@@ -36,7 +36,7 @@ app.get("/api/status", function (_req, res) {
   res.json({
     status: "ok",
     service: "sync-engine-server",
-    events: ["send-clipboard", "receive-clipboard", "send-file", "receive-file"]
+    events: ["send-clipboard", "receive-clipboard", "send-file", "receive-file", "send-media-command", "receive-media-command"]
   });
 });
 
@@ -64,6 +64,12 @@ io.on("connection", function (socket) {
     }
     console.log("[FILE] Archivo retransmitido: " + fileName);
     io.emit("receive-file", payload);
+  });
+
+  socket.on("send-media-command", function (payload) {
+    var action = (payload && payload.action) ? payload.action : "desconocido";
+    console.log("[MEDIA] Comando multimedia retransmitido: " + action);
+    io.emit("receive-media-command", payload);
   });
 
   socket.on("disconnect", function () {

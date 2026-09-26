@@ -2,7 +2,8 @@ const CACHE_NAME = 'sync-engine-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  '/assets/logo.png'
 ];
 
 self.addEventListener('install', (event) => {

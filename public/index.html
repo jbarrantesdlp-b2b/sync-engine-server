@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYNC ENGINE | Dark Mode Tech Dashboard &amp; P2P Chat</title>
+<title>SYNC ENGINE by Barrantes Co. | Dark Mode Tech</title>
 
 <!-- Metadatos PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SyncEngine">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231E202A'/%3E%3Cpath d='M30 50 L45 65 L70 35' stroke='%23FF5500' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='50' cy='50' r='42' stroke='%23FF5500' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/assets/logo.png">
 <link rel="manifest" href="/manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,7 @@
           darkBg: '#121316',
           panel: '#1E202A',
           panelDark: '#161820',
-          panelCard: '#252834',
+          panelHighlight: '#252834',
           borderMuted: '#2D313D',
           neonOrange: '#FF5500',
           neonOrangeHover: '#FF6B1A',
@@ -65,29 +65,6 @@
     box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
   }
 
-  .gauge-ring {
-    --pct: 0%;
-    width: 120px;
-    height: 120px;
-    border-radius: 9999px;
-    background: conic-gradient(#FF5500 var(--pct), rgba(255,255,255,0.06) 0);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    flex-shrink: 0;
-    transition: background 0.6s ease;
-  }
-  .gauge-ring::after {
-    content: '';
-    position: absolute;
-    inset: 8px;
-    border-radius: 9999px;
-    background: #161820;
-    box-shadow: inset 0 0 14px rgba(0,0,0,0.7);
-  }
-  .gauge-value { position: relative; z-index: 1; text-align: center; }
-
   .pulse-dot { animation: pulse-orange 1.8s ease-in-out infinite; }
   @keyframes pulse-orange {
     0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #FF5500; }
@@ -100,6 +77,28 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* Animación Ecualizador de Sonido (KDE Connect Style) */
+  .eq-bar {
+    width: 3.5px;
+    background-color: #FF5500;
+    border-radius: 999px;
+    animation: eq-bounce 1s ease-in-out infinite alternate;
+  }
+  .eq-bar:nth-child(1) { height: 16px; animation-delay: 0.05s; }
+  .eq-bar:nth-child(2) { height: 26px; animation-delay: 0.25s; }
+  .eq-bar:nth-child(3) { height: 14px; animation-delay: 0.15s; }
+  .eq-bar:nth-child(4) { height: 22px; animation-delay: 0.35s; }
+  .eq-bar:nth-child(5) { height: 18px; animation-delay: 0.1s; }
+  @keyframes eq-bounce {
+    0% { transform: scaleY(0.3); opacity: 0.5; }
+    100% { transform: scaleY(1); opacity: 1; box-shadow: 0 0 8px rgba(255,85,0,0.6); }
+  }
+  .eq-paused .eq-bar {
+    animation-play-state: paused;
+    transform: scaleY(0.25);
+    opacity: 0.35;
+  }
+
   #drop-overlay.active { display: flex; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; }
@@ -107,140 +106,62 @@
 </head>
 <body class="font-sans text-gray-100 antialiased selection:bg-[#FF5500]/30 selection:text-white">
 
-  <!-- Header Superior Compacto (Dark Mode Tech) -->
-  <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/90 backdrop-blur-xl">
+  <!-- Header Superior Compacto (Dark Mode Tech & Marca Oficial) -->
+  <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/95 backdrop-blur-xl">
     <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
       
-      <!-- Brand & Título -->
+      <!-- Brand & Logo Oficial (36px de alto) -->
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] font-black tracking-tight text-sm shadow-glow-orange-subtle">
-          JB
-        </div>
+        <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-9 w-auto object-contain flex-shrink-0">
         <div class="flex flex-col">
           <div class="flex items-center gap-2">
-            <h1 class="font-bold text-base sm:text-lg tracking-wide text-white">SYNC ENGINE</h1>
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF5500]/15 text-[#FF5500] border border-[#FF5500]/30">PRO</span>
+            <h1 class="font-bold text-sm sm:text-base tracking-wide text-white">SYNC ENGINE</h1>
+            <span class="text-[10px] text-[#A0A5B1] font-medium hidden sm:inline">by Barrantes Co.</span>
           </div>
-          <p class="text-[11px] text-[#A0A5B1]">P2P Realtime Sync Engine · Barrantes Co.</p>
+          <span class="text-[10px] text-[#FF5500] font-mono tracking-wider font-semibold">P2P SECURE SYNC</span>
         </div>
       </div>
 
-      <!-- Indicador de Estado Activo Naranja Neón -->
-      <div class="flex items-center gap-3">
-        <div id="status-badge" class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#161820] border border-[#2D313D] transition-all duration-300">
+      <!-- Acciones de Cabecera: Selector de Nombre de Dispositivo, Estado Real e Instalador -->
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        
+        <!-- Selector / Indicador de Nombre Personalizado del Equipo -->
+        <button id="open-device-modal-btn" type="button" title="Personalizar nombre del dispositivo"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161820] hover:bg-[#252834] border border-[#2D313D] hover:border-[#FF5500]/50 transition-all text-xs">
+          <span id="header-device-icon" class="text-sm">💻</span>
+          <span id="header-device-name" class="font-semibold text-white max-w-[140px] sm:max-w-[200px] truncate">Mi Equipo</span>
+          <span class="text-[10px] text-[#A0A5B1]">✎</span>
+        </button>
+
+        <!-- Indicador de Estado Real: "● En línea" -->
+        <div id="status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161820] border border-[#2D313D] transition-all">
           <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-[#FF5500] pulse-dot flex-shrink-0"></span>
-          <span id="status-text" class="text-xs font-bold tracking-wider text-[#FF5500] whitespace-nowrap">CONECTANDO</span>
+          <span id="status-text" class="text-xs font-bold tracking-wider text-[#FF5500] whitespace-nowrap">Conectando...</span>
+          <span id="latency-indicator" class="text-[10px] font-mono text-[#A0A5B1] hidden sm:inline">—</span>
         </div>
+
+        <!-- Botón Instalar App (PWA) -->
+        <button id="install-app-btn" type="button" title="Instalar SYNC ENGINE en tu dispositivo"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange-subtle transition-all cursor-pointer">
+          <span>📲</span>
+          <span class="hidden sm:inline">Instalar App</span>
+        </button>
+
       </div>
 
     </div>
   </header>
 
-  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 flex flex-col gap-5">
 
-    <!-- BENTO GRID DASHBOARD: ESTADO, DISPOSITIVOS & KPIS -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
-      
-      <!-- Bento 1: Disponibilidad y Latencia (lg:col-span-4) -->
-      <div class="bento-card rounded-2xl p-5 flex items-center gap-4 lg:col-span-4">
-        <div id="gauge-ring" class="gauge-ring">
-          <div class="gauge-value">
-            <span id="gauge-pct" class="block font-black text-2xl text-[#FF5500]">0%</span>
-            <span class="block text-[9px] tracking-wider text-[#A0A5B1] uppercase font-semibold">uptime</span>
-          </div>
-        </div>
-        <div class="min-w-0 flex-1">
-          <p class="text-[10px] uppercase tracking-widest text-[#FF5500] font-bold">Estado del Enlace</p>
-          <h2 id="hero-status-line" class="font-bold text-base text-white truncate mt-0.5">Sincronizando socket...</h2>
-          <p id="hero-sub" class="text-xs text-[#A0A5B1] truncate mt-0.5">Buscando enlace local</p>
-          <div class="flex items-center gap-3 mt-2 text-xs">
-            <span class="text-[#A0A5B1]">Latencia: <strong id="latency-value" class="text-[#FF5500] font-mono">—</strong></span>
-            <span class="text-[#A0A5B1]">Sesión: <strong id="uptime-clock" class="text-white font-mono">00:00:00</strong></span>
-          </div>
-        </div>
-      </div>
+    <!-- ÁREA PRINCIPAL: BENTO GRID (CHAT CENTRALIZADO + CONTROLES MULTIMEDIA) -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
 
-      <!-- Bento 2: Dispositivo Local Detectado (lg:col-span-3) -->
-      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-3">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Dispositivo Local</span>
-          <span class="w-2 h-2 rounded-full bg-[#FF5500]"></span>
-        </div>
-        <div class="my-2">
-          <p id="device-label" class="font-bold text-sm text-white truncate">Detectando equipo…</p>
-          <p id="server-label" class="text-[11px] text-[#A0A5B1] font-mono truncate mt-0.5">—</p>
-        </div>
-        <div class="text-[10px] text-[#A0A5B1] pt-2 border-t border-[#2D313D] flex items-center justify-between">
-          <span>Modo: WebSocket P2P</span>
-          <span class="text-[#FF5500] font-semibold">Listo</span>
-        </div>
-      </div>
-
-      <!-- Bento 3: Métricas de Portapapeles (lg:col-span-2) -->
-      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-2">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Portapapeles</span>
-          <div class="p-1 rounded bg-[#FF5500]/10 text-[#FF5500]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-            </svg>
-          </div>
-        </div>
-        <div class="flex items-baseline justify-between my-2">
-          <div>
-            <span class="text-xs text-[#A0A5B1] block">Enviados</span>
-            <span id="kpi-clip-out" class="font-black text-xl text-white">0</span>
-          </div>
-          <div class="text-right">
-            <span class="text-xs text-[#A0A5B1] block">Recibidos</span>
-            <span id="kpi-clip-in" class="font-black text-xl text-[#FF5500]">0</span>
-          </div>
-        </div>
-        <p class="text-[9px] text-[#A0A5B1] pt-2 border-t border-[#2D313D]">Sincronización instantánea</p>
-      </div>
-
-      <!-- Bento 4: Métricas de Archivos (lg:col-span-2) -->
-      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-2">
-        <div class="flex items-center justify-between">
-          <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Archivos</span>
-          <div class="p-1 rounded bg-[#FF5500]/10 text-[#FF5500]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/>
-            </svg>
-          </div>
-        </div>
-        <div class="flex items-baseline justify-between my-2">
-          <div>
-            <span class="text-xs text-[#A0A5B1] block">Enviados</span>
-            <span id="kpi-file-out" class="font-black text-xl text-white">0</span>
-          </div>
-          <div class="text-right">
-            <span class="text-xs text-[#A0A5B1] block">Recibidos</span>
-            <span id="kpi-file-in" class="font-black text-xl text-[#FF5500]">0</span>
-          </div>
-        </div>
-        <p class="text-[9px] text-[#A0A5B1] pt-2 border-t border-[#2D313D]">Límite hasta 20 MB</p>
-      </div>
-
-      <!-- Bento 5: Total Eventos (lg:col-span-1) -->
-      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-1">
-        <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Total</span>
-        <div class="my-1">
-          <p id="kpi-events" class="font-black text-2xl text-[#FF5500]">0</p>
-        </div>
-        <span id="activity-count" class="text-[9px] text-[#A0A5B1] truncate">0 eventos</span>
-      </div>
-
-    </section>
-
-    <!-- ÁREA PRINCIPAL: BENTO CHAT FEED & LATERAL TELEMETRÍA -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-
-      <!-- PANEL PRINCIPAL: CHAT DE TRANSMISIÓN (Dark Mode Tech Naranja) -->
-      <section class="xl:col-span-8 bento-card rounded-2xl flex flex-col h-[740px] max-h-[86vh] relative overflow-hidden">
+      <!-- COLUMNA PRINCIPAL: CHAT FEED CENTRALIZADO (Estilo Telegram / Saved Messages) -->
+      <section class="xl:col-span-8 bento-card rounded-2xl flex flex-col h-[750px] max-h-[85vh] relative overflow-hidden">
         
         <!-- Header del Feed -->
-        <div class="px-5 py-3.5 border-b border-[#2D313D] bg-[#161820]/90 backdrop-blur-md flex items-center justify-between gap-3">
+        <div class="px-5 py-3 border-b border-[#2D313D] bg-[#161820]/95 backdrop-blur-md flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
             <div class="w-8 h-8 rounded-lg bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -249,10 +170,10 @@
             </div>
             <div class="min-w-0">
               <h2 class="font-bold text-sm sm:text-base text-white flex items-center gap-2 truncate">
-                Feed de Transmisión
+                Mensajes Guardados &amp; Canal P2P
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF5500]/15 text-[#FF5500] border border-[#FF5500]/30">Activo</span>
               </h2>
-              <p class="text-[11px] text-[#A0A5B1] truncate">Canal P2P cifrado · Portapapeles, texto y archivos</p>
+              <p class="text-[11px] text-[#A0A5B1] truncate">Sincronización instantánea de texto, enlaces, imágenes y archivos</p>
             </div>
           </div>
 
@@ -274,36 +195,36 @@
             </svg>
           </div>
           <p class="font-bold text-lg text-[#FF5500]">Suelta el archivo aquí para transmitirlo</p>
-          <p class="text-xs text-[#A0A5B1]">Se sincronizará en tiempo real con todos los dispositivos</p>
+          <p class="text-xs text-[#A0A5B1]">Se compartirá inmediatamente con todos los dispositivos sincronizados</p>
         </div>
 
-        <!-- CONTENEDOR PRINCIPAL: CHAT FEED -->
-        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth bg-[#121316]/40">
+        <!-- CONTENEDOR DE MENSAJES (Scrollable) -->
+        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth bg-[#121316]/50">
           <div id="chat-empty" class="h-full flex flex-col items-center justify-center text-center p-6 text-[#A0A5B1]">
-            <div class="w-12 h-12 rounded-xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-14 h-14 rounded-2xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
               </svg>
             </div>
-            <p class="text-sm font-semibold text-white">Canal de Sincronización Vacío</p>
-            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Envía un mensaje de texto, pega tu portapapeles o adjunta archivos para compartirlos al instante.</p>
+            <p class="text-base font-bold text-white">Canal P2P Listo</p>
+            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Escribe notas, pega enlaces o adjunta imágenes y archivos para sincronizarlos al instante.</p>
           </div>
         </div>
 
-        <!-- BARRA DE ENTRADA INFERIOR (Dark Mode Tech & Naranja Neón) -->
+        <!-- BARRA INFERIOR DE ENTRADA FLOTANTE -->
         <div id="input-bar" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2.5">
           
-          <!-- Botones de Acción Rápida -->
+          <!-- Botones de Acción Rápida: Pegar 1-Clic & Adjuntar -->
           <div class="flex items-center justify-between gap-2 px-1">
             <div class="flex items-center gap-2">
               
-              <!-- Botón Pegar Portapapeles (Destacado Naranja) -->
-              <button id="paste-clipboard-btn" type="button" title="Pegar y transmitir desde el portapapeles del sistema"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30 text-xs font-semibold active:scale-95 transition-all">
+              <!-- Botón Pegar Portapapeles con 1-Clic -->
+              <button id="paste-clipboard-btn" type="button" title="Pegar contenido del portapapeles del sistema y enviar inmediatamente"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30 text-xs font-bold active:scale-95 transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <span>Pegar portapapeles</span>
+                <span>Pegar Portapapeles con 1-Clic</span>
               </button>
 
               <!-- Botón Adjuntar Archivo (Clip) -->
@@ -312,7 +233,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#FF5500]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                 </svg>
-                <span>Adjuntar archivo</span>
+                <span>Adjuntar</span>
               </button>
               <input type="file" id="chat-file-input" title="Seleccionar archivo para enviar" aria-label="Seleccionar archivo para enviar" class="hidden">
             </div>
@@ -320,15 +241,14 @@
             <span class="text-[10px] text-[#A0A5B1] font-mono hidden sm:inline">Enter para enviar · Shift+Enter para salto</span>
           </div>
 
-          <!-- Campo de Texto y Botón de Enviar de Alto Contraste -->
+          <!-- Campo de Texto y Botón de Envío -->
           <div class="flex items-end gap-2">
             <div class="flex-1 relative">
               <label for="chat-input" class="sr-only">Mensaje o texto a sincronizar</label>
-              <textarea id="chat-input" rows="1" placeholder="Escribe o pega texto para sincronizar..."
+              <textarea id="chat-input" rows="1" placeholder="Escribe un mensaje, enlace o pega texto..."
                 class="w-full resize-none rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none px-4 py-3 text-sm text-white placeholder-[#A0A5B1]/50 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
             </div>
 
-            <!-- Botón de Envío Naranja Neón de Alto Impacto -->
             <button id="chat-send-btn" type="button" title="Enviar mensaje (Enter)"
               class="h-11 px-5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange active:scale-95 flex items-center justify-center gap-2 transition-all flex-shrink-0 cursor-pointer">
               <span>Enviar</span>
@@ -341,33 +261,93 @@
 
       </section>
 
-      <!-- COLUMNA LATERAL: ACTIVIDAD RECIENTE & TELEMETRÍA EN VIVO -->
-      <aside class="xl:col-span-4 flex flex-col gap-6">
+      <!-- COLUMNA LATERAL: WIDGET MULTIMEDIA & PRESENTACIONES + REGISTRO -->
+      <aside class="xl:col-span-4 flex flex-col gap-5">
 
-        <!-- Actividad Reciente -->
-        <div class="bento-card rounded-2xl p-5">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[#FF5500]"></span>
-              Actividad Reciente
-            </h3>
-            <span class="text-[10px] text-[#A0A5B1] font-mono">En vivo</span>
+        <!-- WIDGET DE CONTROL MULTIMEDIA REMOTO & PRESENTACIONES (KDE Connect Style) -->
+        <div class="bento-card rounded-2xl p-5 flex flex-col gap-4">
+          
+          <!-- Encabezado con Animación Ecualizador -->
+          <div class="flex items-center justify-between pb-3 border-b border-[#2D313D]">
+            <div class="flex items-center gap-2.5">
+              <div id="media-eq-bars" class="flex items-end gap-1 h-7 px-1.5 py-0.5 rounded-lg bg-[#161820] border border-[#2D313D] eq-paused">
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+                <span class="eq-bar"></span>
+              </div>
+              <div>
+                <h3 class="font-bold text-xs uppercase tracking-wider text-white">Control Multimedia</h3>
+                <p id="media-status-subtitle" class="text-[10px] text-[#A0A5B1]">KDE Connect P2P</p>
+              </div>
+            </div>
+
+            <!-- Botón Activar MediaSession Pantalla Bloqueo -->
+            <button id="activate-mediasession-btn" type="button" title="Activar reproductor en pantalla de bloqueo del celular"
+              class="px-2.5 py-1 rounded-lg bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30 text-[11px] font-bold transition-all">
+              🔔 Pantalla Bloqueo
+            </button>
           </div>
-          <div id="activity-feed" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
-            <p id="activity-empty" class="text-xs text-[#A0A5B1] italic py-4 text-center">Sin actividad reciente registrada.</p>
+
+          <!-- Tarjeta de Pista / Estado de Reproducción -->
+          <div class="p-3.5 rounded-xl bg-[#161820] border border-[#2D313D] flex items-center justify-between gap-3">
+            <div class="min-w-0">
+              <p id="media-now-title" class="font-bold text-sm text-white truncate">SYNC ENGINE Media</p>
+              <p id="media-now-artist" class="text-xs text-[#A0A5B1] truncate mt-0.5">Control de audio de laptop y móvil</p>
+            </div>
+            <span id="media-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#252834] text-[#A0A5B1] border border-[#2D313D]">STANDBY</span>
           </div>
+
+          <!-- Botones de Control Multimedia: Prev, Play/Pause, Next, Mute -->
+          <div class="grid grid-cols-4 gap-2">
+            <button id="media-prev-btn" type="button" title="Pista Anterior"
+              class="h-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg active:scale-95 transition-all">
+              ⏮
+            </button>
+            <button id="media-play-btn" type="button" title="Reproducir / Pausar"
+              class="h-11 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold flex items-center justify-center text-xl shadow-glow-orange-subtle active:scale-95 transition-all">
+              <span id="media-play-icon">▶</span>
+            </button>
+            <button id="media-next-btn" type="button" title="Pista Siguiente"
+              class="h-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg active:scale-95 transition-all">
+              ⏭
+            </button>
+            <button id="media-mute-btn" type="button" title="Silenciar / Activar Sonido"
+              class="h-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg active:scale-95 transition-all">
+              <span id="media-mute-icon">🔊</span>
+            </button>
+          </div>
+
+          <!-- MODO PRESENTACIÓN (Control a distancia de diapositivas) -->
+          <div class="pt-3 border-t border-[#2D313D] flex flex-col gap-2">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-[#A0A5B1]">Modo Presentaciones</span>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="pres-prev-btn" type="button"
+                class="py-3 px-3 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-white border border-[#2D313D] hover:border-[#FF5500]/40 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                <span>◀</span>
+                <span>Anterior</span>
+              </button>
+              <button id="pres-next-btn" type="button"
+                class="py-3 px-3 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#FF5500] border border-[#FF5500]/30 hover:border-[#FF5500] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                <span>Siguiente</span>
+                <span>▶</span>
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Telemetría y Log del Socket -->
+        <!-- Telemetría & Registro de Eventos -->
         <div class="bento-card rounded-2xl p-5 flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <h3 class="font-bold text-xs uppercase tracking-wider text-[#FF5500] flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-[#FF5500] pulse-dot"></span>
-              Telemetría de Socket
+              Telemetría P2P
             </h3>
-            <span class="text-[10px] text-[#A0A5B1] font-mono">v4.8.3</span>
+            <span id="events-count-badge" class="text-[10px] text-[#A0A5B1] font-mono">0 eventos</span>
           </div>
-          <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[380px] pr-1 font-mono text-xs"></div>
+          <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[220px] pr-1 font-mono text-xs"></div>
         </div>
 
       </aside>
@@ -375,6 +355,55 @@
     </div>
 
   </main>
+
+  <!-- MODAL: PERSONALIZAR NOMBRE DEL DISPOSITIVO -->
+  <div id="device-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bento-card rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-white flex items-center gap-2">
+          <span>💻</span> Nombre de este Equipo
+        </h3>
+        <button id="close-device-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
+      </div>
+      <p class="text-xs text-[#A0A5B1]">
+        Personaliza cómo se identificará este dispositivo al enviar mensajes, archivos y comandos multimedia:
+      </p>
+
+      <input type="text" id="device-name-input" maxlength="40" title="Nombre de este equipo" aria-label="Nombre de este equipo" placeholder="Ej. Laptop de Jose, Samsung S23..."
+        class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+
+      <!-- Presets Rápidos -->
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="💻 Laptop de Jose">💻 Laptop de Jose</button>
+        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="📱 Samsung S23 de Trabajo">📱 Samsung S23</button>
+        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="💻 MacBook Pro">💻 MacBook Pro</button>
+        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="📱 Móvil Personal">📱 Móvil Personal</button>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#2D313D]">
+        <button id="cancel-device-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
+        <button id="save-device-modal-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange-subtle transition-all">Guardar Nombre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL / BANNER DE INSTALACIÓN IOS SAFARI -->
+  <div id="ios-install-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 text-center shadow-panel-depth border border-[#2D313D]">
+      <div class="w-12 h-12 rounded-xl bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] mx-auto text-2xl">
+        📲
+      </div>
+      <h3 class="font-bold text-base text-white">Instalar en tu iPhone o iPad</h3>
+      <div class="text-xs text-[#A0A5B1] space-y-2 text-left bg-[#161820] p-4 rounded-xl border border-[#2D313D]">
+        <p>1. Toca el botón <strong>Compartir (⎋)</strong> en la barra inferior de Safari.</p>
+        <p>2. Desplázate hacia abajo y selecciona <strong>Agregar al inicio (➕)</strong>.</p>
+        <p>3. Toca <strong>Agregar</strong> en la esquina superior derecha.</p>
+      </div>
+      <button id="close-ios-modal-btn" class="w-full py-2.5 rounded-xl bg-[#FF5500] text-black font-extrabold text-xs shadow-glow-orange-subtle">
+        Entendido
+      </button>
+    </div>
+  </div>
 
   <!-- Modal para Visualización de Imágenes -->
   <div id="image-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/95 backdrop-blur-md flex items-center justify-center p-4">
@@ -393,26 +422,41 @@
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
 <script>
-  // Constantes de Configuración
+  // Configuración Principal
   const SERVER_URL = window.location.origin;
   const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+  const STORAGE_KEY_DEVICE = 'sync_engine_custom_device_name';
 
-  // Iconos SVG
-  const FILE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
-  const CLIP_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>';
+  // Audio en bucle silencioso para mantener la MediaSession activa en pantalla de bloqueo móvil
+  const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+  silentAudio.loop = true;
+
+  // Estado Local
+  let isConnected = false;
+  let connectAttemptStart = performance.now();
+  let totalEventsCount = 0;
+  const sentMessageIds = new Set();
+  let deferredPrompt = null;
+  let isMediaPlaying = false;
+  let isMediaMuted = false;
 
   // Referencias DOM
   const statusDot = document.getElementById('status-dot');
   const statusText = document.getElementById('status-text');
   const statusBadge = document.getElementById('status-badge');
-  const heroStatusLine = document.getElementById('hero-status-line');
-  const heroSub = document.getElementById('hero-sub');
-  const gaugeRing = document.getElementById('gauge-ring');
-  const gaugePct = document.getElementById('gauge-pct');
-  const latencyValue = document.getElementById('latency-value');
-  const uptimeClock = document.getElementById('uptime-clock');
-  const deviceLabel = document.getElementById('device-label');
-  const serverLabel = document.getElementById('server-label');
+  const latencyIndicator = document.getElementById('latency-indicator');
+  const headerDeviceName = document.getElementById('header-device-name');
+  const headerDeviceIcon = document.getElementById('header-device-icon');
+  const openDeviceModalBtn = document.getElementById('open-device-modal-btn');
+  const deviceModal = document.getElementById('device-modal');
+  const closeDeviceModalBtn = document.getElementById('close-device-modal-btn');
+  const cancelDeviceModalBtn = document.getElementById('cancel-device-modal-btn');
+  const saveDeviceModalBtn = document.getElementById('save-device-modal-btn');
+  const deviceNameInput = document.getElementById('device-name-input');
+  const presetButtons = document.querySelectorAll('.preset-btn');
+  const installAppBtn = document.getElementById('install-app-btn');
+  const iosInstallModal = document.getElementById('ios-install-modal');
+  const closeIosModalBtn = document.getElementById('close-ios-modal-btn');
   const chatFeed = document.getElementById('chat-feed');
   const chatEmpty = document.getElementById('chat-empty');
   const chatInput = document.getElementById('chat-input');
@@ -422,70 +466,85 @@
   const chatFileInput = document.getElementById('chat-file-input');
   const clearChatBtn = document.getElementById('clear-chat-btn');
   const dropOverlay = document.getElementById('drop-overlay');
-  const activityFeed = document.getElementById('activity-feed');
-  const activityEmpty = document.getElementById('activity-empty');
-  const activityCount = document.getElementById('activity-count');
   const eventLog = document.getElementById('event-log');
+  const eventsCountBadge = document.getElementById('events-count-badge');
   const imageModal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
   const modalDownloadBtn = document.getElementById('modal-download-btn');
   const closeModalBtn = document.getElementById('close-modal-btn');
   const toastContainer = document.getElementById('toast-container');
 
-  // Estado de Sesión y Métricas
-  const sessionStart = Date.now();
-  let lastTick = sessionStart;
-  let totalConnectedMs = 0;
-  let isConnected = false;
-  let connectAttemptStart = performance.now();
-  let activityTotal = 0;
-  const counters = { events: 0, clipOut: 0, clipIn: 0, fileOut: 0, fileIn: 0, reconnect: 0 };
-  const sentMessageIds = new Set();
+  // Referencias Media Widget
+  const mediaEqBars = document.getElementById('media-eq-bars');
+  const mediaNowTitle = document.getElementById('media-now-title');
+  const mediaNowArtist = document.getElementById('media-now-artist');
+  const mediaBadge = document.getElementById('media-badge');
+  const mediaPrevBtn = document.getElementById('media-prev-btn');
+  const mediaPlayBtn = document.getElementById('media-play-btn');
+  const mediaPlayIcon = document.getElementById('media-play-icon');
+  const mediaNextBtn = document.getElementById('media-next-btn');
+  const mediaMuteBtn = document.getElementById('media-mute-btn');
+  const mediaMuteIcon = document.getElementById('media-mute-icon');
+  const presPrevBtn = document.getElementById('pres-prev-btn');
+  const presNextBtn = document.getElementById('pres-next-btn');
+  const activateMediaSessionBtn = document.getElementById('activate-mediasession-btn');
 
-  serverLabel.textContent = SERVER_URL;
-
-  // Detección de Dispositivo Local
-  function getDeviceDetails() {
+  // GESTIÓN DE NOMBRE PERSONALIZADO DE DISPOSITIVO
+  function getDefaultDeviceName() {
     const ua = navigator.userAgent;
-    let os = 'Dispositivo';
-    let icon = '💻';
-    let isMobile = false;
-
-    if (/Android/i.test(ua)) {
-      os = 'Android';
-      icon = '📱';
-      isMobile = true;
-    } else if (/iPhone|iPad|iPod/i.test(ua)) {
-      os = /iPad/i.test(ua) ? 'iPad' : 'iPhone';
-      icon = '📱';
-      isMobile = true;
-    } else if (/Windows/i.test(ua)) {
-      os = 'Windows';
-      icon = '💻';
-    } else if (/Mac OS/i.test(ua)) {
-      os = 'macOS';
-      icon = '💻';
-    } else if (/Linux/i.test(ua)) {
-      os = 'Linux';
-      icon = '💻';
-    }
-
-    let browser = 'Navegador';
-    if (/Edg\//i.test(ua)) browser = 'Edge';
-    else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = 'Chrome';
-    else if (/Firefox\//i.test(ua)) browser = 'Firefox';
-    else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = 'Safari';
-
-    return {
-      icon: icon,
-      deviceType: isMobile ? 'Móvil' : 'PC',
-      name: `${icon} ${isMobile ? 'Móvil' : 'PC'} ${browser}`,
-      shortName: `${icon} ${browser} · ${os}`
-    };
+    if (/Android/i.test(ua)) return '📱 Móvil Android';
+    if (/iPhone|iPad/i.test(ua)) return '📱 iPhone de Jose';
+    if (/Mac/i.test(ua)) return '💻 MacBook Pro';
+    if (/Windows/i.test(ua)) return '💻 Laptop de Jose';
+    return '💻 Mi Equipo';
   }
 
-  const localDeviceInfo = getDeviceDetails();
-  deviceLabel.textContent = localDeviceInfo.shortName;
+  function getCustomDeviceName() {
+    const saved = localStorage.getItem(STORAGE_KEY_DEVICE);
+    return saved && saved.trim() ? saved.trim() : getDefaultDeviceName();
+  }
+
+  function updateDeviceUI() {
+    const name = getCustomDeviceName();
+    headerDeviceName.textContent = name;
+    if (name.includes('📱')) {
+      headerDeviceIcon.textContent = '📱';
+    } else if (name.includes('🖥️')) {
+      headerDeviceIcon.textContent = '🖥️';
+    } else {
+      headerDeviceIcon.textContent = '💻';
+    }
+  }
+
+  updateDeviceUI();
+
+  // Modales de Dispositivo
+  openDeviceModalBtn.addEventListener('click', () => {
+    deviceNameInput.value = getCustomDeviceName();
+    deviceModal.classList.remove('hidden');
+    deviceNameInput.focus();
+  });
+
+  closeDeviceModalBtn.addEventListener('click', () => deviceModal.classList.add('hidden'));
+  cancelDeviceModalBtn.addEventListener('click', () => deviceModal.classList.add('hidden'));
+
+  saveDeviceModalBtn.addEventListener('click', () => {
+    const val = deviceNameInput.value.trim();
+    if (val) {
+      localStorage.setItem(STORAGE_KEY_DEVICE, val);
+      updateDeviceUI();
+      deviceModal.classList.add('hidden');
+      showToast('Nombre guardado: ' + val);
+      logEvent('Nombre de dispositivo actualizado a "' + val + '".', 'success');
+      setupMediaSession();
+    }
+  });
+
+  presetButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      deviceNameInput.value = btn.dataset.name;
+    });
+  });
 
   function timestamp() {
     return new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -500,14 +559,6 @@
     return value.toFixed(value < 10 && i > 0 ? 1 : 0) + ' ' + units[i];
   }
 
-  function formatDuration(ms) {
-    const totalSec = Math.floor(ms / 1000);
-    const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-    const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-    const s = String(totalSec % 60).padStart(2, '0');
-    return h + ':' + m + ':' + s;
-  }
-
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -518,10 +569,10 @@
       .replace(/'/g, '&#039;');
   }
 
-  // Notificaciones Toast Flotantes (Dark Mode Naranja)
+  // Notificaciones Toast Flotantes
   function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    const borderColor = type === 'error' ? 'border-red-500/80 text-red-300' : type === 'warn' ? 'border-[#FF5500] text-[#FF5500]' : 'border-[#FF5500]/60 text-white';
+    const borderColor = type === 'error' ? 'border-red-500/80 text-red-300' : 'border-[#FF5500]/60 text-white';
     toast.className = `log-enter pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1E202A] border ${borderColor} shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300`;
     toast.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#FF5500]"></span><span>${escapeHtml(message)}</span>`;
     toastContainer.appendChild(toast);
@@ -533,7 +584,9 @@
   }
 
   function logEvent(message, tone) {
-    const toneColor = tone === 'error' ? 'border-red-500' : tone === 'success' ? 'border-[#FF5500]' : tone === 'warn' ? 'border-amber-400' : 'border-[#2D313D]';
+    totalEventsCount++;
+    eventsCountBadge.textContent = totalEventsCount + (totalEventsCount === 1 ? ' evento' : ' eventos');
+    const toneColor = tone === 'error' ? 'border-red-500' : tone === 'success' ? 'border-[#FF5500]' : 'border-[#2D313D]';
     const entry = document.createElement('div');
     entry.className = 'log-enter text-xs text-[#A0A5B1] border-l-2 ' + toneColor + ' pl-2.5 py-0.5 truncate';
     const ts = document.createElement('span');
@@ -543,65 +596,6 @@
     entry.appendChild(document.createTextNode(message));
     eventLog.prepend(entry);
     while (eventLog.children.length > 50) eventLog.removeChild(eventLog.lastChild);
-  }
-
-  function updateKpis() {
-    document.getElementById('kpi-events').textContent = counters.events;
-    document.getElementById('kpi-clip-out').textContent = counters.clipOut;
-    document.getElementById('kpi-clip-in').textContent = counters.clipIn;
-    document.getElementById('kpi-file-out').textContent = counters.fileOut;
-    document.getElementById('kpi-file-in').textContent = counters.fileIn;
-    activityCount.textContent = counters.events + (counters.events === 1 ? ' evento' : ' eventos');
-  }
-
-  function bump(key) {
-    counters[key]++;
-    updateKpis();
-  }
-
-  function addActivityCard(type, title, detail) {
-    if (activityEmpty) activityEmpty.remove();
-    activityTotal++;
-
-    const accents = {
-      'clip-out': { icon: CLIP_ICON_SVG, ring: 'border-[#2D313D]', chip: 'bg-[#FF5500]/15 text-[#FF5500]' },
-      'clip-in': { icon: CLIP_ICON_SVG, ring: 'border-[#FF5500]/30', chip: 'bg-[#FF5500]/20 text-[#FF5500]' },
-      'file-out': { icon: FILE_ICON_SVG, ring: 'border-[#2D313D]', chip: 'bg-[#252834] text-white' },
-      'file-in': { icon: FILE_ICON_SVG, ring: 'border-[#FF5500]/30', chip: 'bg-[#FF5500]/20 text-[#FF5500]' },
-    };
-    const cfg = accents[type] || accents['file-in'];
-
-    const card = document.createElement('div');
-    card.className = 'log-enter flex items-center justify-between gap-2.5 rounded-xl bg-[#161820] border ' + cfg.ring + ' p-2.5';
-
-    const iconWrap = document.createElement('div');
-    iconWrap.className = 'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ' + cfg.chip;
-    iconWrap.innerHTML = cfg.icon;
-
-    const info = document.createElement('div');
-    info.className = 'min-w-0 flex-1';
-
-    const titleEl = document.createElement('p');
-    titleEl.className = 'text-xs font-semibold text-white truncate';
-    titleEl.textContent = title;
-
-    const detailEl = document.createElement('p');
-    detailEl.className = 'text-[10px] text-[#A0A5B1] truncate';
-    detailEl.textContent = detail;
-
-    info.appendChild(titleEl);
-    info.appendChild(detailEl);
-
-    const timeEl = document.createElement('span');
-    timeEl.className = 'text-[9px] text-[#A0A5B1] font-mono flex-shrink-0';
-    timeEl.textContent = timestamp();
-
-    card.appendChild(iconWrap);
-    card.appendChild(info);
-    card.appendChild(timeEl);
-
-    activityFeed.prepend(card);
-    while (activityFeed.children.length > 8) activityFeed.removeChild(activityFeed.lastChild);
   }
 
   // Copia al Portapapeles
@@ -636,22 +630,20 @@
     }
   }
 
-  // Creación de Burbujas de Texto (Estilo Tarjetas Flotantes border-radius: 14px)
+  // Creación de Burbujas de Texto (14px border-radius)
   function createTextBubble({ id, isLocal, senderDevice, time, text }) {
     const wrapper = document.createElement('div');
     wrapper.id = id;
     wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
 
-    // Encabezado
     const header = document.createElement('div');
     header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
     header.innerHTML = `
       <span class="font-bold">${escapeHtml(senderDevice)}</span>
       <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(time)}</span>
-      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Sincronizado">✓✓</span>' : ''}
+      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Transmitido">✓✓</span>' : ''}
     `;
 
-    // Cuerpo de la Burbuja
     const bubble = document.createElement('div');
     bubble.className = `relative rounded-[14px] p-3.5 sm:p-4 text-sm shadow-panel-depth transition-all ${
       isLocal 
@@ -663,7 +655,6 @@
     textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words';
     textEl.textContent = text;
 
-    // Barra de Acción / Botón Copiar
     const footerBar = document.createElement('div');
     footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-2 border-t border-[#2D313D]';
 
@@ -678,7 +669,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
       </svg>
-      <span class="copy-label">Copiar</span>
+      <span class="copy-label">Copiar al portapapeles</span>
     `;
     copyBtn.addEventListener('click', () => copyToClipboard(text, copyBtn));
 
@@ -708,7 +699,7 @@
     header.innerHTML = `
       <span class="font-bold">${escapeHtml(senderDevice)}</span>
       <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(time)}</span>
-      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Sincronizado">✓✓</span>' : ''}
+      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Transmitido">✓✓</span>' : ''}
     `;
 
     const bubble = document.createElement('div');
@@ -724,7 +715,6 @@
     const fileHref = (fileData && typeof fileData.data === 'string') ? fileData.data : '';
     const isImage = fileType.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(fileName);
 
-    // Vista Previa de Imagen
     if (isImage && fileHref) {
       const imgWrap = document.createElement('div');
       imgWrap.className = 'mb-3 rounded-xl overflow-hidden bg-[#121316] border border-[#2D313D] max-h-60 flex items-center justify-center cursor-pointer group relative';
@@ -738,7 +728,6 @@
       bubble.appendChild(imgWrap);
     }
 
-    // Tarjeta del Archivo
     const card = document.createElement('div');
     card.className = 'flex items-center justify-between gap-3 p-3 rounded-xl bg-[#121316] border border-[#2D313D]';
 
@@ -781,7 +770,6 @@
     card.appendChild(downloadLink);
     bubble.appendChild(card);
 
-    // Barra de Transferencia Naranja
     const transferWrap = document.createElement('div');
     transferWrap.className = 'mt-2.5 pt-2 border-t border-[#2D313D]';
     transferWrap.innerHTML = `
@@ -801,7 +789,6 @@
     return wrapper;
   }
 
-  // Agrega burbuja con desplazamiento automático
   function appendChatBubble(el) {
     if (chatEmpty && !chatEmpty.classList.contains('hidden')) {
       chatEmpty.classList.add('hidden');
@@ -829,7 +816,7 @@
     }
   }
 
-  // Envío de Mensaje de Texto (Socket.IO 'send-clipboard')
+  // Envío de Texto / Portapapeles (Socket.IO 'send-clipboard')
   function sendTextMessage(text) {
     if (!text || !text.trim()) return;
     const cleanText = text.trim();
@@ -837,11 +824,12 @@
     sentMessageIds.add(msgId);
 
     const timeStr = timestamp();
+    const myDeviceName = getCustomDeviceName();
 
     const bubbleEl = createTextBubble({
       id: msgId,
       isLocal: true,
-      senderDevice: localDeviceInfo.name + ' (Tú)',
+      senderDevice: myDeviceName + ' (Tú)',
       time: timeStr,
       text: cleanText
     });
@@ -850,16 +838,13 @@
     socket.emit('send-clipboard', {
       id: msgId,
       senderId: socket.id,
-      senderDevice: localDeviceInfo.name,
+      senderDevice: myDeviceName,
       text: cleanText,
       timestamp: Date.now()
     });
 
-    bump('clipOut');
-    bump('events');
     const preview = cleanText.length > 50 ? cleanText.slice(0, 50) + '…' : cleanText;
-    logEvent('Portapapeles enviado: ' + preview);
-    addActivityCard('clip-out', 'Portapapeles enviado', preview);
+    logEvent('Mensaje transmitido: ' + preview);
   }
 
   // Envío de Archivo (Socket.IO 'send-file')
@@ -875,13 +860,14 @@
     sentMessageIds.add(fileMsgId);
 
     const timeStr = timestamp();
+    const myDeviceName = getCustomDeviceName();
     const reader = new FileReader();
 
     reader.onload = () => {
       const payload = {
         id: fileMsgId,
         senderId: socket.id,
-        senderDevice: localDeviceInfo.name,
+        senderDevice: myDeviceName,
         name: file.name,
         size: file.size,
         type: file.type || 'application/octet-stream',
@@ -891,7 +877,7 @@
       const bubbleEl = createFileBubble({
         id: fileMsgId,
         isLocal: true,
-        senderDevice: localDeviceInfo.name + ' (Tú)',
+        senderDevice: myDeviceName + ' (Tú)',
         time: timeStr,
         fileData: payload
       });
@@ -899,10 +885,7 @@
 
       socket.emit('send-file', payload);
 
-      bump('fileOut');
-      bump('events');
       logEvent('Archivo enviado: ' + file.name + ' (' + formatSize(file.size) + ').', 'success');
-      addActivityCard('file-out', file.name, formatSize(file.size));
       showToast('Archivo enviado: ' + file.name);
     };
 
@@ -914,36 +897,30 @@
     reader.readAsDataURL(file);
   }
 
-  // Pegar desde Portapapeles del Sistema
-  async function handlePasteFromClipboard() {
+  // Pegar Portapapeles con 1-Clic
+  pasteClipboardBtn.addEventListener('click', async () => {
     try {
       if (navigator.clipboard && navigator.clipboard.readText) {
         const text = await navigator.clipboard.readText();
         if (text && text.trim()) {
           sendTextMessage(text.trim());
-          showToast('Portapapeles sincronizado exitosamente');
-          return;
-        } else {
-          showToast('El portapapeles del sistema está vacío', 'warn');
+          showToast('Portapapeles enviado con 1-clic');
           return;
         }
       }
     } catch (err) {
-      console.warn('Permiso de lectura de portapapeles bloqueado:', err);
+      console.warn('Lectura de portapapeles restringida:', err);
     }
     chatInput.focus();
     showToast('Pega directamente en el campo de texto (Ctrl+V)', 'warn');
-  }
+  });
 
   // Auto-expansión del Campo de Texto
-  function autoResizeInput() {
+  chatInput.addEventListener('input', () => {
     chatInput.style.height = 'auto';
     chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
-  }
+  });
 
-  chatInput.addEventListener('input', autoResizeInput);
-
-  // Manejo de Tecla Enter
   chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -966,8 +943,6 @@
     }
   });
 
-  pasteClipboardBtn.addEventListener('click', handlePasteFromClipboard);
-
   attachFileBtn.addEventListener('click', () => chatFileInput.click());
 
   chatFileInput.addEventListener('change', (e) => {
@@ -986,7 +961,7 @@
     showToast('Feed de mensajes limpiado');
   });
 
-  // Drag and Drop sobre la Ventana
+  // Drag and Drop
   ['dragenter', 'dragover'].forEach((evt) => {
     window.addEventListener(evt, (e) => {
       e.preventDefault();
@@ -1012,7 +987,7 @@
     }
   });
 
-  // Modal de Imágenes
+  // Modal Imágenes
   function openImageModal(src, title) {
     modalImg.src = src;
     modalDownloadBtn.href = src;
@@ -1032,22 +1007,153 @@
     }
   });
 
-  // Reloj de Sesión y Gauge
-  function tick() {
-    const now = Date.now();
-    const delta = now - lastTick;
-    lastTick = now;
-    if (isConnected) totalConnectedMs += delta;
+  // WIDGET MULTIMEDIA & MEDIA SESSION API (PANTALLA DE BLOQUEO)
+  function setupMediaSession() {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'SYNC ENGINE · Control Remoto',
+        artist: 'Barrantes Co.',
+        album: getCustomDeviceName(),
+        artwork: [
+          { src: '/assets/logo.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
 
-    const totalElapsed = now - sessionStart;
-    const pct = totalElapsed > 0 ? Math.min(100, (totalConnectedMs / totalElapsed) * 100) : 0;
-    gaugeRing.style.setProperty('--pct', pct.toFixed(1) + '%');
-    gaugePct.textContent = pct.toFixed(1) + '%';
-    uptimeClock.textContent = formatDuration(totalElapsed);
+      navigator.mediaSession.setActionHandler('play', () => sendMediaCommand('play'));
+      navigator.mediaSession.setActionHandler('pause', () => sendMediaCommand('pause'));
+      navigator.mediaSession.setActionHandler('previoustrack', () => sendMediaCommand('previoustrack'));
+      navigator.mediaSession.setActionHandler('nexttrack', () => sendMediaCommand('nexttrack'));
+    }
   }
-  setInterval(tick, 1000);
 
-  // Conexión Socket.IO
+  function activateMediaSession() {
+    silentAudio.play().then(() => {
+      isMediaPlaying = true;
+      updateMediaWidgetUI();
+      setupMediaSession();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+      showToast('Control en pantalla de bloqueo y notificaciones activado');
+      logEvent('MediaSession activada en este dispositivo.', 'success');
+    }).catch((err) => {
+      console.warn('Reproducción de audio silencioso bloqueada:', err);
+      showToast('Toca el botón nuevamente para conceder permiso de audio');
+    });
+  }
+
+  activateMediaSessionBtn.addEventListener('click', activateMediaSession);
+
+  function updateMediaWidgetUI() {
+    if (isMediaPlaying) {
+      mediaEqBars.classList.remove('eq-paused');
+      mediaPlayIcon.textContent = '⏸';
+      mediaBadge.textContent = 'EN REPRODUCCIÓN';
+      mediaBadge.classList.remove('text-[#A0A5B1]');
+      mediaBadge.classList.add('text-[#FF5500]', 'border-[#FF5500]/40');
+    } else {
+      mediaEqBars.classList.add('eq-paused');
+      mediaPlayIcon.textContent = '▶';
+      mediaBadge.textContent = 'PAUSADO';
+      mediaBadge.classList.remove('text-[#FF5500]', 'border-[#FF5500]/40');
+      mediaBadge.classList.add('text-[#A0A5B1]');
+    }
+
+    if (isMediaMuted) {
+      mediaMuteIcon.textContent = '🔇';
+      mediaMuteBtn.classList.add('text-[#FF5500]', 'border-[#FF5500]/40');
+    } else {
+      mediaMuteIcon.textContent = '🔊';
+      mediaMuteBtn.classList.remove('text-[#FF5500]', 'border-[#FF5500]/40');
+    }
+  }
+
+  function sendMediaCommand(action) {
+    const myDevice = getCustomDeviceName();
+    socket.emit('send-media-command', {
+      action: action,
+      senderDevice: myDevice,
+      timestamp: Date.now()
+    });
+
+    handleMediaActionLocal(action, myDevice, true);
+  }
+
+  function handleMediaActionLocal(action, sender, isLocal) {
+    logEvent(`Comando multimedia: ${action} (${sender})`, 'success');
+    showToast(`Comando: ${action} · ${sender}`);
+
+    if (action === 'play') {
+      isMediaPlaying = true;
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+    } else if (action === 'pause') {
+      isMediaPlaying = false;
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+    } else if (action === 'playpause') {
+      isMediaPlaying = !isMediaPlaying;
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = isMediaPlaying ? 'playing' : 'paused';
+      }
+    } else if (action === 'mute') {
+      isMediaMuted = !isMediaMuted;
+    } else if (action === 'presentation-next') {
+      mediaNowTitle.textContent = 'Diapositiva Siguiente ▶';
+      mediaNowArtist.textContent = 'Control de exposición por ' + sender;
+    } else if (action === 'presentation-prev') {
+      mediaNowTitle.textContent = '◀ Diapositiva Anterior';
+      mediaNowArtist.textContent = 'Control de exposición por ' + sender;
+    }
+
+    updateMediaWidgetUI();
+  }
+
+  mediaPlayBtn.addEventListener('click', () => {
+    if (!isMediaPlaying) {
+      activateMediaSession();
+    }
+    sendMediaCommand('playpause');
+  });
+  mediaPrevBtn.addEventListener('click', () => sendMediaCommand('previoustrack'));
+  mediaNextBtn.addEventListener('click', () => sendMediaCommand('nexttrack'));
+  mediaMuteBtn.addEventListener('click', () => sendMediaCommand('mute'));
+
+  presPrevBtn.addEventListener('click', () => sendMediaCommand('presentation-prev'));
+  presNextBtn.addEventListener('click', () => sendMediaCommand('presentation-next'));
+
+  // INSTALACIÓN PWA
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installAppBtn.classList.remove('hidden');
+    installAppBtn.classList.add('inline-flex');
+  });
+
+  installAppBtn.addEventListener('click', () => {
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    if (isIOS && !isStandalone) {
+      iosInstallModal.classList.remove('hidden');
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === 'accepted') {
+          installAppBtn.classList.add('hidden');
+          showToast('¡SYNC ENGINE instalado!');
+        }
+        deferredPrompt = null;
+      });
+    } else {
+      showToast('Usa el menú del navegador para "Instalar aplicación" o "Agregar a pantalla de inicio"');
+    }
+  });
+
+  closeIosModalBtn.addEventListener('click', () => iosInstallModal.classList.add('hidden'));
+
+  // CONEXIÓN SOCKET.IO & EVENTOS
   const socket = io(SERVER_URL, {
     transports: ['websocket', 'polling'],
     reconnection: true,
@@ -1060,7 +1166,7 @@
     statusDot.classList.add('bg-[#FF5500]');
     statusText.classList.remove('text-red-400');
     statusText.classList.add('text-[#FF5500]');
-    statusText.textContent = 'EN LÍNEA';
+    statusText.textContent = 'En línea';
     statusBadge.classList.remove('border-red-500/60');
     statusBadge.classList.add('border-[#FF5500]/60', 'shadow-glow-orange-subtle');
   }
@@ -1070,44 +1176,37 @@
     statusDot.classList.add('bg-red-500');
     statusText.classList.remove('text-[#FF5500]');
     statusText.classList.add('text-red-400');
-    statusText.textContent = 'RECONECTANDO';
+    statusText.textContent = 'Reconectando';
     statusBadge.classList.remove('border-[#FF5500]/60', 'shadow-glow-orange-subtle');
     statusBadge.classList.add('border-red-500/60');
   }
 
   socket.on('connect', () => {
     const rtt = Math.round(performance.now() - connectAttemptStart);
-    latencyValue.textContent = rtt + ' ms';
+    latencyIndicator.textContent = rtt + ' ms';
     isConnected = true;
-    heroStatusLine.textContent = 'Canal P2P Activo';
-    heroSub.textContent = 'Enlace en ' + SERVER_URL;
     setConnectedUI();
-    bump('events');
     logEvent('Conectado a SYNC ENGINE (' + SERVER_URL + ')', 'success');
   });
 
   socket.on('disconnect', () => {
     isConnected = false;
     connectAttemptStart = performance.now();
-    heroStatusLine.textContent = 'Enlace Interrumpido';
-    heroSub.textContent = 'Reintentando con ' + SERVER_URL;
     setDisconnectedUI();
-    bump('events');
-    logEvent('Desconectado del servidor. Reconectando...', 'error');
+    logEvent('Conexión interrumpida con el servidor. Reconectando...', 'error');
   });
 
   socket.on('connect_error', (err) => {
     isConnected = false;
     setDisconnectedUI();
-    logEvent('Fallo de conexión: ' + (err && err.message ? err.message : 'no disponible'), 'error');
+    logEvent('Error de conexión: ' + (err && err.message ? err.message : 'no disponible'), 'error');
   });
 
   socket.on('reconnect_attempt', () => {
-    bump('reconnect');
-    logEvent('Reintentando enlace P2P...', 'warn');
+    logEvent('Reintentando enlace P2P con el servidor...', 'warn');
   });
 
-  // Manejo de 'receive-clipboard'
+  // Recepción de Portapapeles
   socket.on('receive-clipboard', (data) => {
     const text = (data && typeof data === 'object' && typeof data.text === 'string') 
       ? data.text 
@@ -1122,8 +1221,6 @@
       return;
     }
 
-    bump('clipIn');
-    bump('events');
     const senderDevice = (data && data.senderDevice) ? data.senderDevice : '📱 Dispositivo remoto';
     const rxId = msgId || ('rx_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
 
@@ -1138,11 +1235,10 @@
 
     const preview = text.length > 50 ? text.slice(0, 50) + '…' : text;
     logEvent('Portapapeles recibido de ' + senderDevice + ': ' + preview);
-    addActivityCard('clip-in', 'Portapapeles recibido', preview);
     showToast('Nuevo texto de ' + senderDevice);
   });
 
-  // Manejo de 'receive-file'
+  // Recepción de Archivos
   socket.on('receive-file', (data) => {
     if (!data) return;
     const msgId = data.id || null;
@@ -1152,8 +1248,6 @@
       return;
     }
 
-    bump('fileIn');
-    bump('events');
     const name = data.name || 'archivo';
     const senderDevice = data.senderDevice || '📱 Dispositivo remoto';
     const rxId = msgId || ('rx_file_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
@@ -1168,11 +1262,17 @@
     appendChatBubble(bubbleEl);
 
     logEvent('Archivo recibido de ' + senderDevice + ': ' + name + ' (' + formatSize(data.size) + ').', 'success');
-    addActivityCard('file-in', name, formatSize(data.size));
     showToast('Archivo recibido: ' + name);
   });
 
-  // Registro de Service Worker para PWA
+  // Recepción de Comandos Multimedia
+  socket.on('receive-media-command', (data) => {
+    if (!data || !data.action) return;
+    const senderDevice = data.senderDevice || '📱 Dispositivo remoto';
+    handleMediaActionLocal(data.action, senderDevice, false);
+  });
+
+  // Registro de Service Worker PWA
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').then((reg) => {
@@ -1183,6 +1283,7 @@
     });
   }
 
+  setupMediaSession();
   logEvent('SYNC ENGINE listo en ' + SERVER_URL);
 </script>
 
