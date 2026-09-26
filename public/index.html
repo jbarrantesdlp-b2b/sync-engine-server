@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYNC ENGINE | By Barrantes Co.</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0" crossorigin="anonymous"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { noche: '#0A1A3A', abismo: '#050D1D', oro: '#C5A059', tech: '#38B6FF' },
+        fontFamily: {
+          heading: ['Montserrat', 'sans-serif'],
+          sans: ['Inter', 'sans-serif'],
+        },
+        boxShadow: {
+          'glow-oro': '0 0 22px rgba(197,160,89,0.5), 0 0 44px rgba(197,160,89,0.2)',
+          'glow-oro-hover': '0 0 32px rgba(197,160,89,0.8), 0 0 60px rgba(197,160,89,0.3)',
+          'glow-tech': '0 0 18px rgba(56,182,255,0.35)',
+          'glow-green': '0 0 16px rgba(34,197,94,0.7)',
+          'glow-red': '0 0 16px rgba(239,68,68,0.7)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body {
+    background: radial-gradient(ellipse 120% 80% at 12% -10%, #10285C 0%, #0A1A3A 45%, #050D1D 85%, #030812 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.5); border-radius: 999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .glass {
+    background: rgba(10, 26, 58, 0.42);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .infinito {
+    background: linear-gradient(135deg, #F3D9A4 0%, #C5A059 42%, #8A6A31 68%, #EED9A6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .gauge-ring {
+    --pct: 0%;
+    width: 168px;
+    height: 168px;
+    border-radius: 9999px;
+    background: conic-gradient(#38B6FF var(--pct), rgba(255,255,255,0.08) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.6s ease;
+  }
+  .gauge-ring::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 30% 20%, #123068 0%, #050D1D 78%);
+    box-shadow: inset 0 0 22px rgba(0,0,0,0.55);
+  }
+  .gauge-value { position: relative; z-index: 1; text-align: center; }
+
+  .pulse-dot { animation: pulse-dot 1.7s ease-in-out infinite; }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .5; transform: scale(1.3); }
+  }
+
+  .flash-sync { animation: flash-sync 0.8s ease-out; }
+  @keyframes flash-sync {
+    0% { box-shadow: 0 0 0 0 rgba(56,182,255,0.9), inset 0 0 0 0 rgba(56,182,255,0.55); }
+    35% { box-shadow: 0 0 0 5px rgba(56,182,255,0.2), inset 0 0 30px rgba(56,182,255,0.32); }
+    100% { box-shadow: 0 0 0 0 rgba(56,182,255,0), inset 0 0 0 0 rgba(56,182,255,0); }
+  }
+
+  .log-enter { animation: log-enter 0.35s ease-out; }
+  @keyframes log-enter {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-dot, .flash-sync, .log-enter { animation: none; }
+  }
+
+  #drop-zone.drop-active { border-color: #38B6FF; background: rgba(56,182,255,0.09); }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans text-gray-100 antialiased">
+
+  <div aria-hidden="true" class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div class="absolute -top-32 -left-32 w-[560px] h-[560px] bg-tech/10 blur-[140px] rounded-full"></div>
+    <div class="absolute top-1/3 -right-40 w-[520px] h-[520px] bg-oro/10 blur-[160px] rounded-full"></div>
+    <div class="absolute bottom-[-10%] left-1/4 w-[460px] h-[380px] bg-indigo-500/10 blur-[150px] rounded-full"></div>
+  </div>
+
+  <header class="sticky top-0 z-30 border-b border-oro/25 bg-abismo/70 backdrop-blur-xl">
+    <div class="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+      <div class="flex items-center gap-3">
+        <span class="font-heading text-2xl font-black tracking-tight infinito">JB∞</span>
+        <span class="text-oro/40 font-light">|</span>
+        <span class="text-sm md:text-base font-medium text-gray-300">Barrantes Co.</span>
+      </div>
+
+      <div class="flex flex-col items-center leading-tight">
+        <h1 class="font-heading text-lg md:text-2xl font-extrabold tracking-[0.15em] text-tech">SYNC ENGINE</h1>
+        <p class="text-[10px] md:text-xs text-gray-400 tracking-widest">Latencia P2P &lt;100ms</p>
+      </div>
+
+      <div id="status-badge" class="flex items-center gap-2 px-4 py-2 rounded-full bg-abismo/60 border-2 border-red-500/60 shadow-glow-red transition-colors duration-500">
+        <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-dot flex-shrink-0"></span>
+        <span id="status-text" class="text-xs font-bold tracking-wider text-red-400 whitespace-nowrap">RECONECTANDO</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-[1600px] mx-auto px-6 py-8 grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+    <!-- Hero: estado del enlace -->
+    <section class="xl:col-span-5 glass rounded-3xl border border-oro/25 p-7 flex flex-col gap-6">
+      <div>
+        <p class="text-xs uppercase tracking-widest text-oro/70 font-semibold">Estado del enlace</p>
+        <h2 id="hero-status-line" class="font-heading text-2xl font-extrabold mt-1">Buscando servidor local…</h2>
+        <p id="hero-sub" class="text-sm text-gray-400 mt-1">Conectando con el servidor configurado.</p>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div id="gauge-ring" class="gauge-ring">
+          <div class="gauge-value">
+            <span id="gauge-pct" class="block font-heading text-3xl font-extrabold text-tech">0%</span>
+            <span class="block text-[10px] tracking-wider text-gray-400 uppercase mt-0.5">disponibilidad</span>
+          </div>
+        </div>
+        <div class="flex-1 flex flex-col gap-3 min-w-0">
+          <div>
+            <div class="flex items-baseline gap-2">
+              <span id="latency-value" class="font-heading text-2xl font-extrabold text-gray-100">—</span>
+              <span class="text-xs text-gray-400">latencia de conexión</span>
+            </div>
+          </div>
+          <div class="h-px bg-oro/15"></div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <span id="uptime-clock" class="font-heading text-xl font-bold text-gray-200">00:00:00</span>
+              <span class="text-xs text-gray-400">sesión activa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-xl bg-abismo/60 border border-tech/20 p-4 min-w-0">
+          <p class="text-[10px] uppercase tracking-wider text-gray-400">Dispositivo</p>
+          <p id="device-label" class="font-heading text-sm font-bold mt-1 truncate">Detectando…</p>
+        </div>
+        <div class="rounded-xl bg-abismo/60 border border-oro/20 p-4 min-w-0">
+          <p class="text-[10px] uppercase tracking-wider text-gray-400">Servidor</p>
+          <p id="server-label" class="font-heading text-sm font-bold mt-1 truncate">—</p>
+          <p id="server-since" class="text-[10px] text-gray-500 mt-0.5">Sin conexión aún</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="xl:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
+
+      <div class="glass rounded-2xl border border-tech/20 p-4 flex flex-col gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tech/10 flex items-center justify-center text-tech">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <p id="kpi-events" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Eventos totales</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl border border-oro/20 p-4 flex flex-col gap-3">
+        <div class="w-9 h-9 rounded-lg bg-oro/10 flex items-center justify-center text-oro">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div>
+          <p id="kpi-clip-out" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Portapapeles enviado</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl border border-tech/20 p-4 flex flex-col gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tech/10 flex items-center justify-center text-tech">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+        <div>
+          <p id="kpi-clip-in" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Portapapeles recibido</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl border border-oro/20 p-4 flex flex-col gap-3">
+        <div class="w-9 h-9 rounded-lg bg-oro/10 flex items-center justify-center text-oro">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/></svg>
+        </div>
+        <div>
+          <p id="kpi-file-out" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Archivos enviados</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl border border-tech/20 p-4 flex flex-col gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tech/10 flex items-center justify-center text-tech">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 16V4M8 8l4-4 4 4"/></svg>
+        </div>
+        <div>
+          <p id="kpi-file-in" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Archivos recibidos</p>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl border border-amber-400/20 p-4 flex flex-col gap-3">
+        <div class="w-9 h-9 rounded-lg bg-amber-400/10 flex items-center justify-center text-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </div>
+        <div>
+          <p id="kpi-reconnect" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">Reconexiones</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Actividad reciente -->
+    <section class="xl:col-span-12 glass rounded-3xl border border-oro/25 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-heading text-base font-bold text-gray-100">Actividad reciente</h2>
+        <span id="activity-count" class="text-xs font-semibold px-3 py-1 rounded-full bg-oro/10 text-oro border border-oro/30">0 eventos</span>
+      </div>
+      <div id="activity-feed" class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+        <p id="activity-empty" class="text-sm text-gray-500 italic py-6">Aún no hay actividad. Los eventos de portapapeles y archivos aparecerán aquí en tiempo real.</p>
+      </div>
+    </section>
+
+    <!-- Portapapeles -->
+    <section id="clipboard-card" class="xl:col-span-4 glass rounded-3xl border border-oro/25 p-6 flex flex-col gap-4">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-oro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <h2 class="font-heading text-base font-bold text-gray-100">Portapapeles instantáneo</h2>
+      </div>
+
+      <label for="clipboard-text" class="sr-only">Texto del portapapeles</label>
+      <textarea id="clipboard-text" rows="7" placeholder="Escribe o pega texto para sincronizar entre dispositivos..."
+        class="w-full resize-none rounded-xl bg-abismo/70 border border-tech/25 focus:border-tech focus:ring-2 focus:ring-tech/25 outline-none p-4 text-sm text-gray-100 placeholder-gray-500 transition-colors"></textarea>
+
+      <button id="sync-clipboard-btn"
+        class="w-full py-3 rounded-xl bg-gradient-to-r from-[#8A6A31] via-oro to-[#EED9A6] text-abismo font-bold tracking-wide text-sm shadow-glow-oro hover:shadow-glow-oro-hover active:scale-[0.98] transition-all duration-200">
+        Sincronizar portapapeles
+      </button>
+    </section>
+
+    <!-- Archivos -->
+    <section class="xl:col-span-4 glass rounded-3xl border border-oro/25 p-6 flex flex-col gap-4">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-oro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+        <h2 class="font-heading text-base font-bold text-gray-100">Transferencia de archivos</h2>
+      </div>
+
+      <div id="drop-zone" role="button" tabindex="0" aria-label="Seleccionar archivo para enviar"
+        class="min-h-[130px] rounded-xl border-2 border-dashed border-oro/40 flex flex-col items-center justify-center gap-2 text-center px-4 py-6 cursor-pointer transition-colors hover:border-tech/60 focus:outline-none focus:border-tech/70">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-tech/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/></svg>
+        <p class="text-sm text-gray-300">Arrastra un archivo aquí</p>
+        <p class="text-xs text-gray-500">o haz clic para seleccionar</p>
+        <input type="file" id="file-input" class="hidden">
+      </div>
+
+      <div>
+        <p class="text-[11px] uppercase tracking-wider text-gray-400 mb-2">Recibidos</p>
+        <div id="received-files" class="flex flex-col gap-2 max-h-40 overflow-y-auto">
+          <p id="files-empty" class="text-xs text-gray-500 italic">Aún no se han recibido archivos.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Log -->
+    <section class="xl:col-span-4 glass rounded-3xl border border-oro/25 p-6 flex flex-col gap-3">
+      <div class="flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-oro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <h2 class="font-heading text-base font-bold text-gray-100">Actividad en tiempo real</h2>
+      </div>
+      <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[420px] pr-1"></div>
+    </section>
+
+  </main>
+
+<script>
+  const SERVER_URL = window.location.origin;
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB: límite defensivo para transferencias en Base64 sobre el socket
+
+  const FILE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
+  const CLIP_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>';
+
+  // Referencias DOM
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const statusBadge = document.getElementById('status-badge');
+  const heroStatusLine = document.getElementById('hero-status-line');
+  const heroSub = document.getElementById('hero-sub');
+  const gaugeRing = document.getElementById('gauge-ring');
+  const gaugePct = document.getElementById('gauge-pct');
+  const latencyValue = document.getElementById('latency-value');
+  const uptimeClock = document.getElementById('uptime-clock');
+  const deviceLabel = document.getElementById('device-label');
+  const serverLabel = document.getElementById('server-label');
+  const serverSince = document.getElementById('server-since');
+  const clipboardCard = document.getElementById('clipboard-card');
+  const clipboardText = document.getElementById('clipboard-text');
+  const syncBtn = document.getElementById('sync-clipboard-btn');
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const receivedFiles = document.getElementById('received-files');
+  const filesEmpty = document.getElementById('files-empty');
+  const activityFeed = document.getElementById('activity-feed');
+  const activityEmpty = document.getElementById('activity-empty');
+  const activityCount = document.getElementById('activity-count');
+  const eventLog = document.getElementById('event-log');
+
+  // Estado de sesión (métricas reales, no simuladas)
+  const sessionStart = Date.now();
+  let lastTick = sessionStart;
+  let totalConnectedMs = 0;
+  let isConnected = false;
+  let connectAttemptStart = performance.now();
+  let activityTotal = 0;
+  const counters = { events: 0, clipOut: 0, clipIn: 0, fileOut: 0, fileIn: 0, reconnect: 0 };
+
+  serverLabel.textContent = SERVER_URL;
+
+  function timestamp() {
+    return new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function formatSize(bytes) {
+    if (bytes === undefined || bytes === null) return '—';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let i = 0;
+    let value = bytes;
+    while (value >= 1024 && i < units.length - 1) { value /= 1024; i++; }
+    return value.toFixed(value < 10 && i > 0 ? 1 : 0) + ' ' + units[i];
+  }
+
+  function formatDuration(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+    const s = String(totalSec % 60).padStart(2, '0');
+    return h + ':' + m + ':' + s;
+  }
+
+  function detectDevice() {
+    const ua = navigator.userAgent;
+    let os = 'dispositivo desconocido';
+    if (/Windows/i.test(ua)) os = 'Windows';
+    else if (/Mac OS/i.test(ua)) os = 'macOS';
+    else if (/Android/i.test(ua)) os = 'Android';
+    else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
+    else if (/Linux/i.test(ua)) os = 'Linux';
+    let browser = 'navegador';
+    if (/Edg\//.test(ua)) browser = 'Edge';
+    else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) browser = 'Chrome';
+    else if (/Firefox\//.test(ua)) browser = 'Firefox';
+    else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
+    return browser + ' · ' + os;
+  }
+  deviceLabel.textContent = detectDevice();
+
+  function logEvent(message, tone) {
+    const toneColor = tone === 'error' ? 'border-red-500/50' : tone === 'success' ? 'border-green-500/50' : tone === 'warn' ? 'border-amber-400/50' : 'border-tech/40';
+    const entry = document.createElement('div');
+    entry.className = 'log-enter text-xs text-gray-300 border-l-2 ' + toneColor + ' pl-3 py-1';
+    const ts = document.createElement('span');
+    ts.className = 'text-oro/70 font-mono';
+    ts.textContent = timestamp();
+    entry.appendChild(ts);
+    entry.appendChild(document.createTextNode(' — ' + message));
+    eventLog.prepend(entry);
+    while (eventLog.children.length > 80) eventLog.removeChild(eventLog.lastChild);
+  }
+
+  function updateKpis() {
+    document.getElementById('kpi-events').textContent = counters.events;
+    document.getElementById('kpi-clip-out').textContent = counters.clipOut;
+    document.getElementById('kpi-clip-in').textContent = counters.clipIn;
+    document.getElementById('kpi-file-out').textContent = counters.fileOut;
+    document.getElementById('kpi-file-in').textContent = counters.fileIn;
+    document.getElementById('kpi-reconnect').textContent = counters.reconnect;
+  }
+
+  function bump(key) {
+    counters[key]++;
+    updateKpis();
+  }
+
+  function flashCard(el) {
+    el.classList.remove('flash-sync');
+    void el.offsetWidth;
+    el.classList.add('flash-sync');
+  }
+
+  function addActivityCard(type, title, detail) {
+    if (activityEmpty) activityEmpty.remove();
+    activityTotal++;
+    activityCount.textContent = activityTotal + (activityTotal === 1 ? ' evento' : ' eventos');
+
+    const accents = {
+      'clip-out': { icon: CLIP_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/10 text-tech' },
+      'clip-in': { icon: CLIP_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/10 text-oro' },
+      'file-out': { icon: FILE_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/10 text-tech' },
+      'file-in': { icon: FILE_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/10 text-oro' },
+    };
+    const cfg = accents[type] || accents['file-in'];
+
+    const card = document.createElement('div');
+    card.className = 'log-enter flex-shrink-0 w-56 rounded-2xl bg-abismo/60 border ' + cfg.ring + ' p-4 flex flex-col gap-2';
+
+    const iconWrap = document.createElement('div');
+    iconWrap.className = 'w-8 h-8 rounded-lg flex items-center justify-center ' + cfg.chip;
+    iconWrap.innerHTML = cfg.icon;
+
+    const titleEl = document.createElement('p');
+    titleEl.className = 'text-sm font-semibold text-gray-100 truncate';
+    titleEl.textContent = title;
+
+    const detailEl = document.createElement('p');
+    detailEl.className = 'text-[11px] text-gray-400 truncate';
+    detailEl.textContent = detail;
+
+    const timeEl = document.createElement('p');
+    timeEl.className = 'text-[10px] text-gray-500 font-mono mt-1';
+    timeEl.textContent = timestamp();
+
+    card.appendChild(iconWrap);
+    card.appendChild(titleEl);
+    card.appendChild(detailEl);
+    card.appendChild(timeEl);
+
+    activityFeed.prepend(card);
+    while (activityFeed.children.length > 12) activityFeed.removeChild(activityFeed.lastChild);
+  }
+
+  function renderReceivedFile(data) {
+    if (filesEmpty) filesEmpty.remove();
+    const name = (data && data.name) ? data.name : 'archivo';
+    const size = data ? formatSize(data.size) : '';
+    const href = (data && typeof data.data === 'string') ? data.data : '';
+
+    const item = document.createElement('div');
+    item.className = 'log-enter flex items-center justify-between gap-3 rounded-xl bg-abismo/60 border border-tech/20 px-3 py-2.5';
+
+    const left = document.createElement('div');
+    left.className = 'flex items-center gap-3 min-w-0';
+    const iconWrap = document.createElement('span');
+    iconWrap.className = 'text-tech flex-shrink-0';
+    iconWrap.innerHTML = FILE_ICON_SVG;
+    const info = document.createElement('div');
+    info.className = 'min-w-0';
+    const nameEl = document.createElement('p');
+    nameEl.className = 'text-xs font-semibold text-gray-100 truncate';
+    nameEl.textContent = name;
+    const sizeEl = document.createElement('p');
+    sizeEl.className = 'text-[10px] text-gray-400';
+    sizeEl.textContent = size;
+    info.appendChild(nameEl);
+    info.appendChild(sizeEl);
+    left.appendChild(iconWrap);
+    left.appendChild(info);
+
+    const link = document.createElement('a');
+    link.className = 'flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-tech/15 text-tech border border-tech/40 hover:bg-tech/25 transition-colors';
+    if (href) {
+      link.href = href;
+      link.setAttribute('download', name);
+      link.textContent = 'Descargar';
+    } else {
+      link.href = '#';
+      link.classList.add('opacity-40', 'pointer-events-none');
+      link.textContent = 'Sin datos';
+    }
+
+    item.appendChild(left);
+    item.appendChild(link);
+    receivedFiles.prepend(item);
+    while (receivedFiles.children.length > 6) receivedFiles.removeChild(receivedFiles.lastChild);
+  }
+
+  // Reloj de sesión y disponibilidad (gauge). Se recalcula cada segundo con tiempos reales.
+  function tick() {
+    const now = Date.now();
+    const delta = now - lastTick;
+    lastTick = now;
+    if (isConnected) totalConnectedMs += delta;
+
+    const totalElapsed = now - sessionStart;
+    const pct = totalElapsed > 0 ? Math.min(100, (totalConnectedMs / totalElapsed) * 100) : 0;
+    gaugeRing.style.setProperty('--pct', pct.toFixed(1) + '%');
+    gaugePct.textContent = pct.toFixed(1) + '%';
+    uptimeClock.textContent = formatDuration(totalElapsed);
+  }
+  setInterval(tick, 1000);
+
+  // Conexión Socket.IO
+  const socket = io(SERVER_URL, {
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionDelay: 1500,
+    reconnectionAttempts: Infinity,
+  });
+
+  function setConnectedUI() {
+    statusDot.classList.remove('bg-red-500');
+    statusDot.classList.add('bg-green-500');
+    statusText.classList.remove('text-red-400');
+    statusText.classList.add('text-green-400');
+    statusText.textContent = 'P2P CONECTADO';
+    statusBadge.classList.remove('border-red-500/60', 'shadow-glow-red');
+    statusBadge.classList.add('border-green-500/60', 'shadow-glow-green');
+  }
+
+  function setDisconnectedUI() {
+    statusDot.classList.remove('bg-green-500');
+    statusDot.classList.add('bg-red-500');
+    statusText.classList.remove('text-green-400');
+    statusText.classList.add('text-red-400');
+    statusText.textContent = 'RECONECTANDO';
+    statusBadge.classList.remove('border-green-500/60', 'shadow-glow-green');
+    statusBadge.classList.add('border-red-500/60', 'shadow-glow-red');
+  }
+
+  socket.on('connect', () => {
+    const rtt = Math.round(performance.now() - connectAttemptStart);
+    latencyValue.textContent = rtt + ' ms';
+    isConnected = true;
+    serverSince.textContent = 'Conectado desde ' + timestamp();
+    heroStatusLine.textContent = 'Todo conectado. Listo para avanzar.';
+    heroSub.textContent = 'Enlace P2P estable con ' + SERVER_URL;
+    setConnectedUI();
+    bump('events');
+    logEvent('Conexión P2P establecida con ' + SERVER_URL + '.', 'success');
+  });
+
+  socket.on('disconnect', () => {
+    isConnected = false;
+    connectAttemptStart = performance.now();
+    serverSince.textContent = 'Conexión perdida';
+    heroStatusLine.textContent = 'Enlace interrumpido.';
+    heroSub.textContent = 'Reintentando conexión con ' + SERVER_URL;
+    setDisconnectedUI();
+    bump('events');
+    logEvent('Conexión perdida. Intentando reconectar...', 'error');
+  });
+
+  socket.on('connect_error', (err) => {
+    isConnected = false;
+    setDisconnectedUI();
+    logEvent('Error de conexión: ' + (err && err.message ? err.message : 'servidor no disponible') + '.', 'error');
+  });
+
+  socket.on('reconnect_attempt', () => {
+    bump('reconnect');
+    logEvent('Reintentando conexión con el servidor local...', 'warn');
+  });
+
+  // Portapapeles
+  syncBtn.addEventListener('click', () => {
+    const text = clipboardText.value;
+    if (!text.trim()) return;
+    socket.emit('send-clipboard', { text });
+    flashCard(clipboardCard);
+    bump('clipOut');
+    bump('events');
+    const preview = text.length > 60 ? text.slice(0, 60) + '…' : text;
+    logEvent('Portapapeles enviado al dispositivo emparejado.');
+    addActivityCard('clip-out', 'Portapapeles enviado', preview);
+  });
+
+  socket.on('receive-clipboard', (data) => {
+    const text = (data && typeof data.text === 'string') ? data.text : '';
+    clipboardText.value = text;
+    flashCard(clipboardCard);
+    bump('clipIn');
+    bump('events');
+    const preview = text.length > 60 ? text.slice(0, 60) + '…' : text;
+    logEvent('Portapapeles recibido y actualizado.');
+    addActivityCard('clip-in', 'Portapapeles recibido', preview || '(vacío)');
+  });
+
+  // Archivos: lectura real vía FileReader (Base64 / DataURL)
+  ['dragenter', 'dragover'].forEach((evt) => {
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('drop-active');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach((evt) => {
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drop-active');
+    });
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files && files.length) handleOutgoingFile(files[0]);
+  });
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length) {
+      handleOutgoingFile(e.target.files[0]);
+      fileInput.value = '';
+    }
+  });
+
+  function handleOutgoingFile(file) {
+    if (file.size > MAX_FILE_SIZE) {
+      logEvent('Archivo "' + file.name + '" supera el límite de ' + formatSize(MAX_FILE_SIZE) + '. No se envió.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      socket.emit('send-file', { name: file.name, size: file.size, type: file.type, data: reader.result });
+      bump('fileOut');
+      bump('events');
+      logEvent('Archivo enviado: ' + file.name + ' (' + formatSize(file.size) + ').');
+      addActivityCard('file-out', file.name, formatSize(file.size));
+    };
+    reader.onerror = () => {
+      logEvent('No se pudo leer el archivo "' + file.name + '" para el envío.', 'error');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  socket.on('receive-file', (data) => {
+    bump('fileIn');
+    bump('events');
+    const name = (data && data.name) ? data.name : 'desconocido';
+    logEvent('Archivo recibido: ' + name + '.');
+    renderReceivedFile(data);
+    addActivityCard('file-in', name, data ? formatSize(data.size) : '');
+  });
+
+  logEvent('Interfaz SYNC ENGINE inicializada. Buscando servidor local en ' + SERVER_URL + '...');
+</script>
+
+</body>
+</html>
