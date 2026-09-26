@@ -171,7 +171,7 @@ io.on("connection", function (socket) {
       return;
     }
 
-    const { toSyncId, text, type, fileData, audioData, clientMsgId } = payload || {};
+    const { toSyncId, text, type, fileData, audioData, clientMsgId, replyTo } = payload || {};
     if (!toSyncId) return;
 
     const targetSyncId = String(toSyncId).trim().toUpperCase();
@@ -184,8 +184,8 @@ io.on("connection", function (socket) {
     let messageObj = null;
 
     if (msgType === "text") {
-      // Persistir historial de texto en DB
-      messageObj = db.saveTextMessage(sender.syncId, targetSyncId, text || "", clientMsgId || null);
+      // Persistir historial de texto en DB con soporte para mensaje citado (replyTo)
+      messageObj = db.saveTextMessage(sender.syncId, targetSyncId, text || "", clientMsgId || null, replyTo || null);
       messageObj.fromName = sender.formattedName;
       messageObj.toSyncId = targetSyncId;
     } else {
@@ -200,6 +200,8 @@ io.on("connection", function (socket) {
         text: text || (msgType === "audio" ? "Nota de voz" : "Archivo"),
         audioData: audioData || null,
         fileData: fileData || null,
+        replyTo: replyTo || null,
+        reactions: {},
         timestamp: Date.now(),
         read: false
       };
@@ -225,7 +227,77 @@ io.on("connection", function (socket) {
     console.log(`[MSG] De ${sender.syncId} para ${targetSyncId} (${msgType})`);
   });
 
-  // Indicador de Escritura
+  // Reacciones con Emojis a Mensajes ('message-reaction')
+  socket.on("message-reaction", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.messageId || !payload.toSyncId || !payload.emoji) return;
+
+    const targetSyncId = String(payload.toSyncId).trim().toUpperCase();
+    const updatedReactions = db.updateMessageReaction(payload.messageId, sender.syncId, payload.emoji);
+
+    const eventData = {
+      messageId: payload.messageId,
+      fromSyncId: sender.syncId,
+      emoji: payload.emoji,
+      reactions: updatedReactions
+    };
+
+    // Emitir a sockets del destinatario
+    const targetSockets = onlineUsers.get(targetSyncId);
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("message-reaction-updated", eventData);
+      });
+    }
+
+    // Emitir a sockets del emisor (sincronización multi-dispositivo)
+    const senderSockets = onlineUsers.get(sender.syncId);
+    if (senderSockets && senderSockets.size > 0) {
+      senderSockets.forEach((sockId) => {
+        io.to(sockId).emit("message-reaction-updated", eventData);
+      });
+    }
+    console.log(`[REACTION] ${sender.syncId} reaccionó con ${payload.emoji} al mensaje ${payload.messageId}`);
+  });
+
+  // Indicadores en Tiempo Real ("Escribiendo..." y "Grabando audio...")
+  socket.on("typing-start", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId) return;
+    const targetSockets = onlineUsers.get(payload.toSyncId.trim().toUpperCase());
+    if (targetSockets) {
+      targetSockets.forEach((s) => io.to(s).emit("contact-typing-start", { fromSyncId: sender.syncId, fromName: sender.formattedName }));
+    }
+  });
+
+  socket.on("typing-stop", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId) return;
+    const targetSockets = onlineUsers.get(payload.toSyncId.trim().toUpperCase());
+    if (targetSockets) {
+      targetSockets.forEach((s) => io.to(s).emit("contact-typing-stop", { fromSyncId: sender.syncId }));
+    }
+  });
+
+  socket.on("recording-start", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId) return;
+    const targetSockets = onlineUsers.get(payload.toSyncId.trim().toUpperCase());
+    if (targetSockets) {
+      targetSockets.forEach((s) => io.to(s).emit("contact-recording-start", { fromSyncId: sender.syncId, fromName: sender.formattedName }));
+    }
+  });
+
+  socket.on("recording-stop", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId) return;
+    const targetSockets = onlineUsers.get(payload.toSyncId.trim().toUpperCase());
+    if (targetSockets) {
+      targetSockets.forEach((s) => io.to(s).emit("contact-recording-stop", { fromSyncId: sender.syncId }));
+    }
+  });
+
+  // Indicador de Escritura Legacy
   socket.on("typing", function (payload) {
     const sender = socketToUser.get(socket.id);
     if (!sender || !payload || !payload.toSyncId) return;

@@ -93,6 +93,36 @@
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  .search-match {
+    background-color: #FEF08A;
+    color: #111827;
+    border-radius: 3px;
+    padding: 0 2px;
+  }
+  .search-match-active {
+    background-color: #F59E0B;
+    color: #FFFFFF;
+    border-radius: 3px;
+    padding: 0 3px;
+    font-weight: bold;
+    box-shadow: 0 0 0 2px #D97706;
+  }
+  .quote-highlight {
+    animation: highlight-anim 1.5s ease-out;
+  }
+  @keyframes highlight-anim {
+    0% { transform: scale(1.02); box-shadow: 0 0 0 3px #128C7E; }
+    50% { transform: scale(1.01); box-shadow: 0 0 0 2px #25D366; }
+    100% { transform: scale(1); box-shadow: none; }
+  }
+  .reaction-pop {
+    animation: pop-in 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.7) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
 </style>
 </head>
 <body class="font-sans text-waTextPrimary antialiased selection:bg-waTeal/20 selection:text-waDarkTeal bg-[#F0F2F5]">
@@ -217,15 +247,43 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <!-- Indicador de Escritura en Vivo -->
+            <!-- Indicador de Escritura en Vivo (Secundario) -->
             <div id="typing-indicator" class="hidden text-xs text-waTeal font-bold animate-pulse">
               escribiendo...
             </div>
+
+            <!-- Botón de Búsqueda Interna de Conversación -->
+            <button id="toggle-chat-search-btn" type="button" title="Buscar en la conversación" aria-label="Buscar en la conversación"
+              class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
+              🔍
+            </button>
 
             <!-- Botón de Llamada de Voz WebRTC -->
             <button id="start-call-btn" type="button" title="Iniciar llamada de voz WebRTC" aria-label="Iniciar llamada de voz"
               class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
               📞
+            </button>
+          </div>
+        </div>
+
+        <!-- BARRA DE BÚSQUEDA INTERNA EN EL HISTORIAL DE CHAT -->
+        <div id="chat-search-bar" class="hidden px-3 sm:px-4 py-2 bg-white border-b border-waBorder flex items-center gap-2 shadow-xs z-20">
+          <span class="text-waTextSecondary text-sm flex-shrink-0">🔍</span>
+          <input id="chat-search-input" type="text" placeholder="Buscar en la conversación actual..."
+            class="flex-1 bg-waBg border border-waBorder rounded-xl px-3 py-1.5 text-xs text-waTextPrimary focus:outline-none focus:border-waTeal transition-all" />
+          <span id="chat-search-count" class="text-[11px] text-waTextSecondary font-medium select-none whitespace-nowrap">0 de 0</span>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <button id="chat-search-prev-btn" type="button" title="Coincidencia anterior (Shift+Enter)"
+              class="h-7 w-7 rounded-lg bg-waBg hover:bg-gray-200 text-waTextPrimary flex items-center justify-center text-xs font-bold transition-colors cursor-pointer">
+              ▲
+            </button>
+            <button id="chat-search-next-btn" type="button" title="Coincidencia siguiente (Enter)"
+              class="h-7 w-7 rounded-lg bg-waBg hover:bg-gray-200 text-waTextPrimary flex items-center justify-center text-xs font-bold transition-colors cursor-pointer">
+              ▼
+            </button>
+            <button id="chat-search-close-btn" type="button" title="Cerrar búsqueda (Esc)"
+              class="h-7 w-7 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer">
+              ✕
             </button>
           </div>
         </div>
@@ -245,6 +303,21 @@
 
         <!-- BARRA DE ENTRADA INFERIOR (INPUT BAR) -->
         <div id="input-container" class="p-2.5 sm:p-3.5 bg-[#F0F2F5] border-t border-waBorder flex flex-col gap-2 relative flex-shrink-0">
+
+          <!-- Previsualización de Mensaje Citado (Reply / Citar) -->
+          <div id="reply-preview-bar" class="hidden items-center justify-between p-2 sm:p-2.5 rounded-xl bg-white border-l-4 border-waTeal border border-waBorder shadow-xs">
+            <div class="flex flex-col min-w-0 flex-1 pr-2">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] uppercase font-bold text-waTeal">Respondiendo a:</span>
+                <span id="reply-preview-name" class="text-xs font-bold text-waTextPrimary truncate">Usuario</span>
+              </div>
+              <p id="reply-preview-text" class="text-xs text-waTextSecondary truncate mt-0.5">Mensaje...</p>
+            </div>
+            <button id="cancel-reply-btn" type="button" title="Cancelar respuesta"
+              class="h-7 w-7 rounded-lg hover:bg-gray-100 text-waTextSecondary hover:text-waTextPrimary flex items-center justify-center text-sm font-bold flex-shrink-0 cursor-pointer">
+              ✕
+            </button>
+          </div>
           
           <!-- Selector Flotante de Emoticones (Desplegable) -->
           <div id="emoji-picker" class="hidden absolute bottom-20 left-3 sm:left-6 z-50 p-3 rounded-2xl bg-white border border-waBorder shadow-wa-float w-72 max-w-[90vw]">
@@ -612,6 +685,28 @@
   let audioContext = null;
   let ringtoneInterval = null;
 
+  // Referencias DOM Buscador Interno de Conversación
+  const toggleChatSearchBtn = document.getElementById('toggle-chat-search-btn');
+  const chatSearchBar = document.getElementById('chat-search-bar');
+  const chatSearchInput = document.getElementById('chat-search-input');
+  const chatSearchCount = document.getElementById('chat-search-count');
+  const chatSearchPrevBtn = document.getElementById('chat-search-prev-btn');
+  const chatSearchNextBtn = document.getElementById('chat-search-next-btn');
+  const chatSearchCloseBtn = document.getElementById('chat-search-close-btn');
+
+  // Referencias DOM Citar y Responder (Reply)
+  const replyPreviewBar = document.getElementById('reply-preview-bar');
+  const replyPreviewName = document.getElementById('reply-preview-name');
+  const replyPreviewText = document.getElementById('reply-preview-text');
+  const cancelReplyBtn = document.getElementById('cancel-reply-btn');
+
+  let currentReplyTo = null; // { id, fromName, text }
+  let currentSearchMatches = [];
+  let currentSearchIndex = -1;
+  let isCurrentlyTyping = false;
+  let typingDebounceTimer = null;
+  let activeContactActivity = null; // 'typing' | 'recording' | null
+
   let isRegisterMode = false;
 
   // Sanitización de Emoticones en Identidad
@@ -969,11 +1064,271 @@
     });
   });
 
+  // ACTUALIZACIÓN DINÁMICA DE ESTADO EN CABECERA DEL CHAT ("Escribiendo...", "Grabando audio...", "● En línea")
+  function updateContactHeaderStatus() {
+    if (!activeContactSyncId) return;
+    const contact = contactsMap.get(activeContactSyncId);
+    if (!contact) return;
+
+    if (activeContactActivity === 'typing') {
+      activeChatStatus.innerHTML = '<span class="text-waGreen font-bold animate-pulse flex items-center gap-1"><span>✏️</span> Escribiendo...</span>';
+    } else if (activeContactActivity === 'recording') {
+      activeChatStatus.innerHTML = '<span class="text-red-500 font-bold animate-pulse flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Grabando audio...</span>';
+    } else {
+      activeChatStatus.innerHTML = contact.isOnline 
+        ? '<span class="text-waGreen font-bold">● En línea</span>' 
+        : '<span class="text-waTextSecondary">· Desconectado</span>';
+    }
+  }
+
+  // CITAR Y RESPONDER MENSAJES (REPLY)
+  function setReplyTo(msg) {
+    if (!msg) return;
+    const isLocal = (msg.fromId === currentUser.syncId);
+    const name = isLocal ? 'Tú' : (msg.fromName || msg.fromId);
+    let summary = msg.text || '';
+    if (msg.type === 'audio') summary = '🎤 Nota de voz';
+    else if (msg.type === 'file') summary = '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo');
+
+    currentReplyTo = {
+      id: msg.id,
+      fromName: name,
+      text: summary
+    };
+
+    replyPreviewName.textContent = name;
+    replyPreviewText.textContent = summary;
+    replyPreviewBar.classList.remove('hidden');
+    replyPreviewBar.classList.add('flex');
+    chatTextarea.focus();
+  }
+
+  function cancelReply() {
+    currentReplyTo = null;
+    replyPreviewBar.classList.add('hidden');
+    replyPreviewBar.classList.remove('flex');
+  }
+
+  // REACCIONES CON EMOJIS A MENSAJES
+  function showReactionPicker(bubbleEl, messageId, isLocal) {
+    document.querySelectorAll('.reaction-picker-bar').forEach((el) => el.remove());
+
+    const picker = document.createElement('div');
+    picker.className = `reaction-picker-bar reaction-pop absolute -top-11 ${isLocal ? 'right-0' : 'left-0'} z-30 bg-white border border-waBorder rounded-full shadow-wa-float px-2.5 py-1 flex items-center gap-2 select-none`;
+    
+    const quickEmojis = ['👍', '❤️', '😂', '😮', '🔥'];
+    quickEmojis.forEach((emoji) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'text-lg hover:scale-130 active:scale-95 transition-transform cursor-pointer p-0.5';
+      btn.textContent = emoji;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sendReaction(messageId, emoji);
+        picker.remove();
+      });
+      picker.appendChild(btn);
+    });
+
+    bubbleEl.appendChild(picker);
+
+    const closeHandler = (e) => {
+      if (!picker.contains(e.target)) {
+        picker.remove();
+        document.removeEventListener('click', closeHandler);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', closeHandler), 10);
+  }
+
+  function sendReaction(messageId, emoji) {
+    if (!activeContactSyncId || !socket) return;
+    socket.emit('message-reaction', {
+      messageId: messageId,
+      toSyncId: activeContactSyncId,
+      emoji: emoji
+    });
+  }
+
+  function renderReactionsPill(wrapperEl, reactionsObj, messageId) {
+    if (!reactionsObj || typeof reactionsObj !== 'object') {
+      wrapperEl.innerHTML = '';
+      return;
+    }
+    const entries = Object.entries(reactionsObj);
+    if (entries.length === 0) {
+      wrapperEl.innerHTML = '';
+      return;
+    }
+
+    const counts = {};
+    let userReactedEmoji = null;
+    entries.forEach(([userSyncId, emoji]) => {
+      counts[emoji] = (counts[emoji] || 0) + 1;
+      if (currentUser && userSyncId === currentUser.syncId) {
+        userReactedEmoji = emoji;
+      }
+    });
+
+    const uniqueEmojis = Object.keys(counts);
+    const totalCount = entries.length;
+
+    const pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = `rounded-full border px-2 py-0.5 text-xs flex items-center gap-1 shadow-xs transition-transform active:scale-95 cursor-pointer ${
+      userReactedEmoji 
+        ? 'bg-emerald-50 border-waGreen text-waDarkTeal font-bold ring-1 ring-waGreen/30' 
+        : 'bg-white border-waBorder text-waTextPrimary hover:bg-gray-50'
+    }`;
+    pill.title = entries.map(([u, e]) => `${u}: ${e}`).join(', ');
+
+    const emojisSpan = document.createElement('span');
+    emojisSpan.textContent = uniqueEmojis.join(' ');
+    pill.appendChild(emojisSpan);
+
+    if (totalCount > 1) {
+      const countSpan = document.createElement('span');
+      countSpan.className = 'text-[10px] text-waTextSecondary font-semibold';
+      countSpan.textContent = totalCount;
+      pill.appendChild(countSpan);
+    }
+
+    pill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (userReactedEmoji) {
+        sendReaction(messageId, userReactedEmoji);
+      } else {
+        const bubble = wrapperEl.closest('.relative');
+        if (bubble) showReactionPicker(bubble, messageId, false);
+      }
+    });
+
+    wrapperEl.innerHTML = '';
+    wrapperEl.appendChild(pill);
+  }
+
+  function updateMessageReactionsUI(data) {
+    if (!data || !data.messageId) return;
+    const msgEl = document.getElementById('msg-' + data.messageId);
+    if (!msgEl) return;
+    const wrapperEl = msgEl.querySelector('.reactions-wrapper');
+    if (wrapperEl) {
+      renderReactionsPill(wrapperEl, data.reactions, data.messageId);
+    }
+  }
+
+  // BUSCADOR INTERNO EN EL HISTORIAL DE CHAT
+  function openChatSearch() {
+    chatSearchBar.classList.remove('hidden');
+    chatSearchBar.classList.add('flex');
+    chatSearchInput.focus();
+    if (chatSearchInput.value.trim()) {
+      executeChatSearch();
+    }
+  }
+
+  function closeChatSearch() {
+    chatSearchBar.classList.add('hidden');
+    chatSearchBar.classList.remove('flex');
+    clearChatSearchHighlights();
+    chatSearchInput.value = '';
+    chatSearchCount.textContent = '0 de 0';
+    currentSearchMatches = [];
+    currentSearchIndex = -1;
+  }
+
+  function clearChatSearchHighlights() {
+    const textElements = chatMessages.querySelectorAll('.msg-text-content');
+    textElements.forEach((el) => {
+      if (el.dataset.rawText !== undefined) {
+        el.textContent = el.dataset.rawText;
+      }
+    });
+  }
+
+  function executeChatSearch() {
+    clearChatSearchHighlights();
+    currentSearchMatches = [];
+    currentSearchIndex = -1;
+
+    const query = chatSearchInput.value.trim().toLowerCase();
+    if (!query) {
+      chatSearchCount.textContent = '0 de 0';
+      return;
+    }
+
+    const textElements = chatMessages.querySelectorAll('.msg-text-content');
+    textElements.forEach((el) => {
+      const raw = el.dataset.rawText || el.textContent;
+      if (raw.toLowerCase().includes(query)) {
+        const parts = raw.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
+        el.innerHTML = '';
+        parts.forEach((part) => {
+          if (part.toLowerCase() === query) {
+            const mark = document.createElement('mark');
+            mark.className = 'search-match';
+            mark.textContent = part;
+            el.appendChild(mark);
+            currentSearchMatches.push(mark);
+          } else {
+            el.appendChild(document.createTextNode(part));
+          }
+        });
+      } else {
+        el.textContent = raw;
+      }
+    });
+
+    const total = currentSearchMatches.length;
+    if (total > 0) {
+      currentSearchIndex = 0;
+      highlightActiveSearchMatch();
+    } else {
+      chatSearchCount.textContent = '0 de 0';
+    }
+  }
+
+  function highlightActiveSearchMatch() {
+    const total = currentSearchMatches.length;
+    if (total === 0) {
+      chatSearchCount.textContent = '0 de 0';
+      return;
+    }
+
+    currentSearchMatches.forEach((m, idx) => {
+      if (idx === currentSearchIndex) {
+        m.className = 'search-match-active';
+        m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        m.className = 'search-match';
+      }
+    });
+
+    chatSearchCount.textContent = `${currentSearchIndex + 1} de ${total}`;
+  }
+
+  function nextSearchMatch() {
+    const total = currentSearchMatches.length;
+    if (total === 0) return;
+    currentSearchIndex = (currentSearchIndex + 1) % total;
+    highlightActiveSearchMatch();
+  }
+
+  function prevSearchMatch() {
+    const total = currentSearchMatches.length;
+    if (total === 0) return;
+    currentSearchIndex = (currentSearchIndex - 1 + total) % total;
+    highlightActiveSearchMatch();
+  }
+
   // SELECCIONAR CONTACTO & NAVEGACIÓN RESPONSIVE
   async function selectContact(syncId) {
     if (syncId === currentUser.syncId) return;
     activeContactSyncId = syncId;
     renderedMessageIds.clear();
+    cancelReply();
+    closeChatSearch();
+    activeContactActivity = null;
 
     const contact = contactsMap.get(syncId);
     if (!contact) return;
@@ -992,9 +1347,7 @@
     activeChatAvatar.textContent = contact.syncId.replace('SYNC-', '');
     activeChatName.textContent = contact.formattedName;
     activeChatId.textContent = 'ID: ' + contact.syncId;
-    activeChatStatus.innerHTML = contact.isOnline 
-      ? '<span class="text-waGreen font-bold">● En línea</span>' 
-      : '<span class="text-waTextSecondary">· Desconectado</span>';
+    updateContactHeaderStatus();
 
     chatWelcome.classList.add('hidden');
     chatMessages.innerHTML = '';
@@ -1349,6 +1702,11 @@
     socket.off('contact-status-changed');
     socket.off('receive-private-message');
     socket.off('user-typing');
+    socket.off('contact-typing-start');
+    socket.off('contact-typing-stop');
+    socket.off('contact-recording-start');
+    socket.off('contact-recording-stop');
+    socket.off('message-reaction-updated');
     socket.off('call-made');
     socket.off('answer-made');
     socket.off('ice-candidate');
@@ -1369,12 +1727,43 @@
       if (c) {
         c.isOnline = data.isOnline;
         if (data.syncId === activeContactSyncId) {
-          activeChatStatus.innerHTML = c.isOnline 
-            ? '<span class="text-waGreen font-bold">● En línea</span>' 
-            : '<span class="text-waTextSecondary">· Desconectado</span>';
+          updateContactHeaderStatus();
         }
         loadContacts();
       }
+    });
+
+    // Indicadores en Tiempo Real de Actividad
+    socket.on('contact-typing-start', (data) => {
+      if (data && data.fromSyncId === activeContactSyncId) {
+        activeContactActivity = 'typing';
+        updateContactHeaderStatus();
+      }
+    });
+
+    socket.on('contact-typing-stop', (data) => {
+      if (data && data.fromSyncId === activeContactSyncId) {
+        if (activeContactActivity === 'typing') activeContactActivity = null;
+        updateContactHeaderStatus();
+      }
+    });
+
+    socket.on('contact-recording-start', (data) => {
+      if (data && data.fromSyncId === activeContactSyncId) {
+        activeContactActivity = 'recording';
+        updateContactHeaderStatus();
+      }
+    });
+
+    socket.on('contact-recording-stop', (data) => {
+      if (data && data.fromSyncId === activeContactSyncId) {
+        if (activeContactActivity === 'recording') activeContactActivity = null;
+        updateContactHeaderStatus();
+      }
+    });
+
+    socket.on('message-reaction-updated', (data) => {
+      updateMessageReactionsUI(data);
     });
 
     // Eventos WebRTC Señalización
@@ -1434,7 +1823,9 @@
 
     const isLocal = (msg.fromId === currentUser.syncId);
     const wrapper = document.createElement('div');
-    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[88%] sm:max-w-[72%] msg-enter`;
+    wrapper.id = 'msg-' + msg.id;
+    wrapper.setAttribute('data-msg-id', msg.id);
+    wrapper.className = `relative group flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[88%] sm:max-w-[72%] msg-enter`;
 
     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
     const senderHeader = isLocal ? 'Tú' : (msg.fromName || msg.fromId);
@@ -1456,6 +1847,27 @@
         ? 'bg-[#D9FDD3] text-waTextPrimary rounded-tr-none' 
         : 'bg-white border border-waBorder text-waTextPrimary rounded-tl-none'
     }`;
+
+    // PREVISUALIZACIÓN DE MENSAJE CITADO (SI APLICA)
+    if (msg.replyTo && (msg.replyTo.text || msg.replyTo.fromName)) {
+      const replyBlock = document.createElement('div');
+      replyBlock.className = 'mb-2 p-2 rounded-xl bg-black/5 hover:bg-black/10 border-l-4 border-waTeal cursor-pointer transition-colors text-left';
+      replyBlock.innerHTML = `
+        <div class="text-[11px] font-bold text-waTeal truncate">${escapeHtml(msg.replyTo.fromName || 'Usuario')}</div>
+        <div class="text-xs text-waTextSecondary line-clamp-2">${escapeHtml(msg.replyTo.text || 'Mensaje')}</div>
+      `;
+      replyBlock.addEventListener('click', () => {
+        const targetEl = document.getElementById('msg-' + msg.replyTo.id);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.classList.add('quote-highlight');
+          setTimeout(() => targetEl.classList.remove('quote-highlight'), 1600);
+        } else {
+          triggerPopupNotification('Mensaje', 'El mensaje citado no se encuentra en el historial visible', 'ℹ️');
+        }
+      });
+      bubble.appendChild(replyBlock);
+    }
 
     // TIPO 1: NOTA DE VOZ (AUDIO)
     if (msg.type === 'audio' && msg.audioData) {
@@ -1547,7 +1959,8 @@
     // TIPO 3: TEXTO REGULAR
     else {
       const textEl = document.createElement('div');
-      textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words text-waTextPrimary';
+      textEl.className = 'msg-text-content whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words text-waTextPrimary';
+      textEl.dataset.rawText = msg.text || '';
       textEl.textContent = msg.text || '';
 
       const footerBar = document.createElement('div');
@@ -1565,6 +1978,97 @@
       bubble.appendChild(textEl);
       bubble.appendChild(footerBar);
     }
+
+    // PÍLDORA DE REACCIONES EN ESQUINA INFERIOR
+    const reactionsWrapper = document.createElement('div');
+    reactionsWrapper.className = `reactions-wrapper absolute -bottom-2.5 ${isLocal ? 'left-2' : 'right-2'} flex items-center gap-1 z-10`;
+    bubble.appendChild(reactionsWrapper);
+    renderReactionsPill(reactionsWrapper, msg.reactions, msg.id);
+
+    // TOOLBAR DESKTOP EN HOVER ([↩ Responder] [🙂 Reaccionar])
+    const desktopToolbar = document.createElement('div');
+    desktopToolbar.className = `hidden sm:group-hover:flex items-center gap-1 absolute -top-3.5 ${isLocal ? 'left-2' : 'right-2'} bg-white border border-waBorder rounded-full shadow-sm px-1.5 py-0.5 z-20`;
+
+    const replyBtn = document.createElement('button');
+    replyBtn.type = 'button';
+    replyBtn.className = 'text-xs text-waTextSecondary hover:text-waTeal p-1 cursor-pointer transition-colors';
+    replyBtn.title = 'Responder';
+    replyBtn.innerHTML = '↩';
+    replyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setReplyTo(msg);
+    });
+
+    const reactBtn = document.createElement('button');
+    reactBtn.type = 'button';
+    reactBtn.className = 'text-xs text-waTextSecondary hover:text-waTeal p-1 cursor-pointer transition-colors';
+    reactBtn.title = 'Reaccionar';
+    reactBtn.innerHTML = '🙂';
+    reactBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showReactionPicker(bubble, msg.id, isLocal);
+    });
+
+    desktopToolbar.appendChild(replyBtn);
+    desktopToolbar.appendChild(reactBtn);
+    bubble.appendChild(desktopToolbar);
+
+    // GESTOS TÁCTILES EN MÓVIL (DESLIZAR A LA DERECHA PARA CITAR + LONG-PRESS PARA REACCIONES)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let isSwiping = false;
+    let longPressTimeout = null;
+
+    bubble.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isSwiping = false;
+
+      longPressTimeout = setTimeout(() => {
+        navigator.vibrate?.(40);
+        showReactionPicker(bubble, msg.id, isLocal);
+      }, 450);
+    }, { passive: true });
+
+    bubble.addEventListener('touchmove', (e) => {
+      if (e.touches.length !== 1) return;
+      const curX = e.touches[0].clientX;
+      const curY = e.touches[0].clientY;
+      const dx = curX - touchStartX;
+      const dy = curY - touchStartY;
+
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+        if (longPressTimeout) {
+          clearTimeout(longPressTimeout);
+          longPressTimeout = null;
+        }
+      }
+
+      if (dx > 10 && Math.abs(dy) < 30) {
+        isSwiping = true;
+        const transX = Math.min(dx * 0.5, 60);
+        bubble.style.transform = `translateX(${transX}px)`;
+        bubble.style.transition = 'none';
+      }
+    }, { passive: true });
+
+    bubble.addEventListener('touchend', (e) => {
+      if (longPressTimeout) {
+        clearTimeout(longPressTimeout);
+        longPressTimeout = null;
+      }
+      if (isSwiping) {
+        bubble.style.transition = 'transform 0.2s ease-out';
+        bubble.style.transform = '';
+        const endX = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : touchStartX;
+        if (endX - touchStartX > 50) {
+          navigator.vibrate?.(35);
+          setReplyTo(msg);
+        }
+        isSwiping = false;
+      }
+    });
 
     wrapper.appendChild(headerEl);
     wrapper.appendChild(bubble);
@@ -1590,13 +2094,22 @@
     const text = chatTextarea.value.trim();
     if (!text || !activeContactSyncId || !socket) return;
 
+    if (isCurrentlyTyping && activeContactSyncId && socket) {
+      isCurrentlyTyping = false;
+      clearTimeout(typingDebounceTimer);
+      socket.emit('typing-stop', { toSyncId: activeContactSyncId });
+    }
+
     const clientMsgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const replyData = currentReplyTo;
+    cancelReply();
 
     socket.emit('send-private-message', {
       clientMsgId: clientMsgId,
       toSyncId: activeContactSyncId,
       text: text,
-      type: 'text'
+      type: 'text',
+      replyTo: replyData
     });
 
     chatTextarea.value = '';
@@ -1618,6 +2131,19 @@
     chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 140) + 'px';
 
     if (activeContactSyncId && socket) {
+      if (!isCurrentlyTyping && chatTextarea.value.trim().length > 0) {
+        isCurrentlyTyping = true;
+        socket.emit('typing-start', { toSyncId: activeContactSyncId });
+      }
+
+      clearTimeout(typingDebounceTimer);
+      typingDebounceTimer = setTimeout(() => {
+        if (isCurrentlyTyping && activeContactSyncId && socket) {
+          isCurrentlyTyping = false;
+          socket.emit('typing-stop', { toSyncId: activeContactSyncId });
+        }
+      }, 1500);
+
       socket.emit('typing', { toSyncId: activeContactSyncId, isTyping: chatTextarea.value.length > 0 });
     }
   });
@@ -1664,6 +2190,10 @@
       };
 
       mediaRecorder.start();
+      if (activeContactSyncId && socket) {
+        socket.emit('recording-start', { toSyncId: activeContactSyncId });
+      }
+
       recordSeconds = 0;
       recordingTimer.textContent = '0:00';
       recordTimerInterval = setInterval(() => {
@@ -1682,6 +2212,9 @@
   });
 
   cancelRecordingBtn.addEventListener('click', () => {
+    if (activeContactSyncId && socket) {
+      socket.emit('recording-stop', { toSyncId: activeContactSyncId });
+    }
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
     }
@@ -1694,16 +2227,24 @@
   sendRecordingBtn.addEventListener('click', () => {
     if (!mediaRecorder || !activeContactSyncId || !socket) return;
 
+    if (activeContactSyncId && socket) {
+      socket.emit('recording-stop', { toSyncId: activeContactSyncId });
+    }
+
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
       reader.onload = () => {
         const clientMsgId = 'aud_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        const replyData = currentReplyTo;
+        cancelReply();
+
         socket.emit('send-private-message', {
           clientMsgId: clientMsgId,
           toSyncId: activeContactSyncId,
           type: 'audio',
-          audioData: reader.result
+          audioData: reader.result,
+          replyTo: replyData
         });
         triggerPopupNotification('Nota de Voz', 'Grabación enviada exitosamente', '🎤');
       };
@@ -1727,6 +2268,9 @@
     const reader = new FileReader();
     reader.onload = () => {
       const clientMsgId = 'fil_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      const replyData = currentReplyTo;
+      cancelReply();
+
       socket.emit('send-private-message', {
         clientMsgId: clientMsgId,
         toSyncId: activeContactSyncId,
@@ -1736,7 +2280,8 @@
           size: file.size,
           type: file.type || 'application/octet-stream',
           data: reader.result
-        }
+        },
+        replyTo: replyData
       });
       triggerPopupNotification('Archivo Enviado', file.name, '📎');
       fileInput.value = '';
@@ -1805,6 +2350,35 @@
 
   // Inicialmente deshabilitar botón de llamada hasta seleccionar un contacto
   startCallBtn.classList.add('opacity-40', 'pointer-events-none');
+
+  // Eventos del Buscador Interno de Conversación
+  if (toggleChatSearchBtn) {
+    toggleChatSearchBtn.addEventListener('click', () => {
+      if (chatSearchBar.classList.contains('hidden')) {
+        openChatSearch();
+      } else {
+        closeChatSearch();
+      }
+    });
+  }
+  if (chatSearchCloseBtn) chatSearchCloseBtn.addEventListener('click', closeChatSearch);
+  if (chatSearchInput) {
+    chatSearchInput.addEventListener('input', executeChatSearch);
+    chatSearchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (e.shiftKey) prevSearchMatch();
+        else nextSearchMatch();
+      } else if (e.key === 'Escape') {
+        closeChatSearch();
+      }
+    });
+  }
+  if (chatSearchNextBtn) chatSearchNextBtn.addEventListener('click', nextSearchMatch);
+  if (chatSearchPrevBtn) chatSearchPrevBtn.addEventListener('click', prevSearchMatch);
+
+  // Evento Cancelar Mensaje Citado (Reply)
+  if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', cancelReply);
 
   // INICIO DE LA APLICACIÓN
   checkExistingAuth();

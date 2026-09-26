@@ -255,7 +255,7 @@ function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
   return contactsList;
 }
 
-function saveTextMessage(fromId, toId, text, customId = null) {
+function saveTextMessage(fromId, toId, text, customId = null, replyTo = null) {
   const db = readDb();
   const newMsg = {
     id: customId || ("msg_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
@@ -263,6 +263,8 @@ function saveTextMessage(fromId, toId, text, customId = null) {
     toId: toId,
     type: "text",
     text: text,
+    replyTo: replyTo || null,
+    reactions: {},
     timestamp: Date.now(),
     read: false
   };
@@ -276,6 +278,24 @@ function saveTextMessage(fromId, toId, text, customId = null) {
 
   writeDb(db);
   return newMsg;
+}
+
+function updateMessageReaction(messageId, userSyncId, emoji) {
+  const db = readDb();
+  const msg = db.messages.find((m) => m.id === messageId);
+  if (msg) {
+    if (!msg.reactions || typeof msg.reactions !== 'object') {
+      msg.reactions = {};
+    }
+    if (msg.reactions[userSyncId] === emoji) {
+      delete msg.reactions[userSyncId];
+    } else {
+      msg.reactions[userSyncId] = emoji;
+    }
+    writeDb(db);
+    return msg.reactions;
+  }
+  return { [userSyncId]: emoji };
 }
 
 function getMessagesBetween(user1Id, user2Id) {
@@ -305,5 +325,6 @@ module.exports = {
   addContact,
   getUserContacts,
   saveTextMessage,
+  updateMessageReaction,
   getMessagesBetween
 };
