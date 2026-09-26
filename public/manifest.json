@@ -4,8 +4,8 @@
   "description": "Chat de sincronización, control multimedia y transferencia en tiempo real P2P.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#121316",
-  "theme_color": "#121316",
+  "background_color": "#F0F2F5",
+  "theme_color": "#075E54",
   "orientation": "portrait-primary",
   "icons": [
     {

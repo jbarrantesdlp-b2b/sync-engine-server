@@ -2,19 +2,20 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SYNC ENGINE | Mensajería Privada</title>
 
 <!-- Metadatos PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="SyncEngine">
+<meta name="theme-color" content="#075E54">
 <link rel="apple-touch-icon" href="/assets/logo.png">
 <link rel="manifest" href="/manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0" crossorigin="anonymous"></script>
@@ -24,23 +25,27 @@
     theme: {
       extend: {
         colors: {
-          darkBg: '#121316',
-          panel: '#1E202A',
-          panelDark: '#161820',
-          panelCard: '#252834',
-          borderMuted: '#2D313D',
-          neonOrange: '#FF5500',
-          neonOrangeHover: '#FF6B1A',
-          onlineGreen: '#10B981',
-          textMuted: '#A0A5B1',
+          waGreen: '#25D366',
+          waTeal: '#128C7E',
+          waDarkTeal: '#075E54',
+          waLightTeal: '#00A884',
+          waBg: '#F0F2F5',
+          waChatBg: '#EFEAE2',
+          waBubbleSent: '#D9FDD3',
+          waBubbleReceived: '#FFFFFF',
+          waTextPrimary: '#111B21',
+          waTextSecondary: '#667781',
+          waBorder: '#E9EDEF',
+          waHover: '#F5F6F6',
+          waBlueCheck: '#53BDEB',
         },
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
         },
         boxShadow: {
-          'glow-orange': '0 0 20px rgba(255, 85, 0, 0.35)',
-          'glow-green': '0 0 16px rgba(16, 185, 129, 0.4)',
-          'panel-depth': '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.3)',
+          'wa-card': '0 2px 8px rgba(11, 20, 26, 0.06)',
+          'wa-float': '0 4px 20px rgba(11, 20, 26, 0.12)',
+          'wa-bubble': '0 1px 1.5px rgba(11, 20, 26, 0.13)',
         },
       },
     },
@@ -49,29 +54,29 @@
 
 <style>
   html, body {
-    background-color: #121316;
-    color: #FFFFFF;
+    background-color: #F0F2F5;
+    color: #111B21;
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
   }
 
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-thumb { background: #2D313D; border-radius: 999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #FF5500; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #128C7E; }
   ::-webkit-scrollbar-track { background: transparent; }
 
-  .bento-card {
-    background-color: #1E202A;
-    border: 1px solid #2D313D;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  .chat-canvas {
+    background-color: #EFEAE2;
+    background-image: radial-gradient(#d1c7b7 0.8px, transparent 0.8px);
+    background-size: 26px 26px;
   }
 
   .pulse-online {
-    animation: pulse-green 2s ease-in-out infinite;
+    animation: pulse-wa-green 2s ease-in-out infinite;
   }
-  @keyframes pulse-green {
-    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px #10B981); }
-    50% { opacity: 0.6; transform: scale(1.15); filter: drop-shadow(0 0 8px #10B981); }
+  @keyframes pulse-wa-green {
+    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 3px #25D366); }
+    50% { opacity: 0.6; transform: scale(1.18); filter: drop-shadow(0 0 7px #25D366); }
   }
 
   .pulse-record {
@@ -79,61 +84,61 @@
   }
   @keyframes pulse-red {
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.5; }
+    50% { transform: scale(1.25); opacity: 0.5; }
   }
 
   .msg-enter {
-    animation: msg-fade-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: msg-fade-up 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @keyframes msg-fade-up {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
-<body class="font-sans text-gray-100 antialiased selection:bg-[#FF5500]/30 selection:text-white">
+<body class="font-sans text-waTextPrimary antialiased selection:bg-waTeal/20 selection:text-waDarkTeal bg-[#F0F2F5]">
 
   <!-- APLICACIÓN PRINCIPAL (VISIBLE TRAS AUTENTICACIÓN) -->
-  <div id="app-container" class="min-h-screen flex flex-col hidden">
+  <div id="app-container" class="min-h-screen flex flex-col hidden bg-[#F0F2F5]">
     
-    <!-- ENCABEZADO SUPERIOR -->
-    <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/95 backdrop-blur-xl">
-      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
+    <!-- ENCABEZADO SUPERIOR (VERDE WHATSAPP) -->
+    <header class="sticky top-0 z-40 bg-gradient-to-r from-[#075E54] to-[#128C7E] text-white shadow-md">
+      <div class="max-w-[1700px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         
         <!-- Logo Oficial (36px de alto) & Título -->
         <div class="flex items-center gap-3">
-          <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-[36px] w-auto object-contain flex-shrink-0">
+          <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-[36px] w-auto object-contain flex-shrink-0 drop-shadow-sm">
           <div class="flex flex-col">
             <h1 class="font-bold text-sm sm:text-base tracking-wide text-white flex items-center gap-2">
               <span>SYNC ENGINE</span>
-              <span class="text-[10px] text-[#A0A5B1] font-normal hidden md:inline">by Barrantes Co.</span>
+              <span class="text-[10px] text-emerald-200 font-normal hidden sm:inline">by Barrantes Co.</span>
             </h1>
-            <span class="text-[10px] text-[#FF5500] font-mono tracking-wider font-semibold">MENSAJERÍA PRIVADA</span>
+            <span class="text-[10px] text-emerald-300 font-mono tracking-wider font-semibold">MENSAJERÍA PRIVADA</span>
           </div>
         </div>
 
-        <!-- Identidad Formateada [ID] - [Nombre Personalizado] e Indicador Permanente Verde -->
-        <div class="flex items-center gap-3 flex-wrap">
+        <!-- Identidad Formateada [ID] - [Nombre] e Indicador Verde Permanente -->
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
           
           <!-- Identidad de Usuario: [ID] - [Nombre Personalizado] (Sin Emojis) -->
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161820] border border-[#2D313D] text-xs">
-            <span id="user-identity-badge" class="font-bold text-white tracking-wide truncate max-w-[200px] sm:max-w-[320px]">
-              <span id="header-user-sync-id" class="text-[#FF5500] font-mono">SYNC-0000</span>
-              <span class="text-[#A0A5B1] mx-1">-</span>
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-xs text-white">
+            <span id="user-identity-badge" class="font-bold tracking-wide truncate max-w-[180px] sm:max-w-[300px]">
+              <span id="header-user-sync-id" class="text-emerald-300 font-mono">SYNC-0000</span>
+              <span class="text-white/60 mx-1">-</span>
               <span id="header-user-clean-name" class="text-white">Usuario</span>
             </span>
-            <button id="open-edit-profile-btn" type="button" title="Editar nombre de usuario" class="text-[#A0A5B1] hover:text-[#FF5500] text-xs pl-1">✎</button>
+            <button id="open-edit-profile-btn" type="button" title="Editar nombre personalizado" class="text-emerald-200 hover:text-white text-xs pl-1">✎</button>
           </div>
 
-          <!-- Indicador Verde Permanente: "● En línea" (#10B981 tanto texto como punto) -->
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981]">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] pulse-online flex-shrink-0"></span>
-            <span class="text-xs font-bold tracking-wide text-[#10B981] select-none">● En línea</span>
+          <!-- Indicador Verde Permanente: "● En línea" (#25D366) -->
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366]">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#25D366] pulse-online flex-shrink-0"></span>
+            <span class="text-xs font-bold tracking-wide select-none">● En línea</span>
           </div>
 
-          <!-- Botón de Cerrar Sesión -->
+          <!-- Botón Cerrar Sesión -->
           <button id="logout-btn" type="button" title="Cerrar sesión"
-            class="px-3 py-1.5 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] text-xs font-semibold transition-all">
+            class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs font-semibold transition-all">
             Salir
           </button>
 
@@ -142,140 +147,157 @@
       </div>
     </header>
 
-    <!-- DISPOSICIÓN PRINCIPAL: PANEL LATERAL DE CONTACTOS + ÁREA CENTRAL DE CONVERSACIÓN -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <!-- CUERPO PRINCIPAL RESPONSIVE (MÓVIL SINGLE-VIEW VS LAPTOP/TV DASHBOARD) -->
+    <main class="flex-1 max-w-[1700px] w-full mx-auto p-0 md:p-3 lg:p-4 flex flex-col md:flex-row gap-0 md:gap-4 overflow-hidden h-[calc(100vh-62px)]">
       
-      <!-- PANEL LATERAL COMPACTO DE CONTACTOS (lg:col-span-4 xl:col-span-3) -->
-      <aside class="lg:col-span-4 xl:col-span-3 bento-card rounded-2xl flex flex-col h-[780px] max-h-[88vh] overflow-hidden">
+      <!-- COLUMNA 1: LISTA DE CONTACTOS & BÚSQUEDA POR ID (SIDEBAR) -->
+      <!-- En Móvil: visible si no hay chat activo o si se regresa; En Laptop: columna izquierda fija -->
+      <aside id="sidebar-panel" class="w-full md:w-[350px] lg:w-[400px] flex-shrink-0 bg-white border-r md:border border-waBorder md:rounded-2xl flex flex-col h-full overflow-hidden shadow-wa-card transition-all">
         
-        <!-- Header de Contactos y Contador -->
-        <div class="p-3.5 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-2">
+        <!-- Header de Chats y Contador -->
+        <div class="p-3.5 border-b border-waBorder bg-white flex items-center justify-between gap-2 flex-shrink-0">
           <div class="flex items-center gap-2">
-            <h2 class="font-bold text-sm text-white">Contactos</h2>
-            <span id="contacts-count-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#252834] text-[#A0A5B1] border border-[#2D313D]">0</span>
+            <h2 class="font-bold text-base text-waTextPrimary">Chats</h2>
+            <span id="contacts-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E8F5E9] text-waDarkTeal border border-[#C8E6C9]">0</span>
           </div>
-          <span class="text-[11px] text-[#A0A5B1]">Directorio Privado</span>
+          <span class="text-xs text-waTextSecondary font-medium">Directorio Privado</span>
         </div>
 
-        <!-- Buscador e Incorporación por Código ID -->
-        <div class="p-3 border-b border-[#2D313D] bg-[#1E202A] flex flex-col gap-2">
+        <!-- Buscador e Incorporación Rápida por Código ID -->
+        <div class="p-3 border-b border-waBorder bg-[#F8FAFC] flex flex-col gap-1.5 flex-shrink-0">
           <div class="flex items-center gap-1.5">
-            <input type="text" id="contact-search-input" maxlength="20" placeholder="Buscar o agregar ID (ej. SYNC-8821)..."
-              class="flex-1 px-3 py-2 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-xs text-white uppercase placeholder-gray-500 font-mono">
+            <div class="relative flex-1">
+              <span class="absolute left-3 top-2.5 text-waTextSecondary text-xs">🔍</span>
+              <input type="text" id="contact-search-input" maxlength="20" placeholder="Buscar o agregar ID (ej. SYNC-8821)..."
+                class="w-full pl-8 pr-3 py-2 rounded-xl bg-white border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-xs text-waTextPrimary uppercase placeholder-gray-400 font-mono shadow-sm">
+            </div>
             <button id="add-contact-btn" type="button" title="Agregar contacto por Código ID"
-              class="h-8 px-3 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center justify-center transition-all flex-shrink-0 cursor-pointer">
+              class="h-9 px-3.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-sm flex items-center justify-center transition-all flex-shrink-0 cursor-pointer">
               + ID
             </button>
           </div>
-          <p id="contact-action-msg" class="text-[10px] text-red-400 hidden px-1"></p>
+          <p id="contact-action-msg" class="text-[11px] text-red-500 hidden px-1 font-medium"></p>
         </div>
 
-        <!-- Lista de Contactos (Sin apartado de Mensajes Guardados) -->
-        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-[#2D313D]/40 p-2 space-y-1">
-          <!-- Renderizado dinámico de contactos -->
+        <!-- Lista de Conversaciones/Contactos -->
+        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-waBorder/60 p-1.5 space-y-1 bg-white">
+          <!-- Render dinámico de contactos -->
         </div>
 
       </aside>
 
-      <!-- ÁREA CENTRAL PRINCIPAL PARA LA CONVERSACIÓN (lg:col-span-8 xl:col-span-9) -->
-      <section class="lg:col-span-8 xl:col-span-9 bento-card rounded-2xl flex flex-col h-[780px] max-h-[88vh] overflow-hidden relative">
+      <!-- COLUMNA 2: ÁREA CENTRAL DE CONVERSACIÓN (CHAT PANEL) -->
+      <!-- En Móvil: pantalla completa oculta hasta que se abre un contacto; En Laptop: columna derecha continua -->
+      <section id="chat-panel" class="hidden md:flex flex-1 bg-white md:border border-waBorder md:rounded-2xl flex flex-col h-full overflow-hidden shadow-wa-card relative">
         
-        <!-- Header de la Conversación Activa -->
-        <div class="px-5 py-3 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-3 flex-shrink-0">
+        <!-- Header del Chat Activo -->
+        <div id="chat-header-bar" class="px-4 py-3 border-b border-waBorder bg-white flex items-center justify-between gap-3 flex-shrink-0 shadow-sm z-10">
           <div class="flex items-center gap-3 min-w-0">
-            <div id="active-chat-avatar" class="w-10 h-10 rounded-xl bg-[#252834] border border-[#2D313D] flex items-center justify-center font-bold text-sm text-[#FF5500] flex-shrink-0">
+            
+            <!-- Botón Volver a Chats (Solo Visible en Pantallas Móviles) -->
+            <button id="back-to-contacts-btn" type="button" title="Volver a la lista de chats"
+              class="md:hidden p-1.5 -ml-1 rounded-xl text-waDarkTeal hover:bg-waBg transition-colors flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <!-- Avatar del Contacto Activo -->
+            <div id="active-chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-waTeal to-waLightTeal text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
               💬
             </div>
+
+            <!-- Datos del Contacto Activo -->
             <div class="min-w-0">
-              <h2 id="active-chat-name" class="font-bold text-sm sm:text-base text-white truncate">Selecciona un contacto</h2>
+              <h2 id="active-chat-name" class="font-bold text-sm sm:text-base text-waTextPrimary truncate">Selecciona un contacto</h2>
               <div class="flex items-center gap-2 mt-0.5">
-                <span id="active-chat-id" class="text-[11px] text-[#A0A5B1] font-mono truncate">ID: —</span>
-                <span id="active-chat-status" class="text-[11px] font-semibold text-[#A0A5B1]">· Desconectado</span>
+                <span id="active-chat-id" class="text-[11px] text-waTextSecondary font-mono truncate">ID: —</span>
+                <span id="active-chat-status" class="text-[11px] font-semibold text-waTextSecondary">· Desconectado</span>
               </div>
             </div>
           </div>
 
           <!-- Indicador de Escritura en Vivo -->
-          <div id="typing-indicator" class="hidden text-xs text-[#FF5500] font-semibold animate-pulse">
+          <div id="typing-indicator" class="hidden text-xs text-waTeal font-bold animate-pulse">
             escribiendo...
           </div>
         </div>
 
-        <!-- HILO ÚNICO DE CONVERSACIÓN (Cronológico, Integrado Estilo WhatsApp / Telegram) -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5 scroll-smooth bg-[#121316]/70">
-          <div id="chat-welcome" class="h-full flex flex-col items-center justify-center text-center p-6 text-[#A0A5B1]">
-            <div class="w-14 h-14 rounded-2xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <!-- HILO ÚNICO DE CONVERSACIÓN (FONDO WHATSAPP CHAT) -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3 scroll-smooth chat-canvas">
+          <div id="chat-welcome" class="h-full flex flex-col items-center justify-center text-center p-6 text-waTextSecondary">
+            <div class="w-16 h-16 rounded-full bg-white border border-waBorder flex items-center justify-center text-waTeal mb-3 shadow-wa-card">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
               </svg>
             </div>
-            <p class="text-base font-bold text-white">Canal Privado de Conversación</p>
-            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Selecciona un contacto de la barra lateral o agrega uno con su Código ID único para comenzar a chatear.</p>
+            <p class="text-base font-bold text-waTextPrimary">SYNC ENGINE para Web &amp; Móvil</p>
+            <p class="text-xs text-waTextSecondary max-w-sm mt-1">Selecciona una conversación existente o agrega un compañero mediante su Código ID único arriba.</p>
           </div>
         </div>
 
         <!-- BARRA DE ENTRADA INFERIOR (INPUT BAR) -->
-        <div id="input-container" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2 relative flex-shrink-0">
+        <div id="input-container" class="p-2.5 sm:p-3.5 bg-[#F0F2F5] border-t border-waBorder flex flex-col gap-2 relative flex-shrink-0">
           
           <!-- Selector Flotante de Emoticones (Desplegable) -->
-          <div id="emoji-picker" class="hidden absolute bottom-20 left-4 z-50 p-3 rounded-2xl bg-[#1E202A] border border-[#2D313D] shadow-panel-depth w-72 max-w-[90vw]">
-            <div class="flex items-center justify-between pb-2 mb-2 border-b border-[#2D313D] text-xs font-bold text-[#A0A5B1]">
-              <span>Selector de Emoticones</span>
-              <button id="close-emoji-btn" type="button" class="text-gray-400 hover:text-white">✕</button>
+          <div id="emoji-picker" class="hidden absolute bottom-20 left-3 sm:left-6 z-50 p-3 rounded-2xl bg-white border border-waBorder shadow-wa-float w-72 max-w-[90vw]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-waBorder text-xs font-bold text-waTextSecondary">
+              <span>Emoticones</span>
+              <button id="close-emoji-btn" type="button" class="text-gray-400 hover:text-waTextPrimary">✕</button>
             </div>
             <div class="grid grid-cols-6 gap-2 text-xl select-none">
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😀</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😂</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😍</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😎</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">👍</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🔥</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🎉</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">❤️</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🚀</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">💡</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">✅</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">💻</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">📱</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🔒</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">✨</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">☕</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🎧</button>
-              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">⚡</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">😀</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">😂</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">😍</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">😎</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">👍</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">🔥</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">🎉</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">❤️</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">🚀</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">💡</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">✅</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">💻</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">📱</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">🔒</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">✨</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">☕</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">🎧</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-waBg rounded-lg transition-colors">⚡</button>
             </div>
           </div>
 
           <!-- Barra de Grabación de Audio en Tiempo Real -->
-          <div id="recording-bar" class="hidden items-center justify-between p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs">
+          <div id="recording-bar" class="hidden items-center justify-between p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs">
             <div class="flex items-center gap-3">
               <span class="w-3 h-3 rounded-full bg-red-500 pulse-record"></span>
-              <span class="font-bold text-red-400">Grabando nota de voz...</span>
-              <span id="recording-timer" class="font-mono text-white font-bold">0:00</span>
+              <span class="font-bold text-red-700">Grabando nota de voz...</span>
+              <span id="recording-timer" class="font-mono text-red-900 font-bold">0:00</span>
             </div>
             <div class="flex items-center gap-2">
-              <button id="cancel-recording-btn" type="button" class="px-3 py-1.5 rounded-lg bg-[#252834] text-gray-300 hover:text-white font-semibold">✕ Cancelar</button>
-              <button id="send-recording-btn" type="button" class="px-4 py-1.5 rounded-lg bg-[#FF5500] text-black font-extrabold shadow-glow-orange cursor-pointer">✓ Enviar Audio</button>
+              <button id="cancel-recording-btn" type="button" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold">✕ Cancelar</button>
+              <button id="send-recording-btn" type="button" class="px-4 py-1.5 rounded-lg bg-waGreen hover:bg-waTeal text-white font-bold shadow-sm cursor-pointer">✓ Enviar Audio</button>
             </div>
           </div>
 
-          <!-- Fila Simétrica de Entrada: [😃 Emoticones], [🎙 Grabador], [📎 Adjuntar], [Textarea Expansible], [➤ Enviar] -->
-          <div id="normal-input-bar" class="flex items-end gap-2">
+          <!-- Fila Simétrica de Entrada: [😃], [🎙], [📎], [Textarea], [➤ Enviar] -->
+          <div id="normal-input-bar" class="flex items-end gap-1.5 sm:gap-2">
             
             <!-- [😃 Emoticones] -->
             <button id="toggle-emoji-btn" type="button" title="Insertar emoticones" aria-label="Insertar emoticones"
-              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer">
+              class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
               😃
             </button>
 
             <!-- [🎙 Grabador de Audio] -->
             <button id="voice-record-btn" type="button" title="Grabar nota de voz" aria-label="Grabar nota de voz"
-              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-[#FF5500] border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer">
+              class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
               🎙
             </button>
 
             <!-- [📎 Adjuntar Archivo] -->
-            <button id="attach-btn" type="button" title="Adjuntar imagen o archivo" aria-label="Adjuntar imagen o archivo"
-              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer">
+            <button id="attach-btn" type="button" title="Adjuntar archivo o imagen" aria-label="Adjuntar archivo o imagen"
+              class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
               📎
             </button>
             <input type="file" id="file-input" title="Seleccionar archivo" aria-label="Seleccionar archivo" class="hidden">
@@ -283,14 +305,14 @@
             <!-- Textarea Expansible de Múltiples Líneas -->
             <div class="flex-1 relative min-w-0">
               <label for="chat-textarea" class="sr-only">Escribe un mensaje privado</label>
-              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado... (Enter para enviar, Shift+Enter para nueva línea)"
-                class="w-full resize-none rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none px-4 py-3 text-sm text-white placeholder-[#A0A5B1]/50 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
+              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado..."
+                class="w-full resize-none rounded-2xl bg-white border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none px-4 py-2.5 text-sm text-waTextPrimary placeholder-waTextSecondary max-h-36 overflow-y-auto leading-relaxed shadow-sm transition-all"></textarea>
             </div>
 
             <!-- [➤ Enviar] -->
             <button id="send-btn" type="button" title="Enviar mensaje (Enter)" aria-label="Enviar mensaje"
-              class="h-11 px-5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange active:scale-95 flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
-              <span>➤</span>
+              class="h-11 w-11 sm:w-auto sm:px-5 rounded-2xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-sm shadow-md active:scale-95 flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
+              <span class="text-base">➤</span>
             </button>
 
           </div>
@@ -303,49 +325,49 @@
 
   </div>
 
-  <!-- PANTALLA DE AUTENTICACIÓN (LOGIN & REGISTRO) -->
-  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#121316]">
-    <div class="bento-card rounded-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-panel-depth border border-[#2D313D]">
+  <!-- PANTALLA DE AUTENTICACIÓN (LOGIN & REGISTRO LIGHT MODE) -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#F0F2F5]">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-wa-float border border-waBorder">
       
-      <!-- Logo Oficial (36px a 48px) y Título -->
+      <!-- Logo y Título -->
       <div class="flex flex-col items-center text-center gap-2">
         <img src="/assets/logo.png" alt="SYNC ENGINE" class="h-12 w-auto object-contain">
-        <h2 class="font-bold text-xl text-white">SYNC ENGINE</h2>
-        <p class="text-xs text-[#A0A5B1]">Plataforma Privada de Mensajería &amp; Sincronización</p>
+        <h2 class="font-bold text-xl text-waDarkTeal">SYNC ENGINE</h2>
+        <p class="text-xs text-waTextSecondary">Plataforma Privada de Mensajería &amp; Sincronización</p>
       </div>
 
       <!-- Selector de Pestañas: Login vs Registro -->
-      <div class="grid grid-cols-2 p-1 rounded-xl bg-[#121316] border border-[#2D313D]">
-        <button id="tab-login" type="button" class="py-2 rounded-lg font-bold text-xs bg-[#FF5500] text-black transition-all">Iniciar Sesión</button>
-        <button id="tab-register" type="button" class="py-2 rounded-lg font-bold text-xs text-[#A0A5B1] hover:text-white transition-all">Crear Cuenta</button>
+      <div class="grid grid-cols-2 p-1 rounded-2xl bg-waBg border border-waBorder">
+        <button id="tab-login" type="button" class="py-2.5 rounded-xl font-bold text-xs bg-waTeal text-white shadow-sm transition-all">Iniciar Sesión</button>
+        <button id="tab-register" type="button" class="py-2.5 rounded-xl font-bold text-xs text-waTextSecondary hover:text-waDarkTeal transition-all">Crear Cuenta</button>
       </div>
 
       <!-- Formulario de Autenticación -->
       <form id="auth-form" class="flex flex-col gap-4">
         
         <div>
-          <label for="auth-username" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Nombre de Usuario</label>
+          <label for="auth-username" class="block text-xs font-semibold text-waTextSecondary mb-1">Nombre de Usuario</label>
           <input type="text" id="auth-username" required title="Nombre de usuario" placeholder="ej. jbarrantes"
-            class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+            class="w-full px-4 py-2.5 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-sm text-waTextPrimary">
         </div>
 
         <div>
-          <label for="auth-password" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Contraseña</label>
+          <label for="auth-password" class="block text-xs font-semibold text-waTextSecondary mb-1">Contraseña</label>
           <input type="password" id="auth-password" required title="Contraseña" placeholder="••••••••"
-            class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+            class="w-full px-4 py-2.5 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-sm text-waTextPrimary">
         </div>
 
         <div id="display-name-group" class="hidden">
-          <label for="auth-display-name" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Nombre Personalizado (sin emojis)</label>
+          <label for="auth-display-name" class="block text-xs font-semibold text-waTextSecondary mb-1">Nombre Personalizado (sin emojis)</label>
           <input type="text" id="auth-display-name" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
-            class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
-          <p class="text-[10px] text-[#A0A5B1] mt-1">Se generará automáticamente tu ID único (ej. SYNC-9482).</p>
+            class="w-full px-4 py-2.5 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-sm text-waTextPrimary">
+          <p class="text-[10px] text-waTextSecondary mt-1">Se generará automáticamente tu ID único (ej. SYNC-9482).</p>
         </div>
 
-        <p id="auth-error-msg" class="text-xs text-red-400 hidden"></p>
+        <p id="auth-error-msg" class="text-xs text-red-500 hidden font-medium"></p>
 
         <button type="submit" id="auth-submit-btn"
-          class="w-full py-3 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange transition-all cursor-pointer">
+          class="w-full py-3 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-sm shadow-md transition-all cursor-pointer">
           Ingresar al Chat
         </button>
 
@@ -355,33 +377,33 @@
   </div>
 
   <!-- MODAL: EDITAR NOMBRE PERSONALIZADO -->
-  <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
+  <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-wa-float border border-waBorder">
       <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base text-white">Nombre Personalizado</h3>
-        <button id="close-profile-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
+        <h3 class="font-bold text-base text-waTextPrimary">Nombre Personalizado</h3>
+        <button id="close-profile-modal-btn" class="text-waTextSecondary hover:text-waTextPrimary p-1 text-sm">✕</button>
       </div>
-      <p class="text-xs text-[#A0A5B1]">
+      <p class="text-xs text-waTextSecondary">
         Formato permanente: <strong>[ID] - [Nombre]</strong> (purgando emoticones):
       </p>
 
       <input type="text" id="profile-name-input" maxlength="35" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
-        class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+        class="w-full px-4 py-2.5 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-sm text-waTextPrimary">
 
-      <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#2D313D]">
-        <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
-        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange transition-all cursor-pointer">Guardar</button>
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-waBorder">
+        <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-waTextSecondary hover:text-waTextPrimary">Cancelar</button>
+        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-sm transition-all cursor-pointer">Guardar</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: VISOR DE IMÁGENES -->
-  <div id="image-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/95 backdrop-blur-md flex items-center justify-center p-4">
+  <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-      <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-[#A0A5B1] hover:text-white px-3 py-1 text-xs font-semibold rounded-lg bg-[#1E202A] border border-[#2D313D]">✕ Cerrar</button>
-      <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-panel-depth border border-[#2D313D]">
+      <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-white hover:text-gray-300 px-3 py-1 text-xs font-bold rounded-lg bg-black/50 border border-white/20">✕ Cerrar</button>
+      <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-2xl">
       <div class="mt-4 flex items-center gap-3">
-        <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center gap-2 transition-all">
+        <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-md flex items-center gap-2 transition-all">
           ⬇ Descargar original
         </a>
       </div>
@@ -428,6 +450,10 @@
   const headerUserCleanName = document.getElementById('header-user-clean-name');
   const openEditProfileBtn = document.getElementById('open-edit-profile-btn');
   const logoutBtn = document.getElementById('logout-btn');
+
+  const sidebarPanel = document.getElementById('sidebar-panel');
+  const chatPanel = document.getElementById('chat-panel');
+  const backToContactsBtn = document.getElementById('back-to-contacts-btn');
 
   const contactsList = document.getElementById('contacts-list');
   const contactsCountBadge = document.getElementById('contacts-count-badge');
@@ -484,7 +510,7 @@
       .trim() || 'Usuario';
   }
 
-  // Notificaciones Web & Pop-up in-app
+  // Notificaciones Web & Pop-up flotante in-app
   function initWebNotifications() {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
@@ -503,14 +529,14 @@
     }
 
     const popup = document.createElement('div');
-    popup.className = 'msg-enter pointer-events-auto flex items-start gap-3 p-3.5 rounded-2xl bg-[#1E202A] border border-[#FF5500]/60 shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300';
+    popup.className = 'msg-enter pointer-events-auto flex items-start gap-3 p-3.5 rounded-2xl bg-white border border-waBorder shadow-wa-float text-xs backdrop-blur-xl transition-all duration-300';
     popup.innerHTML = `
-      <div class="w-8 h-8 rounded-xl bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-sm flex-shrink-0 text-[#FF5500]">
+      <div class="w-9 h-9 rounded-full bg-[#E8F5E9] text-waDarkTeal flex items-center justify-center text-sm flex-shrink-0 font-bold">
         ${icon}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="font-bold text-white truncate">${escapeHtml(title)}</p>
-        <p class="text-[11px] text-[#A0A5B1] truncate mt-0.5">${escapeHtml(message)}</p>
+        <p class="font-bold text-waTextPrimary truncate">${escapeHtml(title)}</p>
+        <p class="text-[11px] text-waTextSecondary truncate mt-0.5">${escapeHtml(message)}</p>
       </div>
     `;
     popupNotifications.appendChild(popup);
@@ -524,10 +550,10 @@
   // Pestañas de Autenticación
   tabLogin.addEventListener('click', () => {
     isRegisterMode = false;
-    tabLogin.classList.add('bg-[#FF5500]', 'text-black');
-    tabLogin.classList.remove('text-[#A0A5B1]');
-    tabRegister.classList.remove('bg-[#FF5500]', 'text-black');
-    tabRegister.classList.add('text-[#A0A5B1]');
+    tabLogin.classList.add('bg-waTeal', 'text-white', 'shadow-sm');
+    tabLogin.classList.remove('text-waTextSecondary');
+    tabRegister.classList.remove('bg-waTeal', 'text-white', 'shadow-sm');
+    tabRegister.classList.add('text-waTextSecondary');
     displayNameGroup.classList.add('hidden');
     authSubmitBtn.textContent = 'Ingresar al Chat';
     authErrorMsg.classList.add('hidden');
@@ -535,10 +561,10 @@
 
   tabRegister.addEventListener('click', () => {
     isRegisterMode = true;
-    tabRegister.classList.add('bg-[#FF5500]', 'text-black');
-    tabRegister.classList.remove('text-[#A0A5B1]');
-    tabLogin.classList.remove('bg-[#FF5500]', 'text-black');
-    tabLogin.classList.add('text-[#A0A5B1]');
+    tabRegister.classList.add('bg-waTeal', 'text-white', 'shadow-sm');
+    tabRegister.classList.remove('text-waTextSecondary');
+    tabLogin.classList.remove('bg-waTeal', 'text-white', 'shadow-sm');
+    tabLogin.classList.add('text-waTextSecondary');
     displayNameGroup.classList.remove('hidden');
     authSubmitBtn.textContent = 'Crear Cuenta y Obtener ID';
     authErrorMsg.classList.add('hidden');
@@ -613,12 +639,20 @@
     appContainer.classList.remove('hidden');
     initWebNotifications();
 
-    // Actualizar Encabezado con formato estricto: [ID] - [Nombre Personalizado] (sin emojis)
     headerUserSyncId.textContent = currentUser.syncId;
     headerUserCleanName.textContent = purgeEmojis(currentUser.cleanDisplayName);
 
     initSocket();
     loadContacts();
+
+    // Comportamiento Responsive Inicial: En móvil se muestra primero la lista de contactos
+    if (window.innerWidth < 768) {
+      sidebarPanel.classList.remove('hidden');
+      chatPanel.classList.add('hidden');
+    } else {
+      sidebarPanel.classList.remove('hidden');
+      chatPanel.classList.remove('hidden');
+    }
   }
 
   logoutBtn.addEventListener('click', () => {
@@ -666,6 +700,14 @@
     }
   });
 
+  // BOTÓN NAVEGACIÓN MÓVIL: VOLVER A CHATS
+  backToContactsBtn.addEventListener('click', () => {
+    activeContactSyncId = null;
+    sidebarPanel.classList.remove('hidden');
+    chatPanel.classList.add('hidden');
+    loadContacts();
+  });
+
   // GESTIÓN DE CONTACTOS (SIN MENSAJES GUARDADOS)
   async function loadContacts() {
     try {
@@ -681,6 +723,19 @@
     }
   }
 
+  function getAvatarColor(syncId) {
+    const colors = [
+      'from-emerald-500 to-teal-600',
+      'from-blue-500 to-indigo-600',
+      'from-amber-500 to-orange-600',
+      'from-purple-500 to-violet-600',
+      'from-rose-500 to-pink-600'
+    ];
+    let hash = 0;
+    for (let i = 0; i < syncId.length; i++) hash += syncId.charCodeAt(i);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
   function renderContacts(contacts) {
     contactsMap.clear();
     contactsList.innerHTML = '';
@@ -691,9 +746,10 @@
 
     if (validContacts.length === 0) {
       contactsList.innerHTML = `
-        <div class="p-6 text-center text-[#A0A5B1]">
-          <p class="text-xs font-semibold text-white">Sin contactos agregados</p>
-          <p class="text-[11px] mt-1 text-[#A0A5B1]">Ingresa el Código ID de un compañero en el buscador superior para iniciar una conversación.</p>
+        <div class="p-6 text-center text-waTextSecondary">
+          <div class="w-12 h-12 rounded-full bg-[#E8F5E9] text-waTeal flex items-center justify-center mx-auto mb-2 text-xl font-bold">💬</div>
+          <p class="text-xs font-bold text-waTextPrimary">Sin contactos agregados</p>
+          <p class="text-[11px] mt-1 text-waTextSecondary">Ingresa el Código ID de un compañero en el buscador superior para iniciar una conversación.</p>
         </div>
       `;
       return;
@@ -705,25 +761,32 @@
       const item = document.createElement('div');
       const isActive = (c.syncId === activeContactSyncId);
       item.className = `p-3 rounded-xl cursor-pointer flex items-center gap-3 transition-all ${
-        isActive ? 'bg-[#252834] border border-[#FF5500]/50' : 'hover:bg-[#161820]'
+        isActive ? 'bg-[#E8F5E9] border-l-4 border-waTeal shadow-sm' : 'hover:bg-waBg'
       }`;
 
-      const onlineClass = c.isOnline ? 'bg-[#10B981]' : 'bg-gray-600';
-      const lastSnippet = c.lastMessage ? c.lastMessage.text : 'Toca para iniciar chat';
+      const avatarGradient = getAvatarColor(c.syncId);
+      const onlineDot = c.isOnline 
+        ? '<span class="w-3 h-3 rounded-full bg-waGreen absolute -bottom-0.5 -right-0.5 border-2 border-white"></span>' 
+        : '<span class="w-3 h-3 rounded-full bg-gray-300 absolute -bottom-0.5 -right-0.5 border-2 border-white"></span>';
+      
+      const lastSnippet = c.lastMessage ? c.lastMessage.text : 'Toca para chatear';
+      const lastTime = c.lastMessage && c.lastMessage.timestamp 
+        ? new Date(c.lastMessage.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
+        : '';
 
       item.innerHTML = `
         <div class="relative flex-shrink-0">
-          <div class="w-10 h-10 rounded-xl bg-[#161820] border border-[#2D313D] flex items-center justify-center font-bold text-xs text-[#FF5500] font-mono">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-tr ${avatarGradient} text-white flex items-center justify-center font-bold text-xs shadow-sm font-mono">
             ${escapeHtml(c.syncId.replace('SYNC-', ''))}
           </div>
-          <span class="w-2.5 h-2.5 rounded-full ${onlineClass} absolute -bottom-0.5 -right-0.5 border-2 border-[#1E202A]"></span>
+          ${onlineDot}
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-1">
-            <p class="font-bold text-xs text-white truncate">${escapeHtml(c.formattedName)}</p>
-            <span class="text-[10px] text-[#A0A5B1] font-mono flex-shrink-0">${c.syncId}</span>
+            <p class="font-bold text-xs text-waTextPrimary truncate">${escapeHtml(c.formattedName)}</p>
+            <span class="text-[10px] text-waTextSecondary font-mono flex-shrink-0">${lastTime}</span>
           </div>
-          <p class="text-[11px] text-[#A0A5B1] truncate mt-0.5">${escapeHtml(lastSnippet)}</p>
+          <p class="text-[11px] text-waTextSecondary truncate mt-0.5">${escapeHtml(lastSnippet)}</p>
         </div>
       `;
 
@@ -731,12 +794,13 @@
       contactsList.appendChild(item);
     });
 
-    if (!activeContactSyncId && validContacts.length > 0) {
+    // En pantallas grandes (laptop/TV), auto-seleccionar primer chat si ninguno está activo
+    if (window.innerWidth >= 768 && !activeContactSyncId && validContacts.length > 0) {
       selectContact(validContacts[0].syncId);
     }
   }
 
-  // BUSCADOR / INCORPORACIÓN POR CÓDIGO ID EN BARRA LATERAL
+  // BUSCADOR / INCORPORACIÓN POR CÓDIGO ID
   async function handleAddContact() {
     const rawInput = contactSearchInput.value.trim().toUpperCase();
     contactActionMsg.classList.add('hidden');
@@ -780,7 +844,6 @@
     }
   });
 
-  // Filtro en vivo al escribir en el buscador
   contactSearchInput.addEventListener('input', () => {
     const term = contactSearchInput.value.trim().toLowerCase();
     const items = contactsList.querySelectorAll('div[class*="cursor-pointer"]');
@@ -790,26 +853,36 @@
     });
   });
 
-  // SELECCIONAR CONTACTO & HILO ÚNICO
+  // SELECCIONAR CONTACTO & NAVEGACIÓN RESPONSIVE
   async function selectContact(syncId) {
-    if (syncId === currentUser.syncId) return; // Prohibir auto-contacto
+    if (syncId === currentUser.syncId) return;
     activeContactSyncId = syncId;
-    renderedMessageIds.clear(); // Limpiar deduplicación para nueva conversación
+    renderedMessageIds.clear();
 
     const contact = contactsMap.get(syncId);
     if (!contact) return;
 
-    activeChatAvatar.textContent = '👤';
+    // En pantallas móviles: alternar a la vista única de chat en pantalla completa
+    if (window.innerWidth < 768) {
+      sidebarPanel.classList.add('hidden');
+      chatPanel.classList.remove('hidden');
+      chatPanel.classList.add('flex');
+    } else {
+      sidebarPanel.classList.remove('hidden');
+      chatPanel.classList.remove('hidden');
+      chatPanel.classList.add('flex');
+    }
+
+    activeChatAvatar.textContent = contact.syncId.replace('SYNC-', '');
     activeChatName.textContent = contact.formattedName;
     activeChatId.textContent = 'ID: ' + contact.syncId;
     activeChatStatus.innerHTML = contact.isOnline 
-      ? '<span class="text-[#10B981] font-bold">● En línea</span>' 
-      : '<span class="text-[#A0A5B1]">· Desconectado</span>';
+      ? '<span class="text-waGreen font-bold">● En línea</span>' 
+      : '<span class="text-waTextSecondary">· Desconectado</span>';
 
     chatWelcome.classList.add('hidden');
     chatMessages.innerHTML = '';
 
-    // Cargar historial permanente desde base de datos
     try {
       const res = await fetch('/api/messages/' + syncId, {
         headers: { 'Authorization': 'Bearer ' + currentToken }
@@ -840,7 +913,6 @@
       reconnection: true
     });
 
-    // Limpieza estricta de listeners previos antes de enlazar
     socket.off('connect');
     socket.off('authenticated');
     socket.off('auth-error');
@@ -862,18 +934,16 @@
         c.isOnline = data.isOnline;
         if (data.syncId === activeContactSyncId) {
           activeChatStatus.innerHTML = c.isOnline 
-            ? '<span class="text-[#10B981] font-bold">● En línea</span>' 
-            : '<span class="text-[#A0A5B1]">· Desconectado</span>';
+            ? '<span class="text-waGreen font-bold">● En línea</span>' 
+            : '<span class="text-waTextSecondary">· Desconectado</span>';
         }
         loadContacts();
       }
     });
 
-    // RECEPCIÓN DE MENSAJES PRIVADOS (Texto, Audio o Archivos)
     socket.on('receive-private-message', (msg) => {
       if (!msg || !msg.id) return;
 
-      // Verificación de Deduplicación: no renderizar si ya está en pantalla
       if (renderedMessageIds.has(msg.id)) {
         return;
       }
@@ -889,7 +959,6 @@
         renderMessageBubble(msg);
       }
 
-      // Alerta Pop-up y Notificación si el mensaje proviene del contacto
       if (fromId !== currentUser.syncId) {
         const preview = msg.type === 'audio' 
           ? '🎤 Nota de voz recibida' 
@@ -911,7 +980,7 @@
     });
   }
 
-  // RENDERIZADO DE BURBUJAS (HILO ÚNICO ESTILO WHATSAPP / TELEGRAM)
+  // RENDERIZADO DE BURBUJAS (LIGHT MODE ESTILO WHATSAPP)
   function renderMessageBubble(msg) {
     if (!msg || !msg.id) return;
     if (renderedMessageIds.has(msg.id)) return;
@@ -926,23 +995,22 @@
     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
     const senderHeader = isLocal ? 'Tú' : (msg.fromName || msg.fromId);
 
-    // Encabezado con emisor y hora
     const headerEl = document.createElement('div');
-    headerEl.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
+    headerEl.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-waDarkTeal' : 'text-waTextSecondary'}`;
     headerEl.innerHTML = `
       <span class="font-bold">${escapeHtml(senderHeader)}</span>
-      <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(timeStr)}</span>
-      ${isLocal ? '<span class="text-[10px] text-[#FF5500] font-bold">✓✓</span>' : ''}
+      <span class="text-waTextSecondary font-mono text-[10px]">${escapeHtml(timeStr)}</span>
+      ${isLocal ? '<span class="text-[11px] text-waBlueCheck font-bold">✓✓</span>' : ''}
     `;
 
-    // Burbuja con estilo WhatsApp / Telegram:
-    // * Propios (Enviados): DERECHA con color de acento (#FF5500)
-    // * Contacto (Recibidos): IZQUIERDA con fondo neutro (#1E202A)
+    // Burbuja con paleta WhatsApp:
+    // * Enviados (Propios): Verde Suave (#D9FDD3) alineados a la DERECHA
+    // * Recibidos (Contacto): Blanco (#FFFFFF) alineados a la IZQUIERDA
     const bubble = document.createElement('div');
-    bubble.className = `relative rounded-[16px] p-3.5 sm:p-4 text-sm shadow-panel-depth transition-all ${
+    bubble.className = `relative rounded-2xl p-3 sm:p-3.5 text-sm shadow-wa-bubble transition-all ${
       isLocal 
-        ? 'bg-[#FF5500] text-black font-medium selection:bg-black/30 selection:text-white' 
-        : 'bg-[#1E202A] border border-[#2D313D] text-white'
+        ? 'bg-[#D9FDD3] text-waTextPrimary rounded-tr-none' 
+        : 'bg-white border border-waBorder text-waTextPrimary rounded-tl-none'
     }`;
 
     // TIPO 1: NOTA DE VOZ (AUDIO)
@@ -953,20 +1021,18 @@
       const audio = new Audio(msg.audioData);
       const playBtn = document.createElement('button');
       playBtn.type = 'button';
-      playBtn.className = `w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer font-extrabold ${
-        isLocal ? 'bg-black text-[#FF5500]' : 'bg-[#FF5500] text-black shadow-glow-orange'
-      }`;
+      playBtn.className = 'w-10 h-10 rounded-full bg-waTeal hover:bg-waDarkTeal text-white font-extrabold flex items-center justify-center flex-shrink-0 cursor-pointer shadow-sm';
       playBtn.innerHTML = '▶';
 
       const trackInfo = document.createElement('div');
       trackInfo.className = 'flex-1 min-w-0';
       trackInfo.innerHTML = `
-        <div class="flex items-center justify-between text-xs font-bold mb-1 ${isLocal ? 'text-black' : 'text-white'}">
+        <div class="flex items-center justify-between text-xs font-bold mb-1 text-waTextPrimary">
           <span>🎤 Nota de voz</span>
-          <span class="time-lbl font-mono ${isLocal ? 'text-black/80' : 'text-[#A0A5B1]'}">0:00</span>
+          <span class="time-lbl font-mono text-waTextSecondary">0:00</span>
         </div>
-        <div class="w-full ${isLocal ? 'bg-black/20' : 'bg-[#121316]'} rounded-full h-1.5 overflow-hidden">
-          <div class="progress-bar ${isLocal ? 'bg-black' : 'bg-[#FF5500]'} h-full rounded-full w-0 transition-all"></div>
+        <div class="w-full ${isLocal ? 'bg-[#BCE6B3]' : 'bg-[#E2E8F0]'} rounded-full h-1.5 overflow-hidden">
+          <div class="progress-bar bg-waTeal h-full rounded-full w-0 transition-all"></div>
         </div>
       `;
 
@@ -1004,10 +1070,10 @@
 
       if (isImg && f.data) {
         const imgWrap = document.createElement('div');
-        imgWrap.className = 'mb-2.5 rounded-xl overflow-hidden bg-black/20 max-h-60 flex items-center justify-center cursor-pointer group relative';
+        imgWrap.className = 'mb-2 rounded-xl overflow-hidden bg-black/5 max-h-60 flex items-center justify-center cursor-pointer group relative border border-waBorder';
         imgWrap.innerHTML = `
-          <img src="${f.data}" alt="${escapeHtml(f.name)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.02] transition-transform">
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold backdrop-blur-[2px]">
+          <img src="${f.data}" alt="${escapeHtml(f.name)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.01] transition-transform">
+          <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold backdrop-blur-[1px]">
             🔍 Ver imagen
           </div>
         `;
@@ -1016,21 +1082,19 @@
       }
 
       const fileCard = document.createElement('div');
-      fileCard.className = `flex items-center justify-between gap-3 p-2.5 rounded-xl ${
-        isLocal ? 'bg-black/15 text-black' : 'bg-[#121316] text-white border border-[#2D313D]'
+      fileCard.className = `flex items-center justify-between gap-3 p-2.5 rounded-xl border ${
+        isLocal ? 'bg-white/70 border-emerald-200' : 'bg-[#F8FAFC] border-waBorder'
       }`;
       fileCard.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0">
-          <span class="p-2 rounded-lg ${isLocal ? 'bg-black/20 text-black' : 'bg-[#FF5500]/15 text-[#FF5500]'}">📎</span>
+          <span class="p-2 rounded-lg bg-emerald-100 text-waDarkTeal">📎</span>
           <div class="min-w-0">
-            <p class="font-bold text-xs truncate">${escapeHtml(f.name)}</p>
-            <p class="text-[10px] ${isLocal ? 'text-black/80' : 'text-[#A0A5B1]'} font-mono">${formatSize(f.size)}</p>
+            <p class="font-bold text-xs text-waTextPrimary truncate">${escapeHtml(f.name)}</p>
+            <p class="text-[10px] text-waTextSecondary font-mono">${formatSize(f.size)}</p>
           </div>
         </div>
         <a href="${f.data || '#'}" download="${escapeHtml(f.name)}"
-          class="px-3 py-1.5 rounded-xl font-extrabold text-xs cursor-pointer ${
-            isLocal ? 'bg-black text-[#FF5500]' : 'bg-[#FF5500] text-black shadow-glow-orange'
-          }">
+          class="px-3 py-1.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-sm cursor-pointer">
           ⬇ Descargar
         </a>
       `;
@@ -1039,19 +1103,17 @@
     // TIPO 3: TEXTO REGULAR
     else {
       const textEl = document.createElement('div');
-      textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words';
+      textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words text-waTextPrimary';
       textEl.textContent = msg.text || '';
 
       const footerBar = document.createElement('div');
-      footerBar.className = `mt-2.5 flex items-center justify-end gap-2 pt-1.5 border-t ${
-        isLocal ? 'border-black/20' : 'border-[#2D313D]'
+      footerBar.className = `mt-2 flex items-center justify-end gap-2 pt-1 border-t ${
+        isLocal ? 'border-emerald-200/60' : 'border-waBorder'
       }`;
 
       const copyBtn = document.createElement('button');
       copyBtn.type = 'button';
-      copyBtn.className = `inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer ${
-        isLocal ? 'bg-black/20 hover:bg-black/30 text-black' : 'bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white'
-      }`;
+      copyBtn.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-waTextSecondary hover:text-waDarkTeal hover:bg-black/5 transition-all cursor-pointer';
       copyBtn.innerHTML = `<span>📋 Copiar</span>`;
       copyBtn.addEventListener('click', () => copyToClipboard(msg.text, copyBtn));
 
@@ -1273,6 +1335,22 @@
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
   }
+
+  // Comportamiento al redimensionar ventana (adaptabilidad dinámica móvil <-> laptop)
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+      sidebarPanel.classList.remove('hidden');
+      chatPanel.classList.remove('hidden');
+    } else {
+      if (activeContactSyncId) {
+        sidebarPanel.classList.add('hidden');
+        chatPanel.classList.remove('hidden');
+      } else {
+        sidebarPanel.classList.remove('hidden');
+        chatPanel.classList.add('hidden');
+      }
+    }
+  });
 
   // INICIO DE LA APLICACIÓN
   checkExistingAuth();
