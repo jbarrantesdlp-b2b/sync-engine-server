@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYNC ENGINE | Mensajería Privada P2P</title>
+<title>SYNC ENGINE | Mensajería Privada</title>
 
 <!-- Metadatos PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,7 +36,6 @@
         },
         fontFamily: {
           sans: ['Inter', 'sans-serif'],
-          heading: ['Inter', 'sans-serif'],
         },
         boxShadow: {
           'glow-orange': '0 0 20px rgba(255, 85, 0, 0.35)',
@@ -83,28 +82,27 @@
     50% { transform: scale(1.2); opacity: 0.5; }
   }
 
-  .log-enter { animation: log-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
-  @keyframes log-enter {
-    from { opacity: 0; transform: translateY(6px); }
+  .msg-enter {
+    animation: msg-fade-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes msg-fade-up {
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
-
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; }
 </style>
 </head>
 <body class="font-sans text-gray-100 antialiased selection:bg-[#FF5500]/30 selection:text-white">
 
-  <!-- APLICACIÓN PRINCIPAL (VISIBLE AL AUTENTICARSE) -->
+  <!-- APLICACIÓN PRINCIPAL (VISIBLE TRAS AUTENTICACIÓN) -->
   <div id="app-container" class="min-h-screen flex flex-col hidden">
     
-    <!-- HEADER SUPERIOR REFINADO -->
+    <!-- ENCABEZADO SUPERIOR -->
     <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/95 backdrop-blur-xl">
       <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
         
         <!-- Logo Oficial (36px de alto) & Título -->
         <div class="flex items-center gap-3">
-          <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-9 w-auto object-contain flex-shrink-0">
+          <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-[36px] w-auto object-contain flex-shrink-0">
           <div class="flex flex-col">
             <h1 class="font-bold text-sm sm:text-base tracking-wide text-white flex items-center gap-2">
               <span>SYNC ENGINE</span>
@@ -114,25 +112,26 @@
           </div>
         </div>
 
-        <!-- Usuario Formateado [ID] - [Nombre] e Indicador Permanente "● En línea" -->
+        <!-- Identidad Formateada [ID] - [Nombre Personalizado] e Indicador Permanente Verde -->
         <div class="flex items-center gap-3 flex-wrap">
           
-          <!-- Identidad de Usuario -->
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161820] border border-[#2D313D]">
-            <span class="text-xs text-[#A0A5B1] font-mono">ID:</span>
-            <span id="user-sync-id-badge" class="text-xs font-bold text-[#FF5500] font-mono">SYNC-0000</span>
-            <span class="text-[#2D313D]">|</span>
-            <span id="user-display-name-badge" class="text-xs font-semibold text-white max-w-[180px] sm:max-w-[240px] truncate">Cargando...</span>
-            <button id="edit-profile-btn" type="button" title="Editar nombre de equipo" class="text-[#A0A5B1] hover:text-white text-xs pl-1">✎</button>
+          <!-- Identidad de Usuario: [ID] - [Nombre Personalizado] (Sin Emojis) -->
+          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161820] border border-[#2D313D] text-xs">
+            <span id="user-identity-badge" class="font-bold text-white tracking-wide truncate max-w-[200px] sm:max-w-[320px]">
+              <span id="header-user-sync-id" class="text-[#FF5500] font-mono">SYNC-0000</span>
+              <span class="text-[#A0A5B1] mx-1">-</span>
+              <span id="header-user-clean-name" class="text-white">Usuario</span>
+            </span>
+            <button id="open-edit-profile-btn" type="button" title="Editar nombre de usuario" class="text-[#A0A5B1] hover:text-[#FF5500] text-xs pl-1">✎</button>
           </div>
 
-          <!-- Indicador Permanente Verde: "● En línea" -->
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30">
+          <!-- Indicador Verde Permanente: "● En línea" (#10B981 tanto texto como punto) -->
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30 text-[#10B981]">
             <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] pulse-online flex-shrink-0"></span>
-            <span class="text-xs font-bold tracking-wide text-[#10B981] select-none">En línea</span>
+            <span class="text-xs font-bold tracking-wide text-[#10B981] select-none">● En línea</span>
           </div>
 
-          <!-- Botón Cerrar Sesión -->
+          <!-- Botón de Cerrar Sesión -->
           <button id="logout-btn" type="button" title="Cerrar sesión"
             class="px-3 py-1.5 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] text-xs font-semibold transition-all">
             Salir
@@ -143,39 +142,48 @@
       </div>
     </header>
 
-    <!-- CUERPO PRINCIPAL: SIDEBAR DE CONTACTOS + CHAT PRIVADO -->
+    <!-- DISPOSICIÓN PRINCIPAL: PANEL LATERAL DE CONTACTOS + ÁREA CENTRAL DE CONVERSACIÓN -->
     <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4">
       
-      <!-- BARRA LATERAL: LISTA DE CONTACTOS & BÚSQUEDA POR ID (lg:col-span-4 xl:col-span-3) -->
+      <!-- PANEL LATERAL COMPACTO DE CONTACTOS (lg:col-span-4 xl:col-span-3) -->
       <aside class="lg:col-span-4 xl:col-span-3 bento-card rounded-2xl flex flex-col h-[780px] max-h-[88vh] overflow-hidden">
         
-        <!-- Header de Contactos & Botón Agregar -->
-        <div class="p-4 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-2">
+        <!-- Header de Contactos y Contador -->
+        <div class="p-3.5 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <h2 class="font-bold text-sm text-white">Conversaciones</h2>
+            <h2 class="font-bold text-sm text-white">Contactos</h2>
             <span id="contacts-count-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#252834] text-[#A0A5B1] border border-[#2D313D]">0</span>
           </div>
-          <button id="open-add-contact-btn" type="button" title="Agregar contacto por Código ID"
-            class="px-2.5 py-1 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center gap-1 transition-all">
-            <span>+</span>
-            <span>ID</span>
-          </button>
+          <span class="text-[11px] text-[#A0A5B1]">Directorio Privado</span>
         </div>
 
-        <!-- Lista de Conversaciones y Contactos -->
-        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-[#2D313D]/50 p-2 space-y-1">
+        <!-- Buscador e Incorporación por Código ID -->
+        <div class="p-3 border-b border-[#2D313D] bg-[#1E202A] flex flex-col gap-2">
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="contact-search-input" maxlength="20" placeholder="Buscar o agregar ID (ej. SYNC-8821)..."
+              class="flex-1 px-3 py-2 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-xs text-white uppercase placeholder-gray-500 font-mono">
+            <button id="add-contact-btn" type="button" title="Agregar contacto por Código ID"
+              class="h-8 px-3 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center justify-center transition-all flex-shrink-0 cursor-pointer">
+              + ID
+            </button>
+          </div>
+          <p id="contact-action-msg" class="text-[10px] text-red-400 hidden px-1"></p>
+        </div>
+
+        <!-- Lista de Contactos (Sin apartado de Mensajes Guardados) -->
+        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-[#2D313D]/40 p-2 space-y-1">
           <!-- Renderizado dinámico de contactos -->
         </div>
 
       </aside>
 
-      <!-- ÁREA DE CHAT CENTRAL (lg:col-span-8 xl:col-span-9) -->
+      <!-- ÁREA CENTRAL PRINCIPAL PARA LA CONVERSACIÓN (lg:col-span-8 xl:col-span-9) -->
       <section class="lg:col-span-8 xl:col-span-9 bento-card rounded-2xl flex flex-col h-[780px] max-h-[88vh] overflow-hidden relative">
         
         <!-- Header de la Conversación Activa -->
-        <div class="px-5 py-3 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-3">
+        <div class="px-5 py-3 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-3 flex-shrink-0">
           <div class="flex items-center gap-3 min-w-0">
-            <div id="active-chat-avatar" class="w-9 h-9 rounded-xl bg-[#252834] border border-[#2D313D] flex items-center justify-center font-bold text-sm text-[#FF5500] flex-shrink-0">
+            <div id="active-chat-avatar" class="w-10 h-10 rounded-xl bg-[#252834] border border-[#2D313D] flex items-center justify-center font-bold text-sm text-[#FF5500] flex-shrink-0">
               💬
             </div>
             <div class="min-w-0">
@@ -187,32 +195,32 @@
             </div>
           </div>
 
-          <!-- Indicador de Escritura en Tiempo Real -->
-          <div id="typing-indicator" class="hidden text-xs text-[#FF5500] font-medium animate-pulse">
+          <!-- Indicador de Escritura en Vivo -->
+          <div id="typing-indicator" class="hidden text-xs text-[#FF5500] font-semibold animate-pulse">
             escribiendo...
           </div>
         </div>
 
-        <!-- CONTENEDOR AMPLIO DE MENSAJES (Scrollable) -->
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scroll-smooth bg-[#121316]/60">
+        <!-- HILO ÚNICO DE CONVERSACIÓN (Cronológico, Integrado Estilo WhatsApp / Telegram) -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3.5 scroll-smooth bg-[#121316]/70">
           <div id="chat-welcome" class="h-full flex flex-col items-center justify-center text-center p-6 text-[#A0A5B1]">
             <div class="w-14 h-14 rounded-2xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
               </svg>
             </div>
-            <p class="text-base font-bold text-white">Canal Privado de Mensajería</p>
-            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Selecciona o agrega un contacto con su código ID para iniciar una conversación cifrada en tiempo real.</p>
+            <p class="text-base font-bold text-white">Canal Privado de Conversación</p>
+            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Selecciona un contacto de la barra lateral o agrega uno con su Código ID único para comenzar a chatear.</p>
           </div>
         </div>
 
-        <!-- BARRA DE ENTRADA INFERIOR FLOTANTE & EXPANSIPLE -->
-        <div id="input-container" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2 relative">
+        <!-- BARRA DE ENTRADA INFERIOR (INPUT BAR) -->
+        <div id="input-container" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2 relative flex-shrink-0">
           
           <!-- Selector Flotante de Emoticones (Desplegable) -->
           <div id="emoji-picker" class="hidden absolute bottom-20 left-4 z-50 p-3 rounded-2xl bg-[#1E202A] border border-[#2D313D] shadow-panel-depth w-72 max-w-[90vw]">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-[#2D313D] text-xs font-bold text-[#A0A5B1]">
-              <span>Emoticones Rápidos</span>
+              <span>Selector de Emoticones</span>
               <button id="close-emoji-btn" type="button" class="text-gray-400 hover:text-white">✕</button>
             </div>
             <div class="grid grid-cols-6 gap-2 text-xl select-none">
@@ -237,7 +245,7 @@
             </div>
           </div>
 
-          <!-- Barra de Grabación de Audio en Vivo (Se muestra durante la grabación) -->
+          <!-- Barra de Grabación de Audio en Tiempo Real -->
           <div id="recording-bar" class="hidden items-center justify-between p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs">
             <div class="flex items-center gap-3">
               <span class="w-3 h-3 rounded-full bg-red-500 pulse-record"></span>
@@ -245,41 +253,41 @@
               <span id="recording-timer" class="font-mono text-white font-bold">0:00</span>
             </div>
             <div class="flex items-center gap-2">
-              <button id="cancel-recording-btn" type="button" class="px-3 py-1 rounded-lg bg-[#252834] text-gray-300 hover:text-white font-semibold">✕ Cancelar</button>
-              <button id="send-recording-btn" type="button" class="px-4 py-1 rounded-lg bg-[#FF5500] text-black font-extrabold shadow-glow-orange">✓ Enviar Audio</button>
+              <button id="cancel-recording-btn" type="button" class="px-3 py-1.5 rounded-lg bg-[#252834] text-gray-300 hover:text-white font-semibold">✕ Cancelar</button>
+              <button id="send-recording-btn" type="button" class="px-4 py-1.5 rounded-lg bg-[#FF5500] text-black font-extrabold shadow-glow-orange cursor-pointer">✓ Enviar Audio</button>
             </div>
           </div>
 
-          <!-- Fila de Entrada Principal: [😃] [🎙] [📎] [Textarea Expansible] [➤ Enviar] -->
+          <!-- Fila Simétrica de Entrada: [😃 Emoticones], [🎙 Grabador], [📎 Adjuntar], [Textarea Expansible], [➤ Enviar] -->
           <div id="normal-input-bar" class="flex items-end gap-2">
             
-            <!-- Botón [😃 Emoticones] -->
+            <!-- [😃 Emoticones] -->
             <button id="toggle-emoji-btn" type="button" title="Insertar emoticones" aria-label="Insertar emoticones"
-              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0">
+              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer">
               😃
             </button>
 
-            <!-- Botón [🎙 Grabador de Audio] -->
+            <!-- [🎙 Grabador de Audio] -->
             <button id="voice-record-btn" type="button" title="Grabar nota de voz" aria-label="Grabar nota de voz"
-              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-[#FF5500] border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0">
+              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-[#FF5500] border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer">
               🎙
             </button>
 
-            <!-- Botón [📎 Adjuntar Archivo] -->
+            <!-- [📎 Adjuntar Archivo] -->
             <button id="attach-btn" type="button" title="Adjuntar imagen o archivo" aria-label="Adjuntar imagen o archivo"
-              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0">
+              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer">
               📎
             </button>
             <input type="file" id="file-input" title="Seleccionar archivo" aria-label="Seleccionar archivo" class="hidden">
 
-            <!-- Caja de Texto Expansible de Múltiples Líneas -->
-            <div class="flex-1 relative">
+            <!-- Textarea Expansible de Múltiples Líneas -->
+            <div class="flex-1 relative min-w-0">
               <label for="chat-textarea" class="sr-only">Escribe un mensaje privado</label>
-              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado (Enter para enviar)..."
+              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado... (Enter para enviar, Shift+Enter para nueva línea)"
                 class="w-full resize-none rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none px-4 py-3 text-sm text-white placeholder-[#A0A5B1]/50 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
             </div>
 
-            <!-- Botón [➤ Enviar] Naranja Neón -->
+            <!-- [➤ Enviar] -->
             <button id="send-btn" type="button" title="Enviar mensaje (Enter)" aria-label="Enviar mensaje"
               class="h-11 px-5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange active:scale-95 flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
               <span>➤</span>
@@ -299,7 +307,7 @@
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#121316]">
     <div class="bento-card rounded-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-panel-depth border border-[#2D313D]">
       
-      <!-- Logo y Título -->
+      <!-- Logo Oficial (36px a 48px) y Título -->
       <div class="flex flex-col items-center text-center gap-2">
         <img src="/assets/logo.png" alt="SYNC ENGINE" class="h-12 w-auto object-contain">
         <h2 class="font-bold text-xl text-white">SYNC ENGINE</h2>
@@ -328,10 +336,10 @@
         </div>
 
         <div id="display-name-group" class="hidden">
-          <label for="auth-display-name" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Nombre del Equipo / Dispositivo</label>
-          <input type="text" id="auth-display-name" title="Nombre del equipo" placeholder="ej. Laptop de Jose (sin emojis)"
+          <label for="auth-display-name" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Nombre Personalizado (sin emojis)</label>
+          <input type="text" id="auth-display-name" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
             class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
-          <p class="text-[10px] text-[#A0A5B1] mt-1">Los emojis serán removidos automáticamente del nombre formateado.</p>
+          <p class="text-[10px] text-[#A0A5B1] mt-1">Se generará automáticamente tu ID único (ej. SYNC-9482).</p>
         </div>
 
         <p id="auth-error-msg" class="text-xs text-red-400 hidden"></p>
@@ -346,51 +354,28 @@
     </div>
   </div>
 
-  <!-- MODAL: AGREGAR CONTACTO POR CÓDIGO ID -->
-  <div id="add-contact-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
-      <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base text-white">Agregar Contacto</h3>
-        <button id="close-add-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
-      </div>
-      <p class="text-xs text-[#A0A5B1]">
-        Ingresa el Código ID único del contacto (ej. <strong>SYNC-8821</strong>):
-      </p>
-
-      <input type="text" id="contact-sync-id-input" maxlength="20" title="Código ID del contacto" placeholder="SYNC-XXXX"
-        class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm font-mono uppercase text-white">
-
-      <p id="add-contact-error" class="text-xs text-red-400 hidden"></p>
-
-      <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#2D313D]">
-        <button id="cancel-add-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
-        <button id="submit-add-contact-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange transition-all">Añadir Contacto</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: EDITAR NOMBRE DE EQUIPO (PERFIL) -->
+  <!-- MODAL: EDITAR NOMBRE PERSONALIZADO -->
   <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
       <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base text-white">Nombre de este Equipo</h3>
+        <h3 class="font-bold text-base text-white">Nombre Personalizado</h3>
         <button id="close-profile-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
       </div>
       <p class="text-xs text-[#A0A5B1]">
-        Formato permanente: <strong>[Tu ID] - [Nombre Personalizado]</strong> (sin emoticones):
+        Formato permanente: <strong>[ID] - [Nombre]</strong> (purgando emoticones):
       </p>
 
-      <input type="text" id="profile-name-input" maxlength="35" title="Nombre personalizado de este equipo" placeholder="ej. Laptop de Jose"
+      <input type="text" id="profile-name-input" maxlength="35" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
         class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
 
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#2D313D]">
         <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
-        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange transition-all">Guardar Nombre</button>
+        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange transition-all cursor-pointer">Guardar</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal para Visualización de Imágenes -->
+  <!-- MODAL: VISOR DE IMÁGENES -->
   <div id="image-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
       <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-[#A0A5B1] hover:text-white px-3 py-1 text-xs font-semibold rounded-lg bg-[#1E202A] border border-[#2D313D]">✕ Cerrar</button>
@@ -403,11 +388,11 @@
     </div>
   </div>
 
-  <!-- Contenedor de Alertas Notificaciones Pop-up Flotantes -->
+  <!-- CONTENEDOR DE ALERTAS POP-UP FLOTANTES IN-APP -->
   <div id="popup-notifications" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
 
 <script>
-  // CONFIGURACIÓN Y ESTADO GLOBAL
+  // ESTADO GLOBAL DE LA APLICACIÓN
   const SERVER_URL = window.location.origin;
   const TOKEN_KEY = 'sync_engine_auth_token';
 
@@ -417,13 +402,16 @@
   let contactsMap = new Map();
   let socket = null;
 
+  // Deduplicación local infalible de mensajes
+  const renderedMessageIds = new Set();
+
   // Grabación de Audio (MediaRecorder API)
   let mediaRecorder = null;
   let audioChunks = [];
   let recordTimerInterval = null;
   let recordSeconds = 0;
 
-  // Referencias DOM Principales
+  // Referencias DOM
   const appContainer = document.getElementById('app-container');
   const authScreen = document.getElementById('auth-screen');
   const authForm = document.getElementById('auth-form');
@@ -436,20 +424,16 @@
   const authErrorMsg = document.getElementById('auth-error-msg');
   const authSubmitBtn = document.getElementById('auth-submit-btn');
 
-  const userSyncIdBadge = document.getElementById('user-sync-id-badge');
-  const userDisplayNameBadge = document.getElementById('user-display-name-badge');
+  const headerUserSyncId = document.getElementById('header-user-sync-id');
+  const headerUserCleanName = document.getElementById('header-user-clean-name');
+  const openEditProfileBtn = document.getElementById('open-edit-profile-btn');
   const logoutBtn = document.getElementById('logout-btn');
-  const editProfileBtn = document.getElementById('edit-profile-btn');
 
   const contactsList = document.getElementById('contacts-list');
   const contactsCountBadge = document.getElementById('contacts-count-badge');
-  const openAddContactBtn = document.getElementById('open-add-contact-btn');
-  const addContactModal = document.getElementById('add-contact-modal');
-  const contactSyncIdInput = document.getElementById('contact-sync-id-input');
-  const addContactError = document.getElementById('add-contact-error');
-  const submitAddContactBtn = document.getElementById('submit-add-contact-btn');
-  const closeAddModalBtn = document.getElementById('close-add-modal-btn');
-  const cancelAddModalBtn = document.getElementById('cancel-add-modal-btn');
+  const contactSearchInput = document.getElementById('contact-search-input');
+  const addContactBtn = document.getElementById('add-contact-btn');
+  const contactActionMsg = document.getElementById('contact-action-msg');
 
   const activeChatAvatar = document.getElementById('active-chat-avatar');
   const activeChatName = document.getElementById('active-chat-name');
@@ -489,7 +473,18 @@
 
   let isRegisterMode = false;
 
-  // GESTIÓN DE NOTIFICACIONES WEB & POP-UP FLOTANTE
+  // Sanitización de Emoticones en Identidad
+  function purgeEmojis(str) {
+    if (!str) return 'Usuario';
+    return String(str)
+      .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{FE00}-\u{FE0F}\u{1F004}\u{1F0CF}\u{E0020}-\u{E007F}]/gu, '')
+      .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+      .replace(/[^\w\s\u00C0-\u00FF\-_.]/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim() || 'Usuario';
+  }
+
+  // Notificaciones Web & Pop-up in-app
   function initWebNotifications() {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
@@ -497,7 +492,6 @@
   }
 
   function triggerPopupNotification(title, message, icon = '💬') {
-    // 1. Notificación Nativa del Sistema (si la pestaña está oculta o en segundo plano)
     if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
       try {
         new Notification(title, {
@@ -508,11 +502,10 @@
       } catch (e) {}
     }
 
-    // 2. Alerta Pop-up Flotante In-App en esquina superior derecha
     const popup = document.createElement('div');
-    popup.className = 'log-enter pointer-events-auto flex items-start gap-3 p-3.5 rounded-2xl bg-[#1E202A] border border-[#FF5500]/60 shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300';
+    popup.className = 'msg-enter pointer-events-auto flex items-start gap-3 p-3.5 rounded-2xl bg-[#1E202A] border border-[#FF5500]/60 shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300';
     popup.innerHTML = `
-      <div class="w-8 h-8 rounded-xl bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-sm flex-shrink-0">
+      <div class="w-8 h-8 rounded-xl bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-sm flex-shrink-0 text-[#FF5500]">
         ${icon}
       </div>
       <div class="flex-1 min-w-0">
@@ -528,7 +521,7 @@
     }, 3800);
   }
 
-  // PESTAÑAS LOGIN / REGISTRO
+  // Pestañas de Autenticación
   tabLogin.addEventListener('click', () => {
     isRegisterMode = false;
     tabLogin.classList.add('bg-[#FF5500]', 'text-black');
@@ -547,17 +540,17 @@
     tabLogin.classList.remove('bg-[#FF5500]', 'text-black');
     tabLogin.classList.add('text-[#A0A5B1]');
     displayNameGroup.classList.remove('hidden');
-    authSubmitBtn.textContent = 'Crear Cuenta y Conectar';
+    authSubmitBtn.textContent = 'Crear Cuenta y Obtener ID';
     authErrorMsg.classList.add('hidden');
   });
 
-  // SUBMIT AUTH FORM
+  // Envío Formulario Auth
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authErrorMsg.classList.add('hidden');
     const username = authUsername.value.trim();
     const password = authPassword.value;
-    const displayName = authDisplayName.value.trim();
+    const displayName = purgeEmojis(authDisplayName.value);
 
     const endpoint = isRegisterMode ? '/api/auth/register' : '/api/auth/login';
     const payload = isRegisterMode ? { username, password, displayName } : { username, password };
@@ -570,7 +563,7 @@
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
-        throw new Error(data.error || 'Error al autenticar');
+        throw new Error(data.error || 'Error en autenticación');
       }
 
       currentToken = data.token;
@@ -583,7 +576,7 @@
     }
   });
 
-  // VERIFICACIÓN INICIAL DE SESIÓN
+  // Comprobar Sesión Existente
   async function checkExistingAuth() {
     if (!currentToken) {
       showAuth();
@@ -609,7 +602,10 @@
   function showAuth() {
     authScreen.classList.remove('hidden');
     appContainer.classList.add('hidden');
-    if (socket) socket.disconnect();
+    if (socket) {
+      socket.disconnect();
+      socket = null;
+    }
   }
 
   function showApp() {
@@ -617,9 +613,9 @@
     appContainer.classList.remove('hidden');
     initWebNotifications();
 
-    // Actualizar Encabezado: [ID] - [Nombre]
-    userSyncIdBadge.textContent = currentUser.syncId;
-    userDisplayNameBadge.textContent = currentUser.cleanDisplayName;
+    // Actualizar Encabezado con formato estricto: [ID] - [Nombre Personalizado] (sin emojis)
+    headerUserSyncId.textContent = currentUser.syncId;
+    headerUserCleanName.textContent = purgeEmojis(currentUser.cleanDisplayName);
 
     initSocket();
     loadContacts();
@@ -629,12 +625,14 @@
     localStorage.removeItem(TOKEN_KEY);
     currentToken = null;
     currentUser = null;
+    activeContactSyncId = null;
+    renderedMessageIds.clear();
     showAuth();
   });
 
-  // EDICIÓN DE PERFIL (NOMBRE PERSONALIZADO)
-  editProfileBtn.addEventListener('click', () => {
-    profileNameInput.value = currentUser ? currentUser.cleanDisplayName : '';
+  // Editar Perfil (Nombre Personalizado sin Emojis)
+  openEditProfileBtn.addEventListener('click', () => {
+    profileNameInput.value = currentUser ? purgeEmojis(currentUser.cleanDisplayName) : '';
     editProfileModal.classList.remove('hidden');
   });
 
@@ -642,8 +640,9 @@
   cancelProfileModalBtn.addEventListener('click', () => editProfileModal.classList.add('hidden'));
 
   saveProfileBtn.addEventListener('click', async () => {
-    const newName = profileNameInput.value.trim();
-    if (!newName) return;
+    const rawName = profileNameInput.value;
+    const cleanName = purgeEmojis(rawName);
+    if (!cleanName) return;
 
     try {
       const res = await fetch('/api/user/profile', {
@@ -652,22 +651,22 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + currentToken
         },
-        body: JSON.stringify({ displayName: newName })
+        body: JSON.stringify({ displayName: cleanName })
       });
       const data = await res.json();
       if (data.ok && data.user) {
         currentUser = data.user;
-        userDisplayNameBadge.textContent = currentUser.cleanDisplayName;
+        headerUserCleanName.textContent = currentUser.cleanDisplayName;
         editProfileModal.classList.add('hidden');
-        triggerPopupNotification('Perfil Actualizado', currentUser.formattedName, '👤');
+        triggerPopupNotification('Perfil Actualizado', `${currentUser.syncId} - ${currentUser.cleanDisplayName}`, '👤');
         loadContacts();
       }
     } catch (err) {
-      alert('Error al guardar nombre de equipo: ' + err.message);
+      alert('Error al guardar nombre: ' + err.message);
     }
   });
 
-  // CARGA DE CONTACTOS
+  // GESTIÓN DE CONTACTOS (SIN MENSAJES GUARDADOS)
   async function loadContacts() {
     try {
       const res = await fetch('/api/contacts', {
@@ -685,9 +684,22 @@
   function renderContacts(contacts) {
     contactsMap.clear();
     contactsList.innerHTML = '';
-    contactsCountBadge.textContent = contacts.length;
+    
+    // Filtrar estrictamente cualquier auto-contacto residual
+    const validContacts = contacts.filter((c) => c.syncId !== currentUser.syncId);
+    contactsCountBadge.textContent = validContacts.length;
 
-    contacts.forEach((c) => {
+    if (validContacts.length === 0) {
+      contactsList.innerHTML = `
+        <div class="p-6 text-center text-[#A0A5B1]">
+          <p class="text-xs font-semibold text-white">Sin contactos agregados</p>
+          <p class="text-[11px] mt-1 text-[#A0A5B1]">Ingresa el Código ID de un compañero en el buscador superior para iniciar una conversación.</p>
+        </div>
+      `;
+      return;
+    }
+
+    validContacts.forEach((c) => {
       contactsMap.set(c.syncId, c);
 
       const item = document.createElement('div');
@@ -696,21 +708,19 @@
         isActive ? 'bg-[#252834] border border-[#FF5500]/50' : 'hover:bg-[#161820]'
       }`;
 
-      const avatarIcon = c.isSelf ? '📝' : (c.syncId.includes('📱') ? '📱' : '👤');
       const onlineClass = c.isOnline ? 'bg-[#10B981]' : 'bg-gray-600';
-      const displayName = c.isSelf ? 'Mensajes Guardados (Tú)' : c.formattedName;
-      const lastSnippet = c.lastMessage ? c.lastMessage.text : 'Toca para chatear';
+      const lastSnippet = c.lastMessage ? c.lastMessage.text : 'Toca para iniciar chat';
 
       item.innerHTML = `
         <div class="relative flex-shrink-0">
-          <div class="w-10 h-10 rounded-xl bg-[#161820] border border-[#2D313D] flex items-center justify-center font-bold text-sm text-[#FF5500]">
-            ${avatarIcon}
+          <div class="w-10 h-10 rounded-xl bg-[#161820] border border-[#2D313D] flex items-center justify-center font-bold text-xs text-[#FF5500] font-mono">
+            ${escapeHtml(c.syncId.replace('SYNC-', ''))}
           </div>
           <span class="w-2.5 h-2.5 rounded-full ${onlineClass} absolute -bottom-0.5 -right-0.5 border-2 border-[#1E202A]"></span>
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-1">
-            <p class="font-bold text-xs text-white truncate">${escapeHtml(displayName)}</p>
+            <p class="font-bold text-xs text-white truncate">${escapeHtml(c.formattedName)}</p>
             <span class="text-[10px] text-[#A0A5B1] font-mono flex-shrink-0">${c.syncId}</span>
           </div>
           <p class="text-[11px] text-[#A0A5B1] truncate mt-0.5">${escapeHtml(lastSnippet)}</p>
@@ -721,20 +731,76 @@
       contactsList.appendChild(item);
     });
 
-    // Auto-seleccionar primer contacto si ninguno seleccionado
-    if (!activeContactSyncId && contacts.length > 0) {
-      selectContact(contacts[0].syncId);
+    if (!activeContactSyncId && validContacts.length > 0) {
+      selectContact(validContacts[0].syncId);
     }
   }
 
-  // SELECCIÓN DE CONTACTO Y CARGA DE HISTORIAL
+  // BUSCADOR / INCORPORACIÓN POR CÓDIGO ID EN BARRA LATERAL
+  async function handleAddContact() {
+    const rawInput = contactSearchInput.value.trim().toUpperCase();
+    contactActionMsg.classList.add('hidden');
+    if (!rawInput) return;
+
+    if (rawInput === currentUser.syncId) {
+      contactActionMsg.textContent = 'No puedes agregarte a ti mismo';
+      contactActionMsg.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/contacts/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + currentToken
+        },
+        body: JSON.stringify({ contactSyncId: rawInput })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Código ID no encontrado');
+      }
+
+      contactSearchInput.value = '';
+      triggerPopupNotification('Contacto Agregado', data.target.formattedName, '👤');
+      await loadContacts();
+      selectContact(data.target.syncId);
+    } catch (err) {
+      contactActionMsg.textContent = err.message;
+      contactActionMsg.classList.remove('hidden');
+    }
+  }
+
+  addContactBtn.addEventListener('click', handleAddContact);
+  contactSearchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddContact();
+    }
+  });
+
+  // Filtro en vivo al escribir en el buscador
+  contactSearchInput.addEventListener('input', () => {
+    const term = contactSearchInput.value.trim().toLowerCase();
+    const items = contactsList.querySelectorAll('div[class*="cursor-pointer"]');
+    items.forEach((it) => {
+      const text = it.textContent.toLowerCase();
+      it.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+
+  // SELECCIONAR CONTACTO & HILO ÚNICO
   async function selectContact(syncId) {
+    if (syncId === currentUser.syncId) return; // Prohibir auto-contacto
     activeContactSyncId = syncId;
+    renderedMessageIds.clear(); // Limpiar deduplicación para nueva conversación
+
     const contact = contactsMap.get(syncId);
     if (!contact) return;
 
-    activeChatAvatar.textContent = contact.isSelf ? '📝' : '👤';
-    activeChatName.textContent = contact.isSelf ? 'Mensajes Guardados' : contact.formattedName;
+    activeChatAvatar.textContent = '👤';
+    activeChatName.textContent = contact.formattedName;
     activeChatId.textContent = 'ID: ' + contact.syncId;
     activeChatStatus.innerHTML = contact.isOnline 
       ? '<span class="text-[#10B981] font-bold">● En línea</span>' 
@@ -743,7 +809,7 @@
     chatWelcome.classList.add('hidden');
     chatMessages.innerHTML = '';
 
-    // Cargar historial persistente desde DB
+    // Cargar historial permanente desde base de datos
     try {
       const res = await fetch('/api/messages/' + syncId, {
         headers: { 'Authorization': 'Bearer ' + currentToken }
@@ -758,58 +824,29 @@
       console.warn('Error al cargar historial:', e);
     }
 
-    // Re-render lista para destacar contacto activo
     loadContacts();
     chatTextarea.focus();
   }
 
-  // AGREGAR CONTACTO POR ID
-  openAddContactBtn.addEventListener('click', () => {
-    contactSyncIdInput.value = '';
-    addContactError.classList.add('hidden');
-    addContactModal.classList.remove('hidden');
-    contactSyncIdInput.focus();
-  });
-
-  closeAddModalBtn.addEventListener('click', () => addContactModal.classList.add('hidden'));
-  cancelAddModalBtn.addEventListener('click', () => addContactModal.classList.add('hidden'));
-
-  submitAddContactBtn.addEventListener('click', async () => {
-    const rawId = contactSyncIdInput.value.trim().toUpperCase();
-    if (!rawId) return;
-
-    try {
-      const res = await fetch('/api/contacts/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + currentToken
-        },
-        body: JSON.stringify({ contactSyncId: rawId })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.error || 'Código ID no encontrado');
-      }
-
-      addContactModal.classList.add('hidden');
-      triggerPopupNotification('Contacto Agregado', data.target.formattedName, '👤');
-      await loadContacts();
-      selectContact(data.target.syncId);
-    } catch (err) {
-      addContactError.textContent = err.message;
-      addContactError.classList.remove('hidden');
-    }
-  });
-
-  // SOCKET.IO & TIEMPO REAL
+  // SOCKET.IO & LIMPIEZA DE LISTENERS (PREVENCIÓN DE DUPLICACIÓN)
   function initSocket() {
-    if (socket) socket.disconnect();
+    if (socket) {
+      socket.disconnect();
+      socket = null;
+    }
 
     socket = io(SERVER_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true
     });
+
+    // Limpieza estricta de listeners previos antes de enlazar
+    socket.off('connect');
+    socket.off('authenticated');
+    socket.off('auth-error');
+    socket.off('contact-status-changed');
+    socket.off('receive-private-message');
+    socket.off('user-typing');
 
     socket.on('connect', () => {
       socket.emit('authenticate', { token: currentToken });
@@ -832,18 +869,31 @@
       }
     });
 
-    // Recepción de Mensaje Privado (Texto, Audio o Archivo)
+    // RECEPCIÓN DE MENSAJES PRIVADOS (Texto, Audio o Archivos)
     socket.on('receive-private-message', (msg) => {
+      if (!msg || !msg.id) return;
+
+      // Verificación de Deduplicación: no renderizar si ya está en pantalla
+      if (renderedMessageIds.has(msg.id)) {
+        return;
+      }
+
       const fromId = msg.fromId;
-      const isCurrentConversation = (fromId === activeContactSyncId || (fromId === currentUser.syncId && msg.toId === activeContactSyncId));
+      const toId = msg.toId;
+      const isCurrentConversation = (
+        (fromId === activeContactSyncId && toId === currentUser.syncId) ||
+        (fromId === currentUser.syncId && toId === activeContactSyncId)
+      );
 
       if (isCurrentConversation) {
         renderMessageBubble(msg);
       }
 
-      // Pop-up Notificación si no es nuestro propio mensaje
+      // Alerta Pop-up y Notificación si el mensaje proviene del contacto
       if (fromId !== currentUser.syncId) {
-        const preview = msg.type === 'audio' ? '🎤 Nota de voz recibida' : (msg.type === 'file' ? '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo') : msg.text);
+        const preview = msg.type === 'audio' 
+          ? '🎤 Nota de voz recibida' 
+          : (msg.type === 'file' ? '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo') : msg.text);
         triggerPopupNotification(msg.fromName || fromId, preview, msg.type === 'audio' ? '🎤' : '💬');
       }
 
@@ -861,18 +911,22 @@
     });
   }
 
-  // RENDERIZADO DE BURBUJAS DE MENSAJE
+  // RENDERIZADO DE BURBUJAS (HILO ÚNICO ESTILO WHATSAPP / TELEGRAM)
   function renderMessageBubble(msg) {
+    if (!msg || !msg.id) return;
+    if (renderedMessageIds.has(msg.id)) return;
+    renderedMessageIds.add(msg.id);
+
     if (chatWelcome) chatWelcome.classList.add('hidden');
 
     const isLocal = (msg.fromId === currentUser.syncId);
     const wrapper = document.createElement('div');
-    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[90%] sm:max-w-[75%] log-enter`;
+    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[88%] sm:max-w-[72%] msg-enter`;
 
     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
-    const senderHeader = isLocal ? `${currentUser.formattedName} (Tú)` : (msg.fromName || msg.fromId);
+    const senderHeader = isLocal ? 'Tú' : (msg.fromName || msg.fromId);
 
-    // Encabezado con Nombre y Hora
+    // Encabezado con emisor y hora
     const headerEl = document.createElement('div');
     headerEl.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
     headerEl.innerHTML = `
@@ -881,34 +935,38 @@
       ${isLocal ? '<span class="text-[10px] text-[#FF5500] font-bold">✓✓</span>' : ''}
     `;
 
-    // Tarjeta Flotante
+    // Burbuja con estilo WhatsApp / Telegram:
+    // * Propios (Enviados): DERECHA con color de acento (#FF5500)
+    // * Contacto (Recibidos): IZQUIERDA con fondo neutro (#1E202A)
     const bubble = document.createElement('div');
     bubble.className = `relative rounded-[16px] p-3.5 sm:p-4 text-sm shadow-panel-depth transition-all ${
       isLocal 
-        ? 'bg-[#252834] border border-[#FF5500]/40 text-white' 
+        ? 'bg-[#FF5500] text-black font-medium selection:bg-black/30 selection:text-white' 
         : 'bg-[#1E202A] border border-[#2D313D] text-white'
     }`;
 
     // TIPO 1: NOTA DE VOZ (AUDIO)
     if (msg.type === 'audio' && msg.audioData) {
       const audioCard = document.createElement('div');
-      audioCard.className = 'flex items-center gap-3 min-w-[220px] sm:min-w-[280px]';
+      audioCard.className = 'flex items-center gap-3 min-w-[220px] sm:min-w-[270px]';
 
       const audio = new Audio(msg.audioData);
       const playBtn = document.createElement('button');
       playBtn.type = 'button';
-      playBtn.className = 'w-10 h-10 rounded-xl bg-[#FF5500] text-black font-extrabold flex items-center justify-center flex-shrink-0 shadow-glow-orange cursor-pointer';
+      playBtn.className = `w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer font-extrabold ${
+        isLocal ? 'bg-black text-[#FF5500]' : 'bg-[#FF5500] text-black shadow-glow-orange'
+      }`;
       playBtn.innerHTML = '▶';
 
       const trackInfo = document.createElement('div');
       trackInfo.className = 'flex-1 min-w-0';
       trackInfo.innerHTML = `
-        <div class="flex items-center justify-between text-xs font-semibold mb-1">
+        <div class="flex items-center justify-between text-xs font-bold mb-1 ${isLocal ? 'text-black' : 'text-white'}">
           <span>🎤 Nota de voz</span>
-          <span class="time-lbl font-mono text-[#A0A5B1]">0:00</span>
+          <span class="time-lbl font-mono ${isLocal ? 'text-black/80' : 'text-[#A0A5B1]'}">0:00</span>
         </div>
-        <div class="w-full bg-[#121316] rounded-full h-1.5 overflow-hidden border border-[#2D313D]">
-          <div class="progress-bar bg-[#FF5500] h-full rounded-full w-0 transition-all"></div>
+        <div class="w-full ${isLocal ? 'bg-black/20' : 'bg-[#121316]'} rounded-full h-1.5 overflow-hidden">
+          <div class="progress-bar ${isLocal ? 'bg-black' : 'bg-[#FF5500]'} h-full rounded-full w-0 transition-all"></div>
         </div>
       `;
 
@@ -946,7 +1004,7 @@
 
       if (isImg && f.data) {
         const imgWrap = document.createElement('div');
-        imgWrap.className = 'mb-2.5 rounded-xl overflow-hidden bg-[#121316] border border-[#2D313D] max-h-60 flex items-center justify-center cursor-pointer group relative';
+        imgWrap.className = 'mb-2.5 rounded-xl overflow-hidden bg-black/20 max-h-60 flex items-center justify-center cursor-pointer group relative';
         imgWrap.innerHTML = `
           <img src="${f.data}" alt="${escapeHtml(f.name)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.02] transition-transform">
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold backdrop-blur-[2px]">
@@ -958,17 +1016,21 @@
       }
 
       const fileCard = document.createElement('div');
-      fileCard.className = 'flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#121316] border border-[#2D313D]';
+      fileCard.className = `flex items-center justify-between gap-3 p-2.5 rounded-xl ${
+        isLocal ? 'bg-black/15 text-black' : 'bg-[#121316] text-white border border-[#2D313D]'
+      }`;
       fileCard.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0">
-          <span class="p-2 rounded-lg bg-[#FF5500]/15 text-[#FF5500]">📎</span>
+          <span class="p-2 rounded-lg ${isLocal ? 'bg-black/20 text-black' : 'bg-[#FF5500]/15 text-[#FF5500]'}">📎</span>
           <div class="min-w-0">
-            <p class="font-bold text-xs text-white truncate">${escapeHtml(f.name)}</p>
-            <p class="text-[10px] text-[#A0A5B1] font-mono">${formatSize(f.size)}</p>
+            <p class="font-bold text-xs truncate">${escapeHtml(f.name)}</p>
+            <p class="text-[10px] ${isLocal ? 'text-black/80' : 'text-[#A0A5B1]'} font-mono">${formatSize(f.size)}</p>
           </div>
         </div>
         <a href="${f.data || '#'}" download="${escapeHtml(f.name)}"
-          class="px-3 py-1.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange cursor-pointer">
+          class="px-3 py-1.5 rounded-xl font-extrabold text-xs cursor-pointer ${
+            isLocal ? 'bg-black text-[#FF5500]' : 'bg-[#FF5500] text-black shadow-glow-orange'
+          }">
           ⬇ Descargar
         </a>
       `;
@@ -981,16 +1043,16 @@
       textEl.textContent = msg.text || '';
 
       const footerBar = document.createElement('div');
-      footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-2 border-t border-[#2D313D]';
+      footerBar.className = `mt-2.5 flex items-center justify-end gap-2 pt-1.5 border-t ${
+        isLocal ? 'border-black/20' : 'border-[#2D313D]'
+      }`;
 
       const copyBtn = document.createElement('button');
       copyBtn.type = 'button';
-      copyBtn.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-        isLocal
-          ? 'bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30'
-          : 'bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D]'
+      copyBtn.className = `inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold transition-all cursor-pointer ${
+        isLocal ? 'bg-black/20 hover:bg-black/30 text-black' : 'bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white'
       }`;
-      copyBtn.innerHTML = `<span>📋 Copiar al portapapeles</span>`;
+      copyBtn.innerHTML = `<span>📋 Copiar</span>`;
       copyBtn.addEventListener('click', () => copyToClipboard(msg.text, copyBtn));
 
       footerBar.appendChild(copyBtn);
@@ -1009,20 +1071,23 @@
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
       const orig = btn.innerHTML;
-      btn.innerHTML = '<span>✓ ¡Copiado!</span>';
-      setTimeout(() => btn.innerHTML = orig, 2000);
+      btn.innerHTML = '<span>✓ Copiado</span>';
+      setTimeout(() => btn.innerHTML = orig, 1800);
       triggerPopupNotification('Portapapeles', 'Texto copiado con éxito', '📋');
     }).catch(() => {
       triggerPopupNotification('Error', 'No se pudo acceder al portapapeles', '⚠️');
     });
   }
 
-  // ENVÍO DE MENSAJE DE TEXTO
+  // ENVÍO DE MENSAJES (CON ID ÚNICO CLIENTE PARA DEDUPLICACIÓN)
   function handleSendMessage() {
     const text = chatTextarea.value.trim();
-    if (!text || !activeContactSyncId) return;
+    if (!text || !activeContactSyncId || !socket) return;
+
+    const clientMsgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 
     socket.emit('send-private-message', {
+      clientMsgId: clientMsgId,
       toSyncId: activeContactSyncId,
       text: text,
       type: 'text'
@@ -1051,7 +1116,7 @@
     }
   });
 
-  // EMOTICONES DESPLEGABLE
+  // SELECTOR DE EMOTICONES INTEGRADO
   toggleEmojiBtn.addEventListener('click', () => {
     emojiPicker.classList.toggle('hidden');
   });
@@ -1106,7 +1171,7 @@
       recordingBar.classList.remove('hidden');
       recordingBar.classList.add('flex');
     } catch (err) {
-      alert('Permiso de micrófono denegado: ' + err.message);
+      alert('Permiso de micrófono denegado o no disponible: ' + err.message);
     }
   });
 
@@ -1121,13 +1186,15 @@
   });
 
   sendRecordingBtn.addEventListener('click', () => {
-    if (!mediaRecorder || !activeContactSyncId) return;
+    if (!mediaRecorder || !activeContactSyncId || !socket) return;
 
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
       reader.onload = () => {
+        const clientMsgId = 'aud_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
         socket.emit('send-private-message', {
+          clientMsgId: clientMsgId,
           toSyncId: activeContactSyncId,
           type: 'audio',
           audioData: reader.result
@@ -1149,11 +1216,13 @@
 
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
-    if (!file || !activeContactSyncId) return;
+    if (!file || !activeContactSyncId || !socket) return;
 
     const reader = new FileReader();
     reader.onload = () => {
+      const clientMsgId = 'fil_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
       socket.emit('send-private-message', {
+        clientMsgId: clientMsgId,
         toSyncId: activeContactSyncId,
         type: 'file',
         fileData: {
@@ -1169,7 +1238,7 @@
     reader.readAsDataURL(file);
   });
 
-  // MODAL IMAGEN
+  // MODAL VISOR DE IMAGEN
   function openImageModal(src, name) {
     modalImg.src = src;
     modalDownloadBtn.href = src;
@@ -1205,7 +1274,7 @@
     });
   }
 
-  // INICIO
+  // INICIO DE LA APLICACIÓN
   checkExistingAuth();
 </script>
 

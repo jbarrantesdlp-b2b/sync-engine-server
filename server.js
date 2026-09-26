@@ -171,25 +171,28 @@ io.on("connection", function (socket) {
       return;
     }
 
-    const { toSyncId, text, type, fileData, audioData } = payload || {};
+    const { toSyncId, text, type, fileData, audioData, clientMsgId } = payload || {};
     if (!toSyncId) return;
 
     const targetSyncId = String(toSyncId).trim().toUpperCase();
-    const isSelf = (sender.syncId === targetSyncId);
-    const msgType = type || "text";
+    if (sender.syncId === targetSyncId) {
+      // Bloquear cualquier intento de enviarse a sí mismo
+      return;
+    }
 
+    const msgType = type || "text";
     let messageObj = null;
 
     if (msgType === "text") {
       // Persistir historial de texto en DB
-      messageObj = db.saveTextMessage(sender.syncId, targetSyncId, text || "");
+      messageObj = db.saveTextMessage(sender.syncId, targetSyncId, text || "", clientMsgId || null);
       messageObj.fromName = sender.formattedName;
       messageObj.toSyncId = targetSyncId;
     } else {
       // Transferencia Efímera (Archivos, Imágenes y Notas de Voz)
       // Se transmite en memoria sobre WebSocket y se libera inmediatamente sin retener archivos residuales en disco
       messageObj = {
-        id: "ephem_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        id: clientMsgId || ("ephem_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
         fromId: sender.syncId,
         fromName: sender.formattedName,
         toId: targetSyncId,
@@ -210,13 +213,11 @@ io.on("connection", function (socket) {
       });
     }
 
-    // Confirmación al emisor (eco para sincronizar todas las pestañas/dispositivos del emisor)
+    // Confirmación y sincronización a todos los sockets del emisor
     const senderSockets = onlineUsers.get(sender.syncId);
-    if (senderSockets) {
+    if (senderSockets && senderSockets.size > 0) {
       senderSockets.forEach((sockId) => {
-        if (sockId !== socket.id || isSelf) {
-          io.to(sockId).emit("receive-private-message", messageObj);
-        }
+        io.to(sockId).emit("receive-private-message", messageObj);
       });
     }
 

@@ -113,9 +113,9 @@ function registerUser(username, password, rawDisplayName) {
 
   db.users.push(newUser);
 
-  // Inicializar lista de contactos con auto-contacto (Mensajes Guardados)
+  // Inicializar lista de contactos vacía (sin auto-contacto / Mensajes Guardados)
   if (!db.contacts[syncId]) {
-    db.contacts[syncId] = [syncId];
+    db.contacts[syncId] = [];
   }
 
   writeDb(db);
@@ -190,7 +190,7 @@ function updateUserProfile(syncId, rawName) {
 function addContact(userSyncId, targetSyncId) {
   const targetId = String(targetSyncId).trim().toUpperCase();
   if (userSyncId === targetId) {
-    return { ok: true, alreadyExists: true, target: getUserBySyncId(userSyncId) };
+    throw new Error("No puedes agregarte a ti mismo como contacto");
   }
 
   const db = readDb();
@@ -200,7 +200,7 @@ function addContact(userSyncId, targetSyncId) {
   }
 
   if (!db.contacts[userSyncId]) {
-    db.contacts[userSyncId] = [userSyncId];
+    db.contacts[userSyncId] = [];
   }
 
   if (!db.contacts[userSyncId].includes(targetId)) {
@@ -209,7 +209,7 @@ function addContact(userSyncId, targetSyncId) {
 
   // Recíproco
   if (!db.contacts[targetId]) {
-    db.contacts[targetId] = [targetId];
+    db.contacts[targetId] = [];
   }
   if (!db.contacts[targetId].includes(userSyncId)) {
     db.contacts[targetId].push(userSyncId);
@@ -223,18 +223,18 @@ function addContact(userSyncId, targetSyncId) {
 function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
   const db = readDb();
   if (!db.contacts[userSyncId]) {
-    db.contacts[userSyncId] = [userSyncId];
+    db.contacts[userSyncId] = [];
     writeDb(db);
   }
 
-  const list = db.contacts[userSyncId];
+  // Filtrar estrictamente cualquier auto-contacto para evitar chats de "Mensajes Guardados"
+  const list = db.contacts[userSyncId].filter((id) => id !== userSyncId);
   const contactsList = [];
 
   for (const id of list) {
     const u = db.users.find((item) => item.syncId === id);
     if (u) {
       const pub = toPublicUser(u);
-      pub.isSelf = (id === userSyncId);
       pub.isOnline = onlineSyncIds.has(id);
       
       // Obtener último mensaje para preview
@@ -255,10 +255,10 @@ function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
   return contactsList;
 }
 
-function saveTextMessage(fromId, toId, text) {
+function saveTextMessage(fromId, toId, text, customId = null) {
   const db = readDb();
   const newMsg = {
-    id: "msg_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+    id: customId || ("msg_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
     fromId: fromId,
     toId: toId,
     type: "text",
