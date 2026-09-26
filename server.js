@@ -4,6 +4,7 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const { Server } = require("socket.io");
+const db = require("./db");
 
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
@@ -32,11 +33,93 @@ app.use(express.json({ limit: "50mb" }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
+// Middleware de Autenticación
+function requireAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Token de sesión requerido" });
+  }
+
+  const token = authHeader.slice(7).trim();
+  const user = db.getUserByToken(token);
+  if (!user) {
+    return res.status(401).json({ error: "Sesión expirada o inválida" });
+  }
+
+  req.user = user;
+  next();
+}
+
+// Rutas de Autenticación
+app.post("/api/auth/register", (req, res) => {
+  try {
+    const { username, password, displayName } = req.body || {};
+    const user = db.registerUser(username, password, displayName);
+    const loginResult = db.loginUser(username, password);
+    res.json({ ok: true, token: loginResult.token, user: loginResult.user });
+  } catch (err) {
+    res.status(400).json({ error: err.message || "Error al registrar usuario" });
+  }
+});
+
+app.post("/api/auth/login", (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    const result = db.loginUser(username, password);
+    res.json({ ok: true, token: result.token, user: result.user });
+  } catch (err) {
+    res.status(401).json({ error: err.message || "Error de credenciales" });
+  }
+});
+
+app.get("/api/auth/me", requireAuth, (req, res) => {
+  res.json({ ok: true, user: req.user });
+});
+
+// Rutas de Usuario y Perfil
+app.post("/api/user/profile", requireAuth, (req, res) => {
+  try {
+    const { displayName } = req.body || {};
+    const updated = db.updateUserProfile(req.user.syncId, displayName);
+    res.json({ ok: true, user: updated });
+  } catch (err) {
+    res.status(400).json({ error: err.message || "Error al actualizar perfil" });
+  }
+});
+
+// Rutas de Contactos
+app.get("/api/contacts", requireAuth, (req, res) => {
+  const onlineIds = new Set(onlineUsers.keys());
+  const contacts = db.getUserContacts(req.user.syncId, onlineIds);
+  res.json({ ok: true, contacts: contacts });
+});
+
+app.post("/api/contacts/add", requireAuth, (req, res) => {
+  try {
+    const { contactSyncId } = req.body || {};
+    if (!contactSyncId) {
+      return res.status(400).json({ error: "El código ID es requerido" });
+    }
+    const result = db.addContact(req.user.syncId, contactSyncId);
+    res.json(result);
+  } catch (err) {
+    res.status(404).json({ error: err.message || "Contacto no encontrado" });
+  }
+});
+
+// Rutas de Mensajería e Historial
+app.get("/api/messages/:contactSyncId", requireAuth, (req, res) => {
+  const { contactSyncId } = req.params;
+  const messages = db.getMessagesBetween(req.user.syncId, contactSyncId.toUpperCase());
+  res.json({ ok: true, messages: messages });
+});
+
 app.get("/api/status", function (_req, res) {
   res.json({
     status: "ok",
     service: "sync-engine-server",
-    events: ["send-clipboard", "receive-clipboard", "send-file", "receive-file", "send-media-command", "receive-media-command"]
+    features: ["auth", "private-messaging", "voice-notes", "pwa"],
+    onlineUsersCount: onlineUsers.size
   });
 });
 
@@ -49,41 +132,150 @@ const io = new Server(server, {
   maxHttpBufferSize: 50e6
 });
 
+// Registro de Usuarios Online: Map<syncId, Set<socketId>>
+const onlineUsers = new Map();
+const socketToUser = new Map();
+
 io.on("connection", function (socket) {
-  console.log("[OK] Dispositivo conectado: " + socket.id);
+  console.log("[SOCKET] Conexión abierta: " + socket.id);
 
-  socket.on("send-clipboard", function (payload) {
-    console.log("[SYNC] Portapapeles retransmitido");
-    io.emit("receive-clipboard", payload);
-  });
-
-  socket.on("send-file", function (payload) {
-    var fileName = "desconocido";
-    if (payload && payload.name) {
-      fileName = payload.name;
+  // Autenticación de Socket
+  socket.on("authenticate", function (payload) {
+    const token = payload && payload.token ? payload.token : null;
+    const user = db.getUserByToken(token);
+    if (!user) {
+      socket.emit("auth-error", { message: "Token inválido" });
+      return;
     }
-    console.log("[FILE] Archivo retransmitido: " + fileName);
-    io.emit("receive-file", payload);
+
+    const syncId = user.syncId;
+    socketToUser.set(socket.id, user);
+
+    if (!onlineUsers.has(syncId)) {
+      onlineUsers.set(syncId, new Set());
+    }
+    onlineUsers.get(syncId).add(socket.id);
+
+    socket.emit("authenticated", { user: user });
+    console.log(`[AUTH] Usuario ${user.formattedName} conectado (socket: ${socket.id})`);
+
+    // Notificar a contactos sobre estado online
+    broadcastUserStatus(syncId, true);
   });
 
-  socket.on("send-media-command", function (payload) {
-    var action = (payload && payload.action) ? payload.action : "desconocido";
-    console.log("[MEDIA] Comando multimedia retransmitido: " + action);
-    io.emit("receive-media-command", payload);
+  // Envío de Mensaje Privado (Texto, Audio de Voz o Archivo)
+  socket.on("send-private-message", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender) {
+      socket.emit("error-message", { message: "No autenticado" });
+      return;
+    }
+
+    const { toSyncId, text, type, fileData, audioData } = payload || {};
+    if (!toSyncId) return;
+
+    const targetSyncId = String(toSyncId).trim().toUpperCase();
+    const isSelf = (sender.syncId === targetSyncId);
+    const msgType = type || "text";
+
+    let messageObj = null;
+
+    if (msgType === "text") {
+      // Persistir historial de texto en DB
+      messageObj = db.saveTextMessage(sender.syncId, targetSyncId, text || "");
+      messageObj.fromName = sender.formattedName;
+      messageObj.toSyncId = targetSyncId;
+    } else {
+      // Transferencia Efímera (Archivos, Imágenes y Notas de Voz)
+      // Se transmite en memoria sobre WebSocket y se libera inmediatamente sin retener archivos residuales en disco
+      messageObj = {
+        id: "ephem_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        fromId: sender.syncId,
+        fromName: sender.formattedName,
+        toId: targetSyncId,
+        type: msgType,
+        text: text || (msgType === "audio" ? "Nota de voz" : "Archivo"),
+        audioData: audioData || null,
+        fileData: fileData || null,
+        timestamp: Date.now(),
+        read: false
+      };
+    }
+
+    // Entregar a todos los sockets activos del destinatario
+    const targetSockets = onlineUsers.get(targetSyncId);
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("receive-private-message", messageObj);
+      });
+    }
+
+    // Confirmación al emisor (eco para sincronizar todas las pestañas/dispositivos del emisor)
+    const senderSockets = onlineUsers.get(sender.syncId);
+    if (senderSockets) {
+      senderSockets.forEach((sockId) => {
+        if (sockId !== socket.id || isSelf) {
+          io.to(sockId).emit("receive-private-message", messageObj);
+        }
+      });
+    }
+
+    socket.emit("message-sent", { id: messageObj.id, timestamp: messageObj.timestamp });
+    console.log(`[MSG] De ${sender.syncId} para ${targetSyncId} (${msgType})`);
   });
 
+  // Indicador de Escritura
+  socket.on("typing", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId) return;
+
+    const targetSockets = onlineUsers.get(payload.toSyncId.trim().toUpperCase());
+    if (targetSockets) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("user-typing", {
+          fromSyncId: sender.syncId,
+          fromName: sender.formattedName,
+          isTyping: !!payload.isTyping
+        });
+      });
+    }
+  });
+
+  // Desconexión
   socket.on("disconnect", function () {
-    console.log("[OFF] Dispositivo desconectado: " + socket.id);
+    const user = socketToUser.get(socket.id);
+    if (user) {
+      const syncId = user.syncId;
+      socketToUser.delete(socket.id);
+
+      const userSockets = onlineUsers.get(syncId);
+      if (userSockets) {
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          onlineUsers.delete(syncId);
+          console.log(`[AUTH] Usuario ${user.formattedName} totalmente desconectado.`);
+          broadcastUserStatus(syncId, false);
+        }
+      }
+    }
+    console.log("[SOCKET] Desconectado: " + socket.id);
   });
 });
+
+function broadcastUserStatus(syncId, isOnline) {
+  io.emit("contact-status-changed", {
+    syncId: syncId,
+    isOnline: isOnline
+  });
+}
 
 server.listen(PORT, HOST, function () {
   const localIps = getLocalIPv4Addresses();
   console.log("\n==================================================");
   console.log("SYNC ENGINE Server Activo en http://" + HOST + ":" + PORT);
-  console.log("Conecta tus dispositivos usando una de estas direcciones:");
+  console.log("Direcciones disponibles:");
   if (localIps.length === 0) {
-    console.log("  (no se encontro una IPv4 de red local)");
+    console.log("  (sin IPv4 detectada)");
   } else {
     for (let i = 0; i < localIps.length; i++) {
       console.log("  http://" + localIps[i].address + ":" + PORT);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYNC ENGINE by Barrantes Co. | Dark Mode Tech</title>
+<title>SYNC ENGINE | Mensajería Privada P2P</title>
 
 <!-- Metadatos PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,10 +27,11 @@
           darkBg: '#121316',
           panel: '#1E202A',
           panelDark: '#161820',
-          panelHighlight: '#252834',
+          panelCard: '#252834',
           borderMuted: '#2D313D',
           neonOrange: '#FF5500',
           neonOrangeHover: '#FF6B1A',
+          onlineGreen: '#10B981',
           textMuted: '#A0A5B1',
         },
         fontFamily: {
@@ -38,8 +39,8 @@
           heading: ['Inter', 'sans-serif'],
         },
         boxShadow: {
-          'glow-orange': '0 0 20px rgba(255, 85, 0, 0.4), 0 0 40px rgba(255, 85, 0, 0.15)',
-          'glow-orange-subtle': '0 0 12px rgba(255, 85, 0, 0.25)',
+          'glow-orange': '0 0 20px rgba(255, 85, 0, 0.35)',
+          'glow-green': '0 0 16px rgba(16, 185, 129, 0.4)',
           'panel-depth': '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.3)',
         },
       },
@@ -52,9 +53,10 @@
     background-color: #121316;
     color: #FFFFFF;
     min-height: 100vh;
+    font-family: 'Inter', sans-serif;
   }
 
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-thumb { background: #2D313D; border-radius: 999px; }
   ::-webkit-scrollbar-thumb:hover { background: #FF5500; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -65,10 +67,20 @@
     box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
   }
 
-  .pulse-dot { animation: pulse-orange 1.8s ease-in-out infinite; }
-  @keyframes pulse-orange {
-    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #FF5500; }
-    50% { opacity: 0.6; transform: scale(1.25); box-shadow: 0 0 18px #FF5500; }
+  .pulse-online {
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 4px #10B981); }
+    50% { opacity: 0.6; transform: scale(1.15); filter: drop-shadow(0 0 8px #10B981); }
+  }
+
+  .pulse-record {
+    animation: pulse-red 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse-red {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
   }
 
   .log-enter { animation: log-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -77,486 +89,1103 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Animación Ecualizador de Sonido (KDE Connect Style) */
-  .eq-bar {
-    width: 3.5px;
-    background-color: #FF5500;
-    border-radius: 999px;
-    animation: eq-bounce 1s ease-in-out infinite alternate;
-  }
-  .eq-bar:nth-child(1) { height: 16px; animation-delay: 0.05s; }
-  .eq-bar:nth-child(2) { height: 26px; animation-delay: 0.25s; }
-  .eq-bar:nth-child(3) { height: 14px; animation-delay: 0.15s; }
-  .eq-bar:nth-child(4) { height: 22px; animation-delay: 0.35s; }
-  .eq-bar:nth-child(5) { height: 18px; animation-delay: 0.1s; }
-  @keyframes eq-bounce {
-    0% { transform: scaleY(0.3); opacity: 0.5; }
-    100% { transform: scaleY(1); opacity: 1; box-shadow: 0 0 8px rgba(255,85,0,0.6); }
-  }
-  .eq-paused .eq-bar {
-    animation-play-state: paused;
-    transform: scaleY(0.25);
-    opacity: 0.35;
-  }
-
-  #drop-overlay.active { display: flex; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; }
 </style>
 </head>
 <body class="font-sans text-gray-100 antialiased selection:bg-[#FF5500]/30 selection:text-white">
 
-  <!-- Header Superior Compacto (Dark Mode Tech & Marca Oficial) -->
-  <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/95 backdrop-blur-xl">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+  <!-- APLICACIÓN PRINCIPAL (VISIBLE AL AUTENTICARSE) -->
+  <div id="app-container" class="min-h-screen flex flex-col hidden">
+    
+    <!-- HEADER SUPERIOR REFINADO -->
+    <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/95 backdrop-blur-xl">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4 flex-wrap">
+        
+        <!-- Logo Oficial (36px de alto) & Título -->
+        <div class="flex items-center gap-3">
+          <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-9 w-auto object-contain flex-shrink-0">
+          <div class="flex flex-col">
+            <h1 class="font-bold text-sm sm:text-base tracking-wide text-white flex items-center gap-2">
+              <span>SYNC ENGINE</span>
+              <span class="text-[10px] text-[#A0A5B1] font-normal hidden md:inline">by Barrantes Co.</span>
+            </h1>
+            <span class="text-[10px] text-[#FF5500] font-mono tracking-wider font-semibold">MENSAJERÍA PRIVADA</span>
+          </div>
+        </div>
+
+        <!-- Usuario Formateado [ID] - [Nombre] e Indicador Permanente "● En línea" -->
+        <div class="flex items-center gap-3 flex-wrap">
+          
+          <!-- Identidad de Usuario -->
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161820] border border-[#2D313D]">
+            <span class="text-xs text-[#A0A5B1] font-mono">ID:</span>
+            <span id="user-sync-id-badge" class="text-xs font-bold text-[#FF5500] font-mono">SYNC-0000</span>
+            <span class="text-[#2D313D]">|</span>
+            <span id="user-display-name-badge" class="text-xs font-semibold text-white max-w-[180px] sm:max-w-[240px] truncate">Cargando...</span>
+            <button id="edit-profile-btn" type="button" title="Editar nombre de equipo" class="text-[#A0A5B1] hover:text-white text-xs pl-1">✎</button>
+          </div>
+
+          <!-- Indicador Permanente Verde: "● En línea" -->
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#10B981]/10 border border-[#10B981]/30">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] pulse-online flex-shrink-0"></span>
+            <span class="text-xs font-bold tracking-wide text-[#10B981] select-none">En línea</span>
+          </div>
+
+          <!-- Botón Cerrar Sesión -->
+          <button id="logout-btn" type="button" title="Cerrar sesión"
+            class="px-3 py-1.5 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] text-xs font-semibold transition-all">
+            Salir
+          </button>
+
+        </div>
+
+      </div>
+    </header>
+
+    <!-- CUERPO PRINCIPAL: SIDEBAR DE CONTACTOS + CHAT PRIVADO -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4">
       
-      <!-- Brand & Logo Oficial (36px de alto) -->
-      <div class="flex items-center gap-3">
-        <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-9 w-auto object-contain flex-shrink-0">
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2">
-            <h1 class="font-bold text-sm sm:text-base tracking-wide text-white">SYNC ENGINE</h1>
-            <span class="text-[10px] text-[#A0A5B1] font-medium hidden sm:inline">by Barrantes Co.</span>
-          </div>
-          <span class="text-[10px] text-[#FF5500] font-mono tracking-wider font-semibold">P2P SECURE SYNC</span>
-        </div>
-      </div>
-
-      <!-- Acciones de Cabecera: Selector de Nombre de Dispositivo, Estado Real e Instalador -->
-      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+      <!-- BARRA LATERAL: LISTA DE CONTACTOS & BÚSQUEDA POR ID (lg:col-span-4 xl:col-span-3) -->
+      <aside class="lg:col-span-4 xl:col-span-3 bento-card rounded-2xl flex flex-col h-[780px] max-h-[88vh] overflow-hidden">
         
-        <!-- Selector / Indicador de Nombre Personalizado del Equipo -->
-        <button id="open-device-modal-btn" type="button" title="Personalizar nombre del dispositivo"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161820] hover:bg-[#252834] border border-[#2D313D] hover:border-[#FF5500]/50 transition-all text-xs">
-          <span id="header-device-icon" class="text-sm">💻</span>
-          <span id="header-device-name" class="font-semibold text-white max-w-[140px] sm:max-w-[200px] truncate">Mi Equipo</span>
-          <span class="text-[10px] text-[#A0A5B1]">✎</span>
-        </button>
-
-        <!-- Indicador de Estado Real: "● En línea" -->
-        <div id="status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#161820] border border-[#2D313D] transition-all">
-          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-[#FF5500] pulse-dot flex-shrink-0"></span>
-          <span id="status-text" class="text-xs font-bold tracking-wider text-[#FF5500] whitespace-nowrap">Conectando...</span>
-          <span id="latency-indicator" class="text-[10px] font-mono text-[#A0A5B1] hidden sm:inline">—</span>
-        </div>
-
-        <!-- Botón Instalar App (PWA) -->
-        <button id="install-app-btn" type="button" title="Instalar SYNC ENGINE en tu dispositivo"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange-subtle transition-all cursor-pointer">
-          <span>📲</span>
-          <span class="hidden sm:inline">Instalar App</span>
-        </button>
-
-      </div>
-
-    </div>
-  </header>
-
-  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-5 flex flex-col gap-5">
-
-    <!-- ÁREA PRINCIPAL: BENTO GRID (CHAT CENTRALIZADO + CONTROLES MULTIMEDIA) -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-
-      <!-- COLUMNA PRINCIPAL: CHAT FEED CENTRALIZADO (Estilo Telegram / Saved Messages) -->
-      <section class="xl:col-span-8 bento-card rounded-2xl flex flex-col h-[750px] max-h-[85vh] relative overflow-hidden">
-        
-        <!-- Header del Feed -->
-        <div class="px-5 py-3 border-b border-[#2D313D] bg-[#161820]/95 backdrop-blur-md flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-              </svg>
-            </div>
-            <div class="min-w-0">
-              <h2 class="font-bold text-sm sm:text-base text-white flex items-center gap-2 truncate">
-                Mensajes Guardados &amp; Canal P2P
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF5500]/15 text-[#FF5500] border border-[#FF5500]/30">Activo</span>
-              </h2>
-              <p class="text-[11px] text-[#A0A5B1] truncate">Sincronización instantánea de texto, enlaces, imágenes y archivos</p>
-            </div>
-          </div>
-
+        <!-- Header de Contactos & Botón Agregar -->
+        <div class="p-4 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
-            <button id="clear-chat-btn" title="Limpiar feed local" class="px-3 py-1.5 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white border border-[#2D313D] hover:border-[#FF5500]/40 text-xs font-semibold transition-all flex items-center gap-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span class="hidden sm:inline">Limpiar</span>
-            </button>
+            <h2 class="font-bold text-sm text-white">Conversaciones</h2>
+            <span id="contacts-count-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#252834] text-[#A0A5B1] border border-[#2D313D]">0</span>
           </div>
+          <button id="open-add-contact-btn" type="button" title="Agregar contacto por Código ID"
+            class="px-2.5 py-1 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center gap-1 transition-all">
+            <span>+</span>
+            <span>ID</span>
+          </button>
         </div>
 
-        <!-- Drop Overlay para Drag and Drop de archivos -->
-        <div id="drop-overlay" class="absolute inset-0 z-30 bg-[#121316]/95 border-2 border-dashed border-[#FF5500] backdrop-blur-md hidden flex-col items-center justify-center gap-3 p-6 text-center transition-all pointer-events-none">
-          <div class="w-16 h-16 rounded-2xl bg-[#FF5500]/20 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] animate-bounce shadow-glow-orange">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/>
-            </svg>
-          </div>
-          <p class="font-bold text-lg text-[#FF5500]">Suelta el archivo aquí para transmitirlo</p>
-          <p class="text-xs text-[#A0A5B1]">Se compartirá inmediatamente con todos los dispositivos sincronizados</p>
-        </div>
-
-        <!-- CONTENEDOR DE MENSAJES (Scrollable) -->
-        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth bg-[#121316]/50">
-          <div id="chat-empty" class="h-full flex flex-col items-center justify-center text-center p-6 text-[#A0A5B1]">
-            <div class="w-14 h-14 rounded-2xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-              </svg>
-            </div>
-            <p class="text-base font-bold text-white">Canal P2P Listo</p>
-            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Escribe notas, pega enlaces o adjunta imágenes y archivos para sincronizarlos al instante.</p>
-          </div>
-        </div>
-
-        <!-- BARRA INFERIOR DE ENTRADA FLOTANTE -->
-        <div id="input-bar" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2.5">
-          
-          <!-- Botones de Acción Rápida: Pegar 1-Clic & Adjuntar -->
-          <div class="flex items-center justify-between gap-2 px-1">
-            <div class="flex items-center gap-2">
-              
-              <!-- Botón Pegar Portapapeles con 1-Clic -->
-              <button id="paste-clipboard-btn" type="button" title="Pegar contenido del portapapeles del sistema y enviar inmediatamente"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30 text-xs font-bold active:scale-95 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                <span>Pegar Portapapeles con 1-Clic</span>
-              </button>
-
-              <!-- Botón Adjuntar Archivo (Clip) -->
-              <button id="attach-file-btn" type="button" title="Adjuntar archivo o imagen"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] text-xs font-semibold active:scale-95 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#FF5500]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                </svg>
-                <span>Adjuntar</span>
-              </button>
-              <input type="file" id="chat-file-input" title="Seleccionar archivo para enviar" aria-label="Seleccionar archivo para enviar" class="hidden">
-            </div>
-
-            <span class="text-[10px] text-[#A0A5B1] font-mono hidden sm:inline">Enter para enviar · Shift+Enter para salto</span>
-          </div>
-
-          <!-- Campo de Texto y Botón de Envío -->
-          <div class="flex items-end gap-2">
-            <div class="flex-1 relative">
-              <label for="chat-input" class="sr-only">Mensaje o texto a sincronizar</label>
-              <textarea id="chat-input" rows="1" placeholder="Escribe un mensaje, enlace o pega texto..."
-                class="w-full resize-none rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none px-4 py-3 text-sm text-white placeholder-[#A0A5B1]/50 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
-            </div>
-
-            <button id="chat-send-btn" type="button" title="Enviar mensaje (Enter)"
-              class="h-11 px-5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange active:scale-95 flex items-center justify-center gap-2 transition-all flex-shrink-0 cursor-pointer">
-              <span>Enviar</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- COLUMNA LATERAL: WIDGET MULTIMEDIA & PRESENTACIONES + REGISTRO -->
-      <aside class="xl:col-span-4 flex flex-col gap-5">
-
-        <!-- WIDGET DE CONTROL MULTIMEDIA REMOTO & PRESENTACIONES (KDE Connect Style) -->
-        <div class="bento-card rounded-2xl p-5 flex flex-col gap-4">
-          
-          <!-- Encabezado con Animación Ecualizador -->
-          <div class="flex items-center justify-between pb-3 border-b border-[#2D313D]">
-            <div class="flex items-center gap-2.5">
-              <div id="media-eq-bars" class="flex items-end gap-1 h-7 px-1.5 py-0.5 rounded-lg bg-[#161820] border border-[#2D313D] eq-paused">
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-                <span class="eq-bar"></span>
-              </div>
-              <div>
-                <h3 class="font-bold text-xs uppercase tracking-wider text-white">Control Multimedia</h3>
-                <p id="media-status-subtitle" class="text-[10px] text-[#A0A5B1]">KDE Connect P2P</p>
-              </div>
-            </div>
-
-            <!-- Botón Activar MediaSession Pantalla Bloqueo -->
-            <button id="activate-mediasession-btn" type="button" title="Activar reproductor en pantalla de bloqueo del celular"
-              class="px-2.5 py-1 rounded-lg bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30 text-[11px] font-bold transition-all">
-              🔔 Pantalla Bloqueo
-            </button>
-          </div>
-
-          <!-- Tarjeta de Pista / Estado de Reproducción -->
-          <div class="p-3.5 rounded-xl bg-[#161820] border border-[#2D313D] flex items-center justify-between gap-3">
-            <div class="min-w-0">
-              <p id="media-now-title" class="font-bold text-sm text-white truncate">SYNC ENGINE Media</p>
-              <p id="media-now-artist" class="text-xs text-[#A0A5B1] truncate mt-0.5">Control de audio de laptop y móvil</p>
-            </div>
-            <span id="media-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#252834] text-[#A0A5B1] border border-[#2D313D]">STANDBY</span>
-          </div>
-
-          <!-- Botones de Control Multimedia: Prev, Play/Pause, Next, Mute -->
-          <div class="grid grid-cols-4 gap-2">
-            <button id="media-prev-btn" type="button" title="Pista Anterior"
-              class="h-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg active:scale-95 transition-all">
-              ⏮
-            </button>
-            <button id="media-play-btn" type="button" title="Reproducir / Pausar"
-              class="h-11 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold flex items-center justify-center text-xl shadow-glow-orange-subtle active:scale-95 transition-all">
-              <span id="media-play-icon">▶</span>
-            </button>
-            <button id="media-next-btn" type="button" title="Pista Siguiente"
-              class="h-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg active:scale-95 transition-all">
-              ⏭
-            </button>
-            <button id="media-mute-btn" type="button" title="Silenciar / Activar Sonido"
-              class="h-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg active:scale-95 transition-all">
-              <span id="media-mute-icon">🔊</span>
-            </button>
-          </div>
-
-          <!-- MODO PRESENTACIÓN (Control a distancia de diapositivas) -->
-          <div class="pt-3 border-t border-[#2D313D] flex flex-col gap-2">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-[#A0A5B1]">Modo Presentaciones</span>
-            <div class="grid grid-cols-2 gap-2">
-              <button id="pres-prev-btn" type="button"
-                class="py-3 px-3 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-white border border-[#2D313D] hover:border-[#FF5500]/40 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all">
-                <span>◀</span>
-                <span>Anterior</span>
-              </button>
-              <button id="pres-next-btn" type="button"
-                class="py-3 px-3 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#FF5500] border border-[#FF5500]/30 hover:border-[#FF5500] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition-all">
-                <span>Siguiente</span>
-                <span>▶</span>
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Telemetría & Registro de Eventos -->
-        <div class="bento-card rounded-2xl p-5 flex flex-col gap-3">
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold text-xs uppercase tracking-wider text-[#FF5500] flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[#FF5500] pulse-dot"></span>
-              Telemetría P2P
-            </h3>
-            <span id="events-count-badge" class="text-[10px] text-[#A0A5B1] font-mono">0 eventos</span>
-          </div>
-          <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[220px] pr-1 font-mono text-xs"></div>
+        <!-- Lista de Conversaciones y Contactos -->
+        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-[#2D313D]/50 p-2 space-y-1">
+          <!-- Renderizado dinámico de contactos -->
         </div>
 
       </aside>
 
+      <!-- ÁREA DE CHAT CENTRAL (lg:col-span-8 xl:col-span-9) -->
+      <section class="lg:col-span-8 xl:col-span-9 bento-card rounded-2xl flex flex-col h-[780px] max-h-[88vh] overflow-hidden relative">
+        
+        <!-- Header de la Conversación Activa -->
+        <div class="px-5 py-3 border-b border-[#2D313D] bg-[#161820] flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="active-chat-avatar" class="w-9 h-9 rounded-xl bg-[#252834] border border-[#2D313D] flex items-center justify-center font-bold text-sm text-[#FF5500] flex-shrink-0">
+              💬
+            </div>
+            <div class="min-w-0">
+              <h2 id="active-chat-name" class="font-bold text-sm sm:text-base text-white truncate">Selecciona un contacto</h2>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span id="active-chat-id" class="text-[11px] text-[#A0A5B1] font-mono truncate">ID: —</span>
+                <span id="active-chat-status" class="text-[11px] font-semibold text-[#A0A5B1]">· Desconectado</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Indicador de Escritura en Tiempo Real -->
+          <div id="typing-indicator" class="hidden text-xs text-[#FF5500] font-medium animate-pulse">
+            escribiendo...
+          </div>
+        </div>
+
+        <!-- CONTENEDOR AMPLIO DE MENSAJES (Scrollable) -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 scroll-smooth bg-[#121316]/60">
+          <div id="chat-welcome" class="h-full flex flex-col items-center justify-center text-center p-6 text-[#A0A5B1]">
+            <div class="w-14 h-14 rounded-2xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <p class="text-base font-bold text-white">Canal Privado de Mensajería</p>
+            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Selecciona o agrega un contacto con su código ID para iniciar una conversación cifrada en tiempo real.</p>
+          </div>
+        </div>
+
+        <!-- BARRA DE ENTRADA INFERIOR FLOTANTE & EXPANSIPLE -->
+        <div id="input-container" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2 relative">
+          
+          <!-- Selector Flotante de Emoticones (Desplegable) -->
+          <div id="emoji-picker" class="hidden absolute bottom-20 left-4 z-50 p-3 rounded-2xl bg-[#1E202A] border border-[#2D313D] shadow-panel-depth w-72 max-w-[90vw]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-[#2D313D] text-xs font-bold text-[#A0A5B1]">
+              <span>Emoticones Rápidos</span>
+              <button id="close-emoji-btn" type="button" class="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <div class="grid grid-cols-6 gap-2 text-xl select-none">
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😀</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😂</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😍</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">😎</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">👍</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🔥</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🎉</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">❤️</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🚀</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">💡</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">✅</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">💻</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">📱</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🔒</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">✨</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">☕</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">🎧</button>
+              <button type="button" class="emoji-btn p-1.5 hover:bg-[#252834] rounded-lg">⚡</button>
+            </div>
+          </div>
+
+          <!-- Barra de Grabación de Audio en Vivo (Se muestra durante la grabación) -->
+          <div id="recording-bar" class="hidden items-center justify-between p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-xs">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-red-500 pulse-record"></span>
+              <span class="font-bold text-red-400">Grabando nota de voz...</span>
+              <span id="recording-timer" class="font-mono text-white font-bold">0:00</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="cancel-recording-btn" type="button" class="px-3 py-1 rounded-lg bg-[#252834] text-gray-300 hover:text-white font-semibold">✕ Cancelar</button>
+              <button id="send-recording-btn" type="button" class="px-4 py-1 rounded-lg bg-[#FF5500] text-black font-extrabold shadow-glow-orange">✓ Enviar Audio</button>
+            </div>
+          </div>
+
+          <!-- Fila de Entrada Principal: [😃] [🎙] [📎] [Textarea Expansible] [➤ Enviar] -->
+          <div id="normal-input-bar" class="flex items-end gap-2">
+            
+            <!-- Botón [😃 Emoticones] -->
+            <button id="toggle-emoji-btn" type="button" title="Insertar emoticones" aria-label="Insertar emoticones"
+              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0">
+              😃
+            </button>
+
+            <!-- Botón [🎙 Grabador de Audio] -->
+            <button id="voice-record-btn" type="button" title="Grabar nota de voz" aria-label="Grabar nota de voz"
+              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-[#FF5500] border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0">
+              🎙
+            </button>
+
+            <!-- Botón [📎 Adjuntar Archivo] -->
+            <button id="attach-btn" type="button" title="Adjuntar imagen o archivo" aria-label="Adjuntar imagen o archivo"
+              class="h-11 w-11 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] flex items-center justify-center text-lg transition-all flex-shrink-0">
+              📎
+            </button>
+            <input type="file" id="file-input" title="Seleccionar archivo" aria-label="Seleccionar archivo" class="hidden">
+
+            <!-- Caja de Texto Expansible de Múltiples Líneas -->
+            <div class="flex-1 relative">
+              <label for="chat-textarea" class="sr-only">Escribe un mensaje privado</label>
+              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado (Enter para enviar)..."
+                class="w-full resize-none rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none px-4 py-3 text-sm text-white placeholder-[#A0A5B1]/50 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
+            </div>
+
+            <!-- Botón [➤ Enviar] Naranja Neón -->
+            <button id="send-btn" type="button" title="Enviar mensaje (Enter)" aria-label="Enviar mensaje"
+              class="h-11 px-5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange active:scale-95 flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
+              <span>➤</span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- PANTALLA DE AUTENTICACIÓN (LOGIN & REGISTRO) -->
+  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#121316]">
+    <div class="bento-card rounded-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-panel-depth border border-[#2D313D]">
+      
+      <!-- Logo y Título -->
+      <div class="flex flex-col items-center text-center gap-2">
+        <img src="/assets/logo.png" alt="SYNC ENGINE" class="h-12 w-auto object-contain">
+        <h2 class="font-bold text-xl text-white">SYNC ENGINE</h2>
+        <p class="text-xs text-[#A0A5B1]">Plataforma Privada de Mensajería &amp; Sincronización</p>
+      </div>
+
+      <!-- Selector de Pestañas: Login vs Registro -->
+      <div class="grid grid-cols-2 p-1 rounded-xl bg-[#121316] border border-[#2D313D]">
+        <button id="tab-login" type="button" class="py-2 rounded-lg font-bold text-xs bg-[#FF5500] text-black transition-all">Iniciar Sesión</button>
+        <button id="tab-register" type="button" class="py-2 rounded-lg font-bold text-xs text-[#A0A5B1] hover:text-white transition-all">Crear Cuenta</button>
+      </div>
+
+      <!-- Formulario de Autenticación -->
+      <form id="auth-form" class="flex flex-col gap-4">
+        
+        <div>
+          <label for="auth-username" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Nombre de Usuario</label>
+          <input type="text" id="auth-username" required title="Nombre de usuario" placeholder="ej. jbarrantes"
+            class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+        </div>
+
+        <div>
+          <label for="auth-password" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Contraseña</label>
+          <input type="password" id="auth-password" required title="Contraseña" placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+        </div>
+
+        <div id="display-name-group" class="hidden">
+          <label for="auth-display-name" class="block text-xs font-semibold text-[#A0A5B1] mb-1">Nombre del Equipo / Dispositivo</label>
+          <input type="text" id="auth-display-name" title="Nombre del equipo" placeholder="ej. Laptop de Jose (sin emojis)"
+            class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+          <p class="text-[10px] text-[#A0A5B1] mt-1">Los emojis serán removidos automáticamente del nombre formateado.</p>
+        </div>
+
+        <p id="auth-error-msg" class="text-xs text-red-400 hidden"></p>
+
+        <button type="submit" id="auth-submit-btn"
+          class="w-full py-3 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange transition-all cursor-pointer">
+          Ingresar al Chat
+        </button>
+
+      </form>
+
     </div>
+  </div>
 
-  </main>
-
-  <!-- MODAL: PERSONALIZAR NOMBRE DEL DISPOSITIVO -->
-  <div id="device-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bento-card rounded-2xl p-6 w-full max-w-md flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
+  <!-- MODAL: AGREGAR CONTACTO POR CÓDIGO ID -->
+  <div id="add-contact-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
       <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base text-white flex items-center gap-2">
-          <span>💻</span> Nombre de este Equipo
-        </h3>
-        <button id="close-device-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
+        <h3 class="font-bold text-base text-white">Agregar Contacto</h3>
+        <button id="close-add-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
       </div>
       <p class="text-xs text-[#A0A5B1]">
-        Personaliza cómo se identificará este dispositivo al enviar mensajes, archivos y comandos multimedia:
+        Ingresa el Código ID único del contacto (ej. <strong>SYNC-8821</strong>):
       </p>
 
-      <input type="text" id="device-name-input" maxlength="40" title="Nombre de este equipo" aria-label="Nombre de este equipo" placeholder="Ej. Laptop de Jose, Samsung S23..."
-        class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+      <input type="text" id="contact-sync-id-input" maxlength="20" title="Código ID del contacto" placeholder="SYNC-XXXX"
+        class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm font-mono uppercase text-white">
 
-      <!-- Presets Rápidos -->
-      <div class="flex flex-wrap gap-2">
-        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="💻 Laptop de Jose">💻 Laptop de Jose</button>
-        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="📱 Samsung S23 de Trabajo">📱 Samsung S23</button>
-        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="💻 MacBook Pro">💻 MacBook Pro</button>
-        <button type="button" class="preset-btn px-2.5 py-1 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white text-xs border border-[#2D313D]" data-name="📱 Móvil Personal">📱 Móvil Personal</button>
-      </div>
+      <p id="add-contact-error" class="text-xs text-red-400 hidden"></p>
 
-      <div class="flex items-center justify-end gap-3 pt-3 border-t border-[#2D313D]">
-        <button id="cancel-device-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
-        <button id="save-device-modal-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange-subtle transition-all">Guardar Nombre</button>
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#2D313D]">
+        <button id="cancel-add-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
+        <button id="submit-add-contact-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange transition-all">Añadir Contacto</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL / BANNER DE INSTALACIÓN IOS SAFARI -->
-  <div id="ios-install-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 text-center shadow-panel-depth border border-[#2D313D]">
-      <div class="w-12 h-12 rounded-xl bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] mx-auto text-2xl">
-        📲
+  <!-- MODAL: EDITAR NOMBRE DE EQUIPO (PERFIL) -->
+  <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bento-card rounded-2xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-panel-depth border border-[#2D313D]">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-base text-white">Nombre de este Equipo</h3>
+        <button id="close-profile-modal-btn" class="text-[#A0A5B1] hover:text-white p-1 text-sm">✕</button>
       </div>
-      <h3 class="font-bold text-base text-white">Instalar en tu iPhone o iPad</h3>
-      <div class="text-xs text-[#A0A5B1] space-y-2 text-left bg-[#161820] p-4 rounded-xl border border-[#2D313D]">
-        <p>1. Toca el botón <strong>Compartir (⎋)</strong> en la barra inferior de Safari.</p>
-        <p>2. Desplázate hacia abajo y selecciona <strong>Agregar al inicio (➕)</strong>.</p>
-        <p>3. Toca <strong>Agregar</strong> en la esquina superior derecha.</p>
+      <p class="text-xs text-[#A0A5B1]">
+        Formato permanente: <strong>[Tu ID] - [Nombre Personalizado]</strong> (sin emoticones):
+      </p>
+
+      <input type="text" id="profile-name-input" maxlength="35" title="Nombre personalizado de este equipo" placeholder="ej. Laptop de Jose"
+        class="w-full px-4 py-2.5 rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none text-sm text-white">
+
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#2D313D]">
+        <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#A0A5B1] hover:text-white">Cancelar</button>
+        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange transition-all">Guardar Nombre</button>
       </div>
-      <button id="close-ios-modal-btn" class="w-full py-2.5 rounded-xl bg-[#FF5500] text-black font-extrabold text-xs shadow-glow-orange-subtle">
-        Entendido
-      </button>
     </div>
   </div>
 
   <!-- Modal para Visualización de Imágenes -->
   <div id="image-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-      <button id="close-modal-btn" class="absolute -top-10 right-0 text-[#A0A5B1] hover:text-white px-3 py-1 text-xs font-semibold rounded-lg bg-[#1E202A] border border-[#2D313D]">✕ Cerrar</button>
+      <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-[#A0A5B1] hover:text-white px-3 py-1 text-xs font-semibold rounded-lg bg-[#1E202A] border border-[#2D313D]">✕ Cerrar</button>
       <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-panel-depth border border-[#2D313D]">
       <div class="mt-4 flex items-center gap-3">
         <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center gap-2 transition-all">
-          ⬇ Descargar archivo original
+          ⬇ Descargar original
         </a>
       </div>
     </div>
   </div>
 
-  <!-- Contenedor de Toasts Flotantes -->
-  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <!-- Contenedor de Alertas Notificaciones Pop-up Flotantes -->
+  <div id="popup-notifications" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
 
 <script>
-  // Configuración Principal
+  // CONFIGURACIÓN Y ESTADO GLOBAL
   const SERVER_URL = window.location.origin;
-  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
-  const STORAGE_KEY_DEVICE = 'sync_engine_custom_device_name';
+  const TOKEN_KEY = 'sync_engine_auth_token';
 
-  // Audio en bucle silencioso para mantener la MediaSession activa en pantalla de bloqueo móvil
-  const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
-  silentAudio.loop = true;
+  let currentUser = null;
+  let currentToken = localStorage.getItem(TOKEN_KEY) || null;
+  let activeContactSyncId = null;
+  let contactsMap = new Map();
+  let socket = null;
 
-  // Estado Local
-  let isConnected = false;
-  let connectAttemptStart = performance.now();
-  let totalEventsCount = 0;
-  const sentMessageIds = new Set();
-  let deferredPrompt = null;
-  let isMediaPlaying = false;
-  let isMediaMuted = false;
+  // Grabación de Audio (MediaRecorder API)
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordTimerInterval = null;
+  let recordSeconds = 0;
 
-  // Referencias DOM
-  const statusDot = document.getElementById('status-dot');
-  const statusText = document.getElementById('status-text');
-  const statusBadge = document.getElementById('status-badge');
-  const latencyIndicator = document.getElementById('latency-indicator');
-  const headerDeviceName = document.getElementById('header-device-name');
-  const headerDeviceIcon = document.getElementById('header-device-icon');
-  const openDeviceModalBtn = document.getElementById('open-device-modal-btn');
-  const deviceModal = document.getElementById('device-modal');
-  const closeDeviceModalBtn = document.getElementById('close-device-modal-btn');
-  const cancelDeviceModalBtn = document.getElementById('cancel-device-modal-btn');
-  const saveDeviceModalBtn = document.getElementById('save-device-modal-btn');
-  const deviceNameInput = document.getElementById('device-name-input');
-  const presetButtons = document.querySelectorAll('.preset-btn');
-  const installAppBtn = document.getElementById('install-app-btn');
-  const iosInstallModal = document.getElementById('ios-install-modal');
-  const closeIosModalBtn = document.getElementById('close-ios-modal-btn');
-  const chatFeed = document.getElementById('chat-feed');
-  const chatEmpty = document.getElementById('chat-empty');
-  const chatInput = document.getElementById('chat-input');
-  const chatSendBtn = document.getElementById('chat-send-btn');
-  const pasteClipboardBtn = document.getElementById('paste-clipboard-btn');
-  const attachFileBtn = document.getElementById('attach-file-btn');
-  const chatFileInput = document.getElementById('chat-file-input');
-  const clearChatBtn = document.getElementById('clear-chat-btn');
-  const dropOverlay = document.getElementById('drop-overlay');
-  const eventLog = document.getElementById('event-log');
-  const eventsCountBadge = document.getElementById('events-count-badge');
+  // Referencias DOM Principales
+  const appContainer = document.getElementById('app-container');
+  const authScreen = document.getElementById('auth-screen');
+  const authForm = document.getElementById('auth-form');
+  const tabLogin = document.getElementById('tab-login');
+  const tabRegister = document.getElementById('tab-register');
+  const authUsername = document.getElementById('auth-username');
+  const authPassword = document.getElementById('auth-password');
+  const authDisplayName = document.getElementById('auth-display-name');
+  const displayNameGroup = document.getElementById('display-name-group');
+  const authErrorMsg = document.getElementById('auth-error-msg');
+  const authSubmitBtn = document.getElementById('auth-submit-btn');
+
+  const userSyncIdBadge = document.getElementById('user-sync-id-badge');
+  const userDisplayNameBadge = document.getElementById('user-display-name-badge');
+  const logoutBtn = document.getElementById('logout-btn');
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+
+  const contactsList = document.getElementById('contacts-list');
+  const contactsCountBadge = document.getElementById('contacts-count-badge');
+  const openAddContactBtn = document.getElementById('open-add-contact-btn');
+  const addContactModal = document.getElementById('add-contact-modal');
+  const contactSyncIdInput = document.getElementById('contact-sync-id-input');
+  const addContactError = document.getElementById('add-contact-error');
+  const submitAddContactBtn = document.getElementById('submit-add-contact-btn');
+  const closeAddModalBtn = document.getElementById('close-add-modal-btn');
+  const cancelAddModalBtn = document.getElementById('cancel-add-modal-btn');
+
+  const activeChatAvatar = document.getElementById('active-chat-avatar');
+  const activeChatName = document.getElementById('active-chat-name');
+  const activeChatId = document.getElementById('active-chat-id');
+  const activeChatStatus = document.getElementById('active-chat-status');
+  const typingIndicator = document.getElementById('typing-indicator');
+
+  const chatMessages = document.getElementById('chat-messages');
+  const chatWelcome = document.getElementById('chat-welcome');
+  const chatTextarea = document.getElementById('chat-textarea');
+  const sendBtn = document.getElementById('send-btn');
+  const attachBtn = document.getElementById('attach-btn');
+  const fileInput = document.getElementById('file-input');
+
+  const toggleEmojiBtn = document.getElementById('toggle-emoji-btn');
+  const emojiPicker = document.getElementById('emoji-picker');
+  const closeEmojiBtn = document.getElementById('close-emoji-btn');
+
+  const voiceRecordBtn = document.getElementById('voice-record-btn');
+  const recordingBar = document.getElementById('recording-bar');
+  const normalInputBar = document.getElementById('normal-input-bar');
+  const recordingTimer = document.getElementById('recording-timer');
+  const cancelRecordingBtn = document.getElementById('cancel-recording-btn');
+  const sendRecordingBtn = document.getElementById('send-recording-btn');
+
+  const editProfileModal = document.getElementById('edit-profile-modal');
+  const profileNameInput = document.getElementById('profile-name-input');
+  const closeProfileModalBtn = document.getElementById('close-profile-modal-btn');
+  const cancelProfileModalBtn = document.getElementById('cancel-profile-modal-btn');
+  const saveProfileBtn = document.getElementById('save-profile-btn');
+
   const imageModal = document.getElementById('image-modal');
   const modalImg = document.getElementById('modal-img');
   const modalDownloadBtn = document.getElementById('modal-download-btn');
-  const closeModalBtn = document.getElementById('close-modal-btn');
-  const toastContainer = document.getElementById('toast-container');
+  const closeImageModalBtn = document.getElementById('close-image-modal-btn');
+  const popupNotifications = document.getElementById('popup-notifications');
 
-  // Referencias Media Widget
-  const mediaEqBars = document.getElementById('media-eq-bars');
-  const mediaNowTitle = document.getElementById('media-now-title');
-  const mediaNowArtist = document.getElementById('media-now-artist');
-  const mediaBadge = document.getElementById('media-badge');
-  const mediaPrevBtn = document.getElementById('media-prev-btn');
-  const mediaPlayBtn = document.getElementById('media-play-btn');
-  const mediaPlayIcon = document.getElementById('media-play-icon');
-  const mediaNextBtn = document.getElementById('media-next-btn');
-  const mediaMuteBtn = document.getElementById('media-mute-btn');
-  const mediaMuteIcon = document.getElementById('media-mute-icon');
-  const presPrevBtn = document.getElementById('pres-prev-btn');
-  const presNextBtn = document.getElementById('pres-next-btn');
-  const activateMediaSessionBtn = document.getElementById('activate-mediasession-btn');
+  let isRegisterMode = false;
 
-  // GESTIÓN DE NOMBRE PERSONALIZADO DE DISPOSITIVO
-  function getDefaultDeviceName() {
-    const ua = navigator.userAgent;
-    if (/Android/i.test(ua)) return '📱 Móvil Android';
-    if (/iPhone|iPad/i.test(ua)) return '📱 iPhone de Jose';
-    if (/Mac/i.test(ua)) return '💻 MacBook Pro';
-    if (/Windows/i.test(ua)) return '💻 Laptop de Jose';
-    return '💻 Mi Equipo';
-  }
-
-  function getCustomDeviceName() {
-    const saved = localStorage.getItem(STORAGE_KEY_DEVICE);
-    return saved && saved.trim() ? saved.trim() : getDefaultDeviceName();
-  }
-
-  function updateDeviceUI() {
-    const name = getCustomDeviceName();
-    headerDeviceName.textContent = name;
-    if (name.includes('📱')) {
-      headerDeviceIcon.textContent = '📱';
-    } else if (name.includes('🖥️')) {
-      headerDeviceIcon.textContent = '🖥️';
-    } else {
-      headerDeviceIcon.textContent = '💻';
+  // GESTIÓN DE NOTIFICACIONES WEB & POP-UP FLOTANTE
+  function initWebNotifications() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
     }
   }
 
-  updateDeviceUI();
+  function triggerPopupNotification(title, message, icon = '💬') {
+    // 1. Notificación Nativa del Sistema (si la pestaña está oculta o en segundo plano)
+    if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          body: message,
+          icon: '/assets/logo.png',
+          badge: '/assets/logo.png'
+        });
+      } catch (e) {}
+    }
 
-  // Modales de Dispositivo
-  openDeviceModalBtn.addEventListener('click', () => {
-    deviceNameInput.value = getCustomDeviceName();
-    deviceModal.classList.remove('hidden');
-    deviceNameInput.focus();
+    // 2. Alerta Pop-up Flotante In-App en esquina superior derecha
+    const popup = document.createElement('div');
+    popup.className = 'log-enter pointer-events-auto flex items-start gap-3 p-3.5 rounded-2xl bg-[#1E202A] border border-[#FF5500]/60 shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300';
+    popup.innerHTML = `
+      <div class="w-8 h-8 rounded-xl bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-sm flex-shrink-0">
+        ${icon}
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-white truncate">${escapeHtml(title)}</p>
+        <p class="text-[11px] text-[#A0A5B1] truncate mt-0.5">${escapeHtml(message)}</p>
+      </div>
+    `;
+    popupNotifications.appendChild(popup);
+    setTimeout(() => {
+      popup.style.opacity = '0';
+      popup.style.transform = 'translateY(-10px)';
+      setTimeout(() => popup.remove(), 300);
+    }, 3800);
+  }
+
+  // PESTAÑAS LOGIN / REGISTRO
+  tabLogin.addEventListener('click', () => {
+    isRegisterMode = false;
+    tabLogin.classList.add('bg-[#FF5500]', 'text-black');
+    tabLogin.classList.remove('text-[#A0A5B1]');
+    tabRegister.classList.remove('bg-[#FF5500]', 'text-black');
+    tabRegister.classList.add('text-[#A0A5B1]');
+    displayNameGroup.classList.add('hidden');
+    authSubmitBtn.textContent = 'Ingresar al Chat';
+    authErrorMsg.classList.add('hidden');
   });
 
-  closeDeviceModalBtn.addEventListener('click', () => deviceModal.classList.add('hidden'));
-  cancelDeviceModalBtn.addEventListener('click', () => deviceModal.classList.add('hidden'));
+  tabRegister.addEventListener('click', () => {
+    isRegisterMode = true;
+    tabRegister.classList.add('bg-[#FF5500]', 'text-black');
+    tabRegister.classList.remove('text-[#A0A5B1]');
+    tabLogin.classList.remove('bg-[#FF5500]', 'text-black');
+    tabLogin.classList.add('text-[#A0A5B1]');
+    displayNameGroup.classList.remove('hidden');
+    authSubmitBtn.textContent = 'Crear Cuenta y Conectar';
+    authErrorMsg.classList.add('hidden');
+  });
 
-  saveDeviceModalBtn.addEventListener('click', () => {
-    const val = deviceNameInput.value.trim();
-    if (val) {
-      localStorage.setItem(STORAGE_KEY_DEVICE, val);
-      updateDeviceUI();
-      deviceModal.classList.add('hidden');
-      showToast('Nombre guardado: ' + val);
-      logEvent('Nombre de dispositivo actualizado a "' + val + '".', 'success');
-      setupMediaSession();
+  // SUBMIT AUTH FORM
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authErrorMsg.classList.add('hidden');
+    const username = authUsername.value.trim();
+    const password = authPassword.value;
+    const displayName = authDisplayName.value.trim();
+
+    const endpoint = isRegisterMode ? '/api/auth/register' : '/api/auth/login';
+    const payload = isRegisterMode ? { username, password, displayName } : { username, password };
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Error al autenticar');
+      }
+
+      currentToken = data.token;
+      currentUser = data.user;
+      localStorage.setItem(TOKEN_KEY, currentToken);
+      showApp();
+    } catch (err) {
+      authErrorMsg.textContent = err.message;
+      authErrorMsg.classList.remove('hidden');
     }
   });
 
-  presetButtons.forEach((btn) => {
+  // VERIFICACIÓN INICIAL DE SESIÓN
+  async function checkExistingAuth() {
+    if (!currentToken) {
+      showAuth();
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      const data = await res.json();
+      if (res.ok && data.ok && data.user) {
+        currentUser = data.user;
+        showApp();
+      } else {
+        showAuth();
+      }
+    } catch (err) {
+      showAuth();
+    }
+  }
+
+  function showAuth() {
+    authScreen.classList.remove('hidden');
+    appContainer.classList.add('hidden');
+    if (socket) socket.disconnect();
+  }
+
+  function showApp() {
+    authScreen.classList.add('hidden');
+    appContainer.classList.remove('hidden');
+    initWebNotifications();
+
+    // Actualizar Encabezado: [ID] - [Nombre]
+    userSyncIdBadge.textContent = currentUser.syncId;
+    userDisplayNameBadge.textContent = currentUser.cleanDisplayName;
+
+    initSocket();
+    loadContacts();
+  }
+
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem(TOKEN_KEY);
+    currentToken = null;
+    currentUser = null;
+    showAuth();
+  });
+
+  // EDICIÓN DE PERFIL (NOMBRE PERSONALIZADO)
+  editProfileBtn.addEventListener('click', () => {
+    profileNameInput.value = currentUser ? currentUser.cleanDisplayName : '';
+    editProfileModal.classList.remove('hidden');
+  });
+
+  closeProfileModalBtn.addEventListener('click', () => editProfileModal.classList.add('hidden'));
+  cancelProfileModalBtn.addEventListener('click', () => editProfileModal.classList.add('hidden'));
+
+  saveProfileBtn.addEventListener('click', async () => {
+    const newName = profileNameInput.value.trim();
+    if (!newName) return;
+
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + currentToken
+        },
+        body: JSON.stringify({ displayName: newName })
+      });
+      const data = await res.json();
+      if (data.ok && data.user) {
+        currentUser = data.user;
+        userDisplayNameBadge.textContent = currentUser.cleanDisplayName;
+        editProfileModal.classList.add('hidden');
+        triggerPopupNotification('Perfil Actualizado', currentUser.formattedName, '👤');
+        loadContacts();
+      }
+    } catch (err) {
+      alert('Error al guardar nombre de equipo: ' + err.message);
+    }
+  });
+
+  // CARGA DE CONTACTOS
+  async function loadContacts() {
+    try {
+      const res = await fetch('/api/contacts', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.contacts)) {
+        renderContacts(data.contacts);
+      }
+    } catch (err) {
+      console.warn('Error al cargar contactos:', err);
+    }
+  }
+
+  function renderContacts(contacts) {
+    contactsMap.clear();
+    contactsList.innerHTML = '';
+    contactsCountBadge.textContent = contacts.length;
+
+    contacts.forEach((c) => {
+      contactsMap.set(c.syncId, c);
+
+      const item = document.createElement('div');
+      const isActive = (c.syncId === activeContactSyncId);
+      item.className = `p-3 rounded-xl cursor-pointer flex items-center gap-3 transition-all ${
+        isActive ? 'bg-[#252834] border border-[#FF5500]/50' : 'hover:bg-[#161820]'
+      }`;
+
+      const avatarIcon = c.isSelf ? '📝' : (c.syncId.includes('📱') ? '📱' : '👤');
+      const onlineClass = c.isOnline ? 'bg-[#10B981]' : 'bg-gray-600';
+      const displayName = c.isSelf ? 'Mensajes Guardados (Tú)' : c.formattedName;
+      const lastSnippet = c.lastMessage ? c.lastMessage.text : 'Toca para chatear';
+
+      item.innerHTML = `
+        <div class="relative flex-shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-[#161820] border border-[#2D313D] flex items-center justify-center font-bold text-sm text-[#FF5500]">
+            ${avatarIcon}
+          </div>
+          <span class="w-2.5 h-2.5 rounded-full ${onlineClass} absolute -bottom-0.5 -right-0.5 border-2 border-[#1E202A]"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-1">
+            <p class="font-bold text-xs text-white truncate">${escapeHtml(displayName)}</p>
+            <span class="text-[10px] text-[#A0A5B1] font-mono flex-shrink-0">${c.syncId}</span>
+          </div>
+          <p class="text-[11px] text-[#A0A5B1] truncate mt-0.5">${escapeHtml(lastSnippet)}</p>
+        </div>
+      `;
+
+      item.addEventListener('click', () => selectContact(c.syncId));
+      contactsList.appendChild(item);
+    });
+
+    // Auto-seleccionar primer contacto si ninguno seleccionado
+    if (!activeContactSyncId && contacts.length > 0) {
+      selectContact(contacts[0].syncId);
+    }
+  }
+
+  // SELECCIÓN DE CONTACTO Y CARGA DE HISTORIAL
+  async function selectContact(syncId) {
+    activeContactSyncId = syncId;
+    const contact = contactsMap.get(syncId);
+    if (!contact) return;
+
+    activeChatAvatar.textContent = contact.isSelf ? '📝' : '👤';
+    activeChatName.textContent = contact.isSelf ? 'Mensajes Guardados' : contact.formattedName;
+    activeChatId.textContent = 'ID: ' + contact.syncId;
+    activeChatStatus.innerHTML = contact.isOnline 
+      ? '<span class="text-[#10B981] font-bold">● En línea</span>' 
+      : '<span class="text-[#A0A5B1]">· Desconectado</span>';
+
+    chatWelcome.classList.add('hidden');
+    chatMessages.innerHTML = '';
+
+    // Cargar historial persistente desde DB
+    try {
+      const res = await fetch('/api/messages/' + syncId, {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.messages)) {
+        data.messages.forEach((msg) => {
+          renderMessageBubble(msg);
+        });
+      }
+    } catch (e) {
+      console.warn('Error al cargar historial:', e);
+    }
+
+    // Re-render lista para destacar contacto activo
+    loadContacts();
+    chatTextarea.focus();
+  }
+
+  // AGREGAR CONTACTO POR ID
+  openAddContactBtn.addEventListener('click', () => {
+    contactSyncIdInput.value = '';
+    addContactError.classList.add('hidden');
+    addContactModal.classList.remove('hidden');
+    contactSyncIdInput.focus();
+  });
+
+  closeAddModalBtn.addEventListener('click', () => addContactModal.classList.add('hidden'));
+  cancelAddModalBtn.addEventListener('click', () => addContactModal.classList.add('hidden'));
+
+  submitAddContactBtn.addEventListener('click', async () => {
+    const rawId = contactSyncIdInput.value.trim().toUpperCase();
+    if (!rawId) return;
+
+    try {
+      const res = await fetch('/api/contacts/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + currentToken
+        },
+        body: JSON.stringify({ contactSyncId: rawId })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || 'Código ID no encontrado');
+      }
+
+      addContactModal.classList.add('hidden');
+      triggerPopupNotification('Contacto Agregado', data.target.formattedName, '👤');
+      await loadContacts();
+      selectContact(data.target.syncId);
+    } catch (err) {
+      addContactError.textContent = err.message;
+      addContactError.classList.remove('hidden');
+    }
+  });
+
+  // SOCKET.IO & TIEMPO REAL
+  function initSocket() {
+    if (socket) socket.disconnect();
+
+    socket = io(SERVER_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true
+    });
+
+    socket.on('connect', () => {
+      socket.emit('authenticate', { token: currentToken });
+    });
+
+    socket.on('authenticated', () => {
+      loadContacts();
+    });
+
+    socket.on('contact-status-changed', (data) => {
+      const c = contactsMap.get(data.syncId);
+      if (c) {
+        c.isOnline = data.isOnline;
+        if (data.syncId === activeContactSyncId) {
+          activeChatStatus.innerHTML = c.isOnline 
+            ? '<span class="text-[#10B981] font-bold">● En línea</span>' 
+            : '<span class="text-[#A0A5B1]">· Desconectado</span>';
+        }
+        loadContacts();
+      }
+    });
+
+    // Recepción de Mensaje Privado (Texto, Audio o Archivo)
+    socket.on('receive-private-message', (msg) => {
+      const fromId = msg.fromId;
+      const isCurrentConversation = (fromId === activeContactSyncId || (fromId === currentUser.syncId && msg.toId === activeContactSyncId));
+
+      if (isCurrentConversation) {
+        renderMessageBubble(msg);
+      }
+
+      // Pop-up Notificación si no es nuestro propio mensaje
+      if (fromId !== currentUser.syncId) {
+        const preview = msg.type === 'audio' ? '🎤 Nota de voz recibida' : (msg.type === 'file' ? '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo') : msg.text);
+        triggerPopupNotification(msg.fromName || fromId, preview, msg.type === 'audio' ? '🎤' : '💬');
+      }
+
+      loadContacts();
+    });
+
+    socket.on('user-typing', (data) => {
+      if (data.fromSyncId === activeContactSyncId) {
+        if (data.isTyping) {
+          typingIndicator.classList.remove('hidden');
+        } else {
+          typingIndicator.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  // RENDERIZADO DE BURBUJAS DE MENSAJE
+  function renderMessageBubble(msg) {
+    if (chatWelcome) chatWelcome.classList.add('hidden');
+
+    const isLocal = (msg.fromId === currentUser.syncId);
+    const wrapper = document.createElement('div');
+    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[90%] sm:max-w-[75%] log-enter`;
+
+    const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
+    const senderHeader = isLocal ? `${currentUser.formattedName} (Tú)` : (msg.fromName || msg.fromId);
+
+    // Encabezado con Nombre y Hora
+    const headerEl = document.createElement('div');
+    headerEl.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
+    headerEl.innerHTML = `
+      <span class="font-bold">${escapeHtml(senderHeader)}</span>
+      <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(timeStr)}</span>
+      ${isLocal ? '<span class="text-[10px] text-[#FF5500] font-bold">✓✓</span>' : ''}
+    `;
+
+    // Tarjeta Flotante
+    const bubble = document.createElement('div');
+    bubble.className = `relative rounded-[16px] p-3.5 sm:p-4 text-sm shadow-panel-depth transition-all ${
+      isLocal 
+        ? 'bg-[#252834] border border-[#FF5500]/40 text-white' 
+        : 'bg-[#1E202A] border border-[#2D313D] text-white'
+    }`;
+
+    // TIPO 1: NOTA DE VOZ (AUDIO)
+    if (msg.type === 'audio' && msg.audioData) {
+      const audioCard = document.createElement('div');
+      audioCard.className = 'flex items-center gap-3 min-w-[220px] sm:min-w-[280px]';
+
+      const audio = new Audio(msg.audioData);
+      const playBtn = document.createElement('button');
+      playBtn.type = 'button';
+      playBtn.className = 'w-10 h-10 rounded-xl bg-[#FF5500] text-black font-extrabold flex items-center justify-center flex-shrink-0 shadow-glow-orange cursor-pointer';
+      playBtn.innerHTML = '▶';
+
+      const trackInfo = document.createElement('div');
+      trackInfo.className = 'flex-1 min-w-0';
+      trackInfo.innerHTML = `
+        <div class="flex items-center justify-between text-xs font-semibold mb-1">
+          <span>🎤 Nota de voz</span>
+          <span class="time-lbl font-mono text-[#A0A5B1]">0:00</span>
+        </div>
+        <div class="w-full bg-[#121316] rounded-full h-1.5 overflow-hidden border border-[#2D313D]">
+          <div class="progress-bar bg-[#FF5500] h-full rounded-full w-0 transition-all"></div>
+        </div>
+      `;
+
+      playBtn.addEventListener('click', () => {
+        if (audio.paused) {
+          audio.play();
+          playBtn.innerHTML = '⏸';
+        } else {
+          audio.pause();
+          playBtn.innerHTML = '▶';
+        }
+      });
+
+      audio.ontimeupdate = () => {
+        const pct = (audio.currentTime / (audio.duration || 1)) * 100;
+        trackInfo.querySelector('.progress-bar').style.width = pct + '%';
+        const mins = Math.floor(audio.currentTime / 60);
+        const secs = String(Math.floor(audio.currentTime % 60)).padStart(2, '0');
+        trackInfo.querySelector('.time-lbl').textContent = mins + ':' + secs;
+      };
+
+      audio.onended = () => {
+        playBtn.innerHTML = '▶';
+        trackInfo.querySelector('.progress-bar').style.width = '0%';
+      };
+
+      audioCard.appendChild(playBtn);
+      audioCard.appendChild(trackInfo);
+      bubble.appendChild(audioCard);
+    }
+    // TIPO 2: ARCHIVO O IMAGEN
+    else if (msg.type === 'file' && msg.fileData) {
+      const f = msg.fileData;
+      const isImg = (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|gif|webp|svg)$/i.test(f.name);
+
+      if (isImg && f.data) {
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'mb-2.5 rounded-xl overflow-hidden bg-[#121316] border border-[#2D313D] max-h-60 flex items-center justify-center cursor-pointer group relative';
+        imgWrap.innerHTML = `
+          <img src="${f.data}" alt="${escapeHtml(f.name)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.02] transition-transform">
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold backdrop-blur-[2px]">
+            🔍 Ver imagen
+          </div>
+        `;
+        imgWrap.addEventListener('click', () => openImageModal(f.data, f.name));
+        bubble.appendChild(imgWrap);
+      }
+
+      const fileCard = document.createElement('div');
+      fileCard.className = 'flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#121316] border border-[#2D313D]';
+      fileCard.innerHTML = `
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="p-2 rounded-lg bg-[#FF5500]/15 text-[#FF5500]">📎</span>
+          <div class="min-w-0">
+            <p class="font-bold text-xs text-white truncate">${escapeHtml(f.name)}</p>
+            <p class="text-[10px] text-[#A0A5B1] font-mono">${formatSize(f.size)}</p>
+          </div>
+        </div>
+        <a href="${f.data || '#'}" download="${escapeHtml(f.name)}"
+          class="px-3 py-1.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange cursor-pointer">
+          ⬇ Descargar
+        </a>
+      `;
+      bubble.appendChild(fileCard);
+    }
+    // TIPO 3: TEXTO REGULAR
+    else {
+      const textEl = document.createElement('div');
+      textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words';
+      textEl.textContent = msg.text || '';
+
+      const footerBar = document.createElement('div');
+      footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-2 border-t border-[#2D313D]';
+
+      const copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+        isLocal
+          ? 'bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30'
+          : 'bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D]'
+      }`;
+      copyBtn.innerHTML = `<span>📋 Copiar al portapapeles</span>`;
+      copyBtn.addEventListener('click', () => copyToClipboard(msg.text, copyBtn));
+
+      footerBar.appendChild(copyBtn);
+      bubble.appendChild(textEl);
+      bubble.appendChild(footerBar);
+    }
+
+    wrapper.appendChild(headerEl);
+    wrapper.appendChild(bubble);
+    chatMessages.appendChild(wrapper);
+
+    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+  }
+
+  function copyToClipboard(text, btn) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<span>✓ ¡Copiado!</span>';
+      setTimeout(() => btn.innerHTML = orig, 2000);
+      triggerPopupNotification('Portapapeles', 'Texto copiado con éxito', '📋');
+    }).catch(() => {
+      triggerPopupNotification('Error', 'No se pudo acceder al portapapeles', '⚠️');
+    });
+  }
+
+  // ENVÍO DE MENSAJE DE TEXTO
+  function handleSendMessage() {
+    const text = chatTextarea.value.trim();
+    if (!text || !activeContactSyncId) return;
+
+    socket.emit('send-private-message', {
+      toSyncId: activeContactSyncId,
+      text: text,
+      type: 'text'
+    });
+
+    chatTextarea.value = '';
+    chatTextarea.style.height = 'auto';
+    chatTextarea.focus();
+  }
+
+  sendBtn.addEventListener('click', handleSendMessage);
+
+  chatTextarea.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  });
+
+  chatTextarea.addEventListener('input', () => {
+    chatTextarea.style.height = 'auto';
+    chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 140) + 'px';
+
+    if (activeContactSyncId && socket) {
+      socket.emit('typing', { toSyncId: activeContactSyncId, isTyping: chatTextarea.value.length > 0 });
+    }
+  });
+
+  // EMOTICONES DESPLEGABLE
+  toggleEmojiBtn.addEventListener('click', () => {
+    emojiPicker.classList.toggle('hidden');
+  });
+
+  closeEmojiBtn.addEventListener('click', () => emojiPicker.classList.add('hidden'));
+
+  document.querySelectorAll('.emoji-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      deviceNameInput.value = btn.dataset.name;
+      const emoji = btn.textContent;
+      const start = chatTextarea.selectionStart;
+      const end = chatTextarea.selectionEnd;
+      const val = chatTextarea.value;
+      chatTextarea.value = val.substring(0, start) + emoji + val.substring(end);
+      chatTextarea.selectionStart = chatTextarea.selectionEnd = start + emoji.length;
+      chatTextarea.focus();
+      emojiPicker.classList.add('hidden');
     });
   });
 
-  function timestamp() {
-    return new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  // GRABADOR DE NOTAS DE VOZ (MediaRecorder API)
+  voiceRecordBtn.addEventListener('click', async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Tu navegador no soporta grabación de audio');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        clearInterval(recordTimerInterval);
+      };
+
+      mediaRecorder.start();
+      recordSeconds = 0;
+      recordingTimer.textContent = '0:00';
+      recordTimerInterval = setInterval(() => {
+        recordSeconds++;
+        const mins = Math.floor(recordSeconds / 60);
+        const secs = String(recordSeconds % 60).padStart(2, '0');
+        recordingTimer.textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      normalInputBar.classList.add('hidden');
+      recordingBar.classList.remove('hidden');
+      recordingBar.classList.add('flex');
+    } catch (err) {
+      alert('Permiso de micrófono denegado: ' + err.message);
+    }
+  });
+
+  cancelRecordingBtn.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    audioChunks = [];
+    recordingBar.classList.add('hidden');
+    recordingBar.classList.remove('flex');
+    normalInputBar.classList.remove('hidden');
+  });
+
+  sendRecordingBtn.addEventListener('click', () => {
+    if (!mediaRecorder || !activeContactSyncId) return;
+
+    mediaRecorder.onstop = () => {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onload = () => {
+        socket.emit('send-private-message', {
+          toSyncId: activeContactSyncId,
+          type: 'audio',
+          audioData: reader.result
+        });
+        triggerPopupNotification('Nota de Voz', 'Grabación enviada exitosamente', '🎤');
+      };
+      reader.readAsDataURL(audioBlob);
+
+      recordingBar.classList.add('hidden');
+      recordingBar.classList.remove('flex');
+      normalInputBar.classList.remove('hidden');
+    };
+
+    mediaRecorder.stop();
+  });
+
+  // ADJUNTAR ARCHIVOS
+  attachBtn.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file || !activeContactSyncId) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      socket.emit('send-private-message', {
+        toSyncId: activeContactSyncId,
+        type: 'file',
+        fileData: {
+          name: file.name,
+          size: file.size,
+          type: file.type || 'application/octet-stream',
+          data: reader.result
+        }
+      });
+      triggerPopupNotification('Archivo Enviado', file.name, '📎');
+      fileInput.value = '';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // MODAL IMAGEN
+  function openImageModal(src, name) {
+    modalImg.src = src;
+    modalDownloadBtn.href = src;
+    modalDownloadBtn.download = name || 'imagen';
+    imageModal.classList.remove('hidden');
   }
 
+  closeImageModalBtn.addEventListener('click', () => imageModal.classList.add('hidden'));
+
   function formatSize(bytes) {
-    if (bytes === undefined || bytes === null || isNaN(bytes)) return '—';
+    if (!bytes) return '0 B';
     const units = ['B', 'KB', 'MB', 'GB'];
     let i = 0;
-    let value = Number(bytes);
-    while (value >= 1024 && i < units.length - 1) { value /= 1024; i++; }
-    return value.toFixed(value < 10 && i > 0 ? 1 : 0) + ' ' + units[i];
+    let v = Number(bytes);
+    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+    return v.toFixed(1) + ' ' + units[i];
   }
 
   function escapeHtml(str) {
@@ -569,722 +1198,15 @@
       .replace(/'/g, '&#039;');
   }
 
-  // Notificaciones Toast Flotantes
-  function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    const borderColor = type === 'error' ? 'border-red-500/80 text-red-300' : 'border-[#FF5500]/60 text-white';
-    toast.className = `log-enter pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1E202A] border ${borderColor} shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300`;
-    toast.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#FF5500]"></span><span>${escapeHtml(message)}</span>`;
-    toastContainer.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(10px)';
-      setTimeout(() => toast.remove(), 300);
-    }, 2800);
-  }
-
-  function logEvent(message, tone) {
-    totalEventsCount++;
-    eventsCountBadge.textContent = totalEventsCount + (totalEventsCount === 1 ? ' evento' : ' eventos');
-    const toneColor = tone === 'error' ? 'border-red-500' : tone === 'success' ? 'border-[#FF5500]' : 'border-[#2D313D]';
-    const entry = document.createElement('div');
-    entry.className = 'log-enter text-xs text-[#A0A5B1] border-l-2 ' + toneColor + ' pl-2.5 py-0.5 truncate';
-    const ts = document.createElement('span');
-    ts.className = 'text-[#FF5500] font-mono text-[10px] mr-1.5';
-    ts.textContent = timestamp();
-    entry.appendChild(ts);
-    entry.appendChild(document.createTextNode(message));
-    eventLog.prepend(entry);
-    while (eventLog.children.length > 50) eventLog.removeChild(eventLog.lastChild);
-  }
-
-  // Copia al Portapapeles
-  async function copyToClipboard(text, buttonEl) {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
-      if (buttonEl) {
-        const label = buttonEl.querySelector('.copy-label') || buttonEl;
-        const origText = label.textContent;
-        label.textContent = '✓ ¡Copiado!';
-        buttonEl.classList.add('bg-[#FF5500]', 'text-black', 'border-[#FF5500]');
-        buttonEl.classList.remove('text-[#FF5500]', 'text-[#A0A5B1]');
-        showToast('Texto copiado al portapapeles');
-        setTimeout(() => {
-          label.textContent = origText;
-          buttonEl.classList.remove('bg-[#FF5500]', 'text-black', 'border-[#FF5500]');
-        }, 2000);
-      }
-    } catch (err) {
-      showToast('No se pudo copiar: permiso denegado', 'error');
-    }
-  }
-
-  // Creación de Burbujas de Texto (14px border-radius)
-  function createTextBubble({ id, isLocal, senderDevice, time, text }) {
-    const wrapper = document.createElement('div');
-    wrapper.id = id;
-    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
-
-    const header = document.createElement('div');
-    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
-    header.innerHTML = `
-      <span class="font-bold">${escapeHtml(senderDevice)}</span>
-      <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(time)}</span>
-      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Transmitido">✓✓</span>' : ''}
-    `;
-
-    const bubble = document.createElement('div');
-    bubble.className = `relative rounded-[14px] p-3.5 sm:p-4 text-sm shadow-panel-depth transition-all ${
-      isLocal 
-        ? 'bg-[#252834] border border-[#FF5500]/40 text-white' 
-        : 'bg-[#161820] border border-[#2D313D] text-white'
-    }`;
-
-    const textEl = document.createElement('div');
-    textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words';
-    textEl.textContent = text;
-
-    const footerBar = document.createElement('div');
-    footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-2 border-t border-[#2D313D]';
-
-    const copyBtn = document.createElement('button');
-    copyBtn.type = 'button';
-    copyBtn.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-      isLocal
-        ? 'bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30'
-        : 'bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D]'
-    }`;
-    copyBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-      </svg>
-      <span class="copy-label">Copiar al portapapeles</span>
-    `;
-    copyBtn.addEventListener('click', () => copyToClipboard(text, copyBtn));
-
-    const lengthHint = document.createElement('span');
-    lengthHint.className = 'text-[10px] text-[#A0A5B1] font-mono';
-    lengthHint.textContent = text.length + ' car.';
-
-    footerBar.appendChild(copyBtn);
-    footerBar.appendChild(lengthHint);
-
-    bubble.appendChild(textEl);
-    bubble.appendChild(footerBar);
-    wrapper.appendChild(header);
-    wrapper.appendChild(bubble);
-
-    return wrapper;
-  }
-
-  // Creación de Burbujas de Archivo / Imagen
-  function createFileBubble({ id, isLocal, senderDevice, time, fileData }) {
-    const wrapper = document.createElement('div');
-    wrapper.id = id;
-    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
-
-    const header = document.createElement('div');
-    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
-    header.innerHTML = `
-      <span class="font-bold">${escapeHtml(senderDevice)}</span>
-      <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(time)}</span>
-      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Transmitido">✓✓</span>' : ''}
-    `;
-
-    const bubble = document.createElement('div');
-    bubble.className = `relative rounded-[14px] p-3.5 sm:p-4 text-sm shadow-panel-depth w-full max-w-sm sm:max-w-md ${
-      isLocal 
-        ? 'bg-[#252834] border border-[#FF5500]/40 text-white' 
-        : 'bg-[#161820] border border-[#2D313D] text-white'
-    }`;
-
-    const fileName = fileData && fileData.name ? fileData.name : 'archivo';
-    const fileSize = formatSize(fileData ? fileData.size : 0);
-    const fileType = fileData && fileData.type ? fileData.type : '';
-    const fileHref = (fileData && typeof fileData.data === 'string') ? fileData.data : '';
-    const isImage = fileType.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(fileName);
-
-    if (isImage && fileHref) {
-      const imgWrap = document.createElement('div');
-      imgWrap.className = 'mb-3 rounded-xl overflow-hidden bg-[#121316] border border-[#2D313D] max-h-60 flex items-center justify-center cursor-pointer group relative';
-      imgWrap.innerHTML = `
-        <img src="${fileHref}" alt="${escapeHtml(fileName)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.02] transition-transform duration-300">
-        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold backdrop-blur-[2px]">
-          🔍 Ampliar imagen
-        </div>
-      `;
-      imgWrap.addEventListener('click', () => openImageModal(fileHref, fileName));
-      bubble.appendChild(imgWrap);
-    }
-
-    const card = document.createElement('div');
-    card.className = 'flex items-center justify-between gap-3 p-3 rounded-xl bg-[#121316] border border-[#2D313D]';
-
-    const left = document.createElement('div');
-    left.className = 'flex items-center gap-2.5 min-w-0';
-
-    const iconWrap = document.createElement('div');
-    iconWrap.className = 'p-2 rounded-lg bg-[#FF5500]/15 text-[#FF5500] flex-shrink-0';
-    iconWrap.innerHTML = isImage
-      ? `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`
-      : `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
-
-    const info = document.createElement('div');
-    info.className = 'min-w-0';
-    info.innerHTML = `
-      <p class="font-bold text-xs sm:text-sm text-white truncate" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</p>
-      <p class="text-[10px] text-[#A0A5B1] font-mono mt-0.5">${escapeHtml(fileSize)}</p>
-    `;
-
-    left.appendChild(iconWrap);
-    left.appendChild(info);
-
-    const downloadLink = document.createElement('a');
-    downloadLink.className = `flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-      fileHref 
-        ? 'bg-[#FF5500] hover:bg-[#FF6B1A] text-black shadow-glow-orange-subtle cursor-pointer' 
-        : 'bg-[#252834] text-[#A0A5B1] opacity-40 pointer-events-none'
-    }`;
-    
-    if (fileHref) {
-      downloadLink.href = fileHref;
-      downloadLink.download = fileName;
-      downloadLink.textContent = '⬇ Descargar';
-    } else {
-      downloadLink.href = '#';
-      downloadLink.textContent = 'Sin datos';
-    }
-
-    card.appendChild(left);
-    card.appendChild(downloadLink);
-    bubble.appendChild(card);
-
-    const transferWrap = document.createElement('div');
-    transferWrap.className = 'mt-2.5 pt-2 border-t border-[#2D313D]';
-    transferWrap.innerHTML = `
-      <div class="w-full bg-[#121316] rounded-full h-1.5 overflow-hidden border border-[#2D313D]">
-        <div class="bg-gradient-to-r from-[#FF5500] to-[#FFA066] h-full rounded-full w-full"></div>
-      </div>
-      <div class="flex items-center justify-between text-[10px] text-[#A0A5B1] mt-1.5">
-        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#FF5500]"></span> Sincronizado</span>
-        <span class="font-mono text-[#A0A5B1]">${escapeHtml(fileSize)}</span>
-      </div>
-    `;
-    bubble.appendChild(transferWrap);
-
-    wrapper.appendChild(header);
-    wrapper.appendChild(bubble);
-
-    return wrapper;
-  }
-
-  function appendChatBubble(el) {
-    if (chatEmpty && !chatEmpty.classList.contains('hidden')) {
-      chatEmpty.classList.add('hidden');
-    }
-    chatFeed.appendChild(el);
-    chatFeed.scrollTo({
-      top: chatFeed.scrollHeight,
-      behavior: 'smooth'
-    });
-
-    while (chatFeed.children.length > 100) {
-      const firstChild = chatFeed.querySelector('.log-enter');
-      if (firstChild) firstChild.remove();
-      else break;
-    }
-  }
-
-  function markBubbleSynced(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const check = el.querySelector('.status-check');
-    if (check) {
-      check.textContent = '✓✓';
-      check.classList.add('text-[#FF5500]');
-    }
-  }
-
-  // Envío de Texto / Portapapeles (Socket.IO 'send-clipboard')
-  function sendTextMessage(text) {
-    if (!text || !text.trim()) return;
-    const cleanText = text.trim();
-    const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-    sentMessageIds.add(msgId);
-
-    const timeStr = timestamp();
-    const myDeviceName = getCustomDeviceName();
-
-    const bubbleEl = createTextBubble({
-      id: msgId,
-      isLocal: true,
-      senderDevice: myDeviceName + ' (Tú)',
-      time: timeStr,
-      text: cleanText
-    });
-    appendChatBubble(bubbleEl);
-
-    socket.emit('send-clipboard', {
-      id: msgId,
-      senderId: socket.id,
-      senderDevice: myDeviceName,
-      text: cleanText,
-      timestamp: Date.now()
-    });
-
-    const preview = cleanText.length > 50 ? cleanText.slice(0, 50) + '…' : cleanText;
-    logEvent('Mensaje transmitido: ' + preview);
-  }
-
-  // Envío de Archivo (Socket.IO 'send-file')
-  function handleOutgoingFile(file) {
-    if (!file) return;
-    if (file.size > MAX_FILE_SIZE) {
-      showToast('El archivo supera el límite de ' + formatSize(MAX_FILE_SIZE), 'error');
-      logEvent('Archivo "' + file.name + '" supera el límite de ' + formatSize(MAX_FILE_SIZE) + '.', 'error');
-      return;
-    }
-
-    const fileMsgId = 'file_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-    sentMessageIds.add(fileMsgId);
-
-    const timeStr = timestamp();
-    const myDeviceName = getCustomDeviceName();
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const payload = {
-        id: fileMsgId,
-        senderId: socket.id,
-        senderDevice: myDeviceName,
-        name: file.name,
-        size: file.size,
-        type: file.type || 'application/octet-stream',
-        data: reader.result
-      };
-
-      const bubbleEl = createFileBubble({
-        id: fileMsgId,
-        isLocal: true,
-        senderDevice: myDeviceName + ' (Tú)',
-        time: timeStr,
-        fileData: payload
-      });
-      appendChatBubble(bubbleEl);
-
-      socket.emit('send-file', payload);
-
-      logEvent('Archivo enviado: ' + file.name + ' (' + formatSize(file.size) + ').', 'success');
-      showToast('Archivo enviado: ' + file.name);
-    };
-
-    reader.onerror = () => {
-      showToast('Error al leer el archivo para envío', 'error');
-      logEvent('No se pudo leer el archivo "' + file.name + '".', 'error');
-    };
-
-    reader.readAsDataURL(file);
-  }
-
-  // Pegar Portapapeles con 1-Clic
-  pasteClipboardBtn.addEventListener('click', async () => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.readText) {
-        const text = await navigator.clipboard.readText();
-        if (text && text.trim()) {
-          sendTextMessage(text.trim());
-          showToast('Portapapeles enviado con 1-clic');
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn('Lectura de portapapeles restringida:', err);
-    }
-    chatInput.focus();
-    showToast('Pega directamente en el campo de texto (Ctrl+V)', 'warn');
-  });
-
-  // Auto-expansión del Campo de Texto
-  chatInput.addEventListener('input', () => {
-    chatInput.style.height = 'auto';
-    chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
-  });
-
-  chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const val = chatInput.value;
-      if (val.trim()) {
-        sendTextMessage(val);
-        chatInput.value = '';
-        chatInput.style.height = 'auto';
-      }
-    }
-  });
-
-  chatSendBtn.addEventListener('click', () => {
-    const val = chatInput.value;
-    if (val.trim()) {
-      sendTextMessage(val);
-      chatInput.value = '';
-      chatInput.style.height = 'auto';
-      chatInput.focus();
-    }
-  });
-
-  attachFileBtn.addEventListener('click', () => chatFileInput.click());
-
-  chatFileInput.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files.length) {
-      handleOutgoingFile(e.target.files[0]);
-      chatFileInput.value = '';
-    }
-  });
-
-  clearChatBtn.addEventListener('click', () => {
-    chatFeed.innerHTML = '';
-    if (chatEmpty) {
-      chatEmpty.classList.remove('hidden');
-      chatFeed.appendChild(chatEmpty);
-    }
-    showToast('Feed de mensajes limpiado');
-  });
-
-  // Drag and Drop
-  ['dragenter', 'dragover'].forEach((evt) => {
-    window.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropOverlay.classList.remove('hidden');
-      dropOverlay.classList.add('flex');
-    });
-  });
-
-  ['dragleave', 'drop'].forEach((evt) => {
-    dropOverlay.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropOverlay.classList.remove('flex');
-      dropOverlay.classList.add('hidden');
-    });
-  });
-
-  dropOverlay.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files && files.length) {
-      handleOutgoingFile(files[0]);
-    }
-  });
-
-  // Modal Imágenes
-  function openImageModal(src, title) {
-    modalImg.src = src;
-    modalDownloadBtn.href = src;
-    modalDownloadBtn.download = title || 'imagen';
-    imageModal.classList.remove('hidden');
-  }
-
-  closeModalBtn.addEventListener('click', () => {
-    imageModal.classList.add('hidden');
-    modalImg.src = '';
-  });
-
-  imageModal.addEventListener('click', (e) => {
-    if (e.target === imageModal) {
-      imageModal.classList.add('hidden');
-      modalImg.src = '';
-    }
-  });
-
-  // WIDGET MULTIMEDIA & MEDIA SESSION API (PANTALLA DE BLOQUEO)
-  function setupMediaSession() {
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'SYNC ENGINE · Control Remoto',
-        artist: 'Barrantes Co.',
-        album: getCustomDeviceName(),
-        artwork: [
-          { src: '/assets/logo.png', sizes: '512x512', type: 'image/png' }
-        ]
-      });
-
-      navigator.mediaSession.setActionHandler('play', () => sendMediaCommand('play'));
-      navigator.mediaSession.setActionHandler('pause', () => sendMediaCommand('pause'));
-      navigator.mediaSession.setActionHandler('previoustrack', () => sendMediaCommand('previoustrack'));
-      navigator.mediaSession.setActionHandler('nexttrack', () => sendMediaCommand('nexttrack'));
-    }
-  }
-
-  function activateMediaSession() {
-    silentAudio.play().then(() => {
-      isMediaPlaying = true;
-      updateMediaWidgetUI();
-      setupMediaSession();
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'playing';
-      }
-      showToast('Control en pantalla de bloqueo y notificaciones activado');
-      logEvent('MediaSession activada en este dispositivo.', 'success');
-    }).catch((err) => {
-      console.warn('Reproducción de audio silencioso bloqueada:', err);
-      showToast('Toca el botón nuevamente para conceder permiso de audio');
-    });
-  }
-
-  activateMediaSessionBtn.addEventListener('click', activateMediaSession);
-
-  function updateMediaWidgetUI() {
-    if (isMediaPlaying) {
-      mediaEqBars.classList.remove('eq-paused');
-      mediaPlayIcon.textContent = '⏸';
-      mediaBadge.textContent = 'EN REPRODUCCIÓN';
-      mediaBadge.classList.remove('text-[#A0A5B1]');
-      mediaBadge.classList.add('text-[#FF5500]', 'border-[#FF5500]/40');
-    } else {
-      mediaEqBars.classList.add('eq-paused');
-      mediaPlayIcon.textContent = '▶';
-      mediaBadge.textContent = 'PAUSADO';
-      mediaBadge.classList.remove('text-[#FF5500]', 'border-[#FF5500]/40');
-      mediaBadge.classList.add('text-[#A0A5B1]');
-    }
-
-    if (isMediaMuted) {
-      mediaMuteIcon.textContent = '🔇';
-      mediaMuteBtn.classList.add('text-[#FF5500]', 'border-[#FF5500]/40');
-    } else {
-      mediaMuteIcon.textContent = '🔊';
-      mediaMuteBtn.classList.remove('text-[#FF5500]', 'border-[#FF5500]/40');
-    }
-  }
-
-  function sendMediaCommand(action) {
-    const myDevice = getCustomDeviceName();
-    socket.emit('send-media-command', {
-      action: action,
-      senderDevice: myDevice,
-      timestamp: Date.now()
-    });
-
-    handleMediaActionLocal(action, myDevice, true);
-  }
-
-  function handleMediaActionLocal(action, sender, isLocal) {
-    logEvent(`Comando multimedia: ${action} (${sender})`, 'success');
-    showToast(`Comando: ${action} · ${sender}`);
-
-    if (action === 'play') {
-      isMediaPlaying = true;
-      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-    } else if (action === 'pause') {
-      isMediaPlaying = false;
-      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-    } else if (action === 'playpause') {
-      isMediaPlaying = !isMediaPlaying;
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = isMediaPlaying ? 'playing' : 'paused';
-      }
-    } else if (action === 'mute') {
-      isMediaMuted = !isMediaMuted;
-    } else if (action === 'presentation-next') {
-      mediaNowTitle.textContent = 'Diapositiva Siguiente ▶';
-      mediaNowArtist.textContent = 'Control de exposición por ' + sender;
-    } else if (action === 'presentation-prev') {
-      mediaNowTitle.textContent = '◀ Diapositiva Anterior';
-      mediaNowArtist.textContent = 'Control de exposición por ' + sender;
-    }
-
-    updateMediaWidgetUI();
-  }
-
-  mediaPlayBtn.addEventListener('click', () => {
-    if (!isMediaPlaying) {
-      activateMediaSession();
-    }
-    sendMediaCommand('playpause');
-  });
-  mediaPrevBtn.addEventListener('click', () => sendMediaCommand('previoustrack'));
-  mediaNextBtn.addEventListener('click', () => sendMediaCommand('nexttrack'));
-  mediaMuteBtn.addEventListener('click', () => sendMediaCommand('mute'));
-
-  presPrevBtn.addEventListener('click', () => sendMediaCommand('presentation-prev'));
-  presNextBtn.addEventListener('click', () => sendMediaCommand('presentation-next'));
-
-  // INSTALACIÓN PWA
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installAppBtn.classList.remove('hidden');
-    installAppBtn.classList.add('inline-flex');
-  });
-
-  installAppBtn.addEventListener('click', () => {
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-
-    if (isIOS && !isStandalone) {
-      iosInstallModal.classList.remove('hidden');
-      return;
-    }
-
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choice) => {
-        if (choice.outcome === 'accepted') {
-          installAppBtn.classList.add('hidden');
-          showToast('¡SYNC ENGINE instalado!');
-        }
-        deferredPrompt = null;
-      });
-    } else {
-      showToast('Usa el menú del navegador para "Instalar aplicación" o "Agregar a pantalla de inicio"');
-    }
-  });
-
-  closeIosModalBtn.addEventListener('click', () => iosInstallModal.classList.add('hidden'));
-
-  // CONEXIÓN SOCKET.IO & EVENTOS
-  const socket = io(SERVER_URL, {
-    transports: ['websocket', 'polling'],
-    reconnection: true,
-    reconnectionDelay: 1500,
-    reconnectionAttempts: Infinity,
-  });
-
-  function setConnectedUI() {
-    statusDot.classList.remove('bg-red-500');
-    statusDot.classList.add('bg-[#FF5500]');
-    statusText.classList.remove('text-red-400');
-    statusText.classList.add('text-[#FF5500]');
-    statusText.textContent = 'En línea';
-    statusBadge.classList.remove('border-red-500/60');
-    statusBadge.classList.add('border-[#FF5500]/60', 'shadow-glow-orange-subtle');
-  }
-
-  function setDisconnectedUI() {
-    statusDot.classList.remove('bg-[#FF5500]');
-    statusDot.classList.add('bg-red-500');
-    statusText.classList.remove('text-[#FF5500]');
-    statusText.classList.add('text-red-400');
-    statusText.textContent = 'Reconectando';
-    statusBadge.classList.remove('border-[#FF5500]/60', 'shadow-glow-orange-subtle');
-    statusBadge.classList.add('border-red-500/60');
-  }
-
-  socket.on('connect', () => {
-    const rtt = Math.round(performance.now() - connectAttemptStart);
-    latencyIndicator.textContent = rtt + ' ms';
-    isConnected = true;
-    setConnectedUI();
-    logEvent('Conectado a SYNC ENGINE (' + SERVER_URL + ')', 'success');
-  });
-
-  socket.on('disconnect', () => {
-    isConnected = false;
-    connectAttemptStart = performance.now();
-    setDisconnectedUI();
-    logEvent('Conexión interrumpida con el servidor. Reconectando...', 'error');
-  });
-
-  socket.on('connect_error', (err) => {
-    isConnected = false;
-    setDisconnectedUI();
-    logEvent('Error de conexión: ' + (err && err.message ? err.message : 'no disponible'), 'error');
-  });
-
-  socket.on('reconnect_attempt', () => {
-    logEvent('Reintentando enlace P2P con el servidor...', 'warn');
-  });
-
-  // Recepción de Portapapeles
-  socket.on('receive-clipboard', (data) => {
-    const text = (data && typeof data === 'object' && typeof data.text === 'string') 
-      ? data.text 
-      : (typeof data === 'string' ? data : '');
-
-    if (!text) return;
-
-    const msgId = (data && data.id) ? data.id : null;
-
-    if (msgId && sentMessageIds.has(msgId)) {
-      markBubbleSynced(msgId);
-      return;
-    }
-
-    const senderDevice = (data && data.senderDevice) ? data.senderDevice : '📱 Dispositivo remoto';
-    const rxId = msgId || ('rx_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
-
-    const bubbleEl = createTextBubble({
-      id: rxId,
-      isLocal: false,
-      senderDevice: senderDevice,
-      time: timestamp(),
-      text: text
-    });
-    appendChatBubble(bubbleEl);
-
-    const preview = text.length > 50 ? text.slice(0, 50) + '…' : text;
-    logEvent('Portapapeles recibido de ' + senderDevice + ': ' + preview);
-    showToast('Nuevo texto de ' + senderDevice);
-  });
-
-  // Recepción de Archivos
-  socket.on('receive-file', (data) => {
-    if (!data) return;
-    const msgId = data.id || null;
-
-    if (msgId && sentMessageIds.has(msgId)) {
-      markBubbleSynced(msgId);
-      return;
-    }
-
-    const name = data.name || 'archivo';
-    const senderDevice = data.senderDevice || '📱 Dispositivo remoto';
-    const rxId = msgId || ('rx_file_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
-
-    const bubbleEl = createFileBubble({
-      id: rxId,
-      isLocal: false,
-      senderDevice: senderDevice,
-      time: timestamp(),
-      fileData: data
-    });
-    appendChatBubble(bubbleEl);
-
-    logEvent('Archivo recibido de ' + senderDevice + ': ' + name + ' (' + formatSize(data.size) + ').', 'success');
-    showToast('Archivo recibido: ' + name);
-  });
-
-  // Recepción de Comandos Multimedia
-  socket.on('receive-media-command', (data) => {
-    if (!data || !data.action) return;
-    const senderDevice = data.senderDevice || '📱 Dispositivo remoto';
-    handleMediaActionLocal(data.action, senderDevice, false);
-  });
-
-  // Registro de Service Worker PWA
+  // PWA REGISTRATION
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').then((reg) => {
-        logEvent('Service Worker PWA registrado (' + reg.scope + ')');
-      }).catch((err) => {
-        console.warn('Registro de Service Worker PWA:', err.message);
-      });
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
   }
 
-  setupMediaSession();
-  logEvent('SYNC ENGINE listo en ' + SERVER_URL);
+  // INICIO
+  checkExistingAuth();
 </script>
 
 </body>
