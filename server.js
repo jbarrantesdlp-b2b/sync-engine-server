@@ -1,12 +1,11 @@
-const https = require("https");
+const http = require("http");
 const os = require("os");
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
-const selfsigned = require("selfsigned");
 const { Server } = require("socket.io");
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 
 function getLocalIPv4Addresses() {
@@ -27,33 +26,6 @@ function getLocalIPv4Addresses() {
   return addresses;
 }
 
-function createSslOptions() {
-  const altNames = [
-    { type: 2, value: "localhost" },
-    { type: 7, ip: "127.0.0.1" }
-  ];
-
-  const localIps = getLocalIPv4Addresses();
-  for (let i = 0; i < localIps.length; i++) {
-    altNames.push({ type: 7, ip: localIps[i].address });
-  }
-
-  const pems = selfsigned.generate(
-    [{ name: "commonName", value: "localhost" }],
-    {
-      days: 365,
-      keySize: 2048,
-      algorithm: "sha256",
-      extensions: [{ name: "subjectAltName", altNames: altNames }]
-    }
-  );
-
-  return {
-    key: pems.private,
-    cert: pems.cert
-  };
-}
-
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
@@ -68,8 +40,7 @@ app.get("/api/status", function (_req, res) {
   });
 });
 
-const sslOptions = createSslOptions();
-const server = https.createServer(sslOptions, app);
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -103,13 +74,13 @@ io.on("connection", function (socket) {
 server.listen(PORT, HOST, function () {
   const localIps = getLocalIPv4Addresses();
   console.log("\n==================================================");
-  console.log("SYNC ENGINE Server Activo en https://" + HOST + ":" + PORT);
+  console.log("SYNC ENGINE Server Activo en http://" + HOST + ":" + PORT);
   console.log("Conecta tus dispositivos usando una de estas direcciones:");
   if (localIps.length === 0) {
     console.log("  (no se encontro una IPv4 de red local)");
   } else {
     for (let i = 0; i < localIps.length; i++) {
-      console.log("  https://" + localIps[i].address + ":" + PORT);
+      console.log("  http://" + localIps[i].address + ":" + PORT);
     }
   }
   console.log("==================================================\n");
