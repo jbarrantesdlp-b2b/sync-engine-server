@@ -216,9 +216,17 @@
             </div>
           </div>
 
-          <!-- Indicador de Escritura en Vivo -->
-          <div id="typing-indicator" class="hidden text-xs text-waTeal font-bold animate-pulse">
-            escribiendo...
+          <div class="flex items-center gap-2">
+            <!-- Indicador de Escritura en Vivo -->
+            <div id="typing-indicator" class="hidden text-xs text-waTeal font-bold animate-pulse">
+              escribiendo...
+            </div>
+
+            <!-- Botón de Llamada de Voz WebRTC -->
+            <button id="start-call-btn" type="button" title="Iniciar llamada de voz WebRTC" aria-label="Iniciar llamada de voz"
+              class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
+              📞
+            </button>
           </div>
         </div>
 
@@ -412,6 +420,76 @@
   <!-- CONTENEDOR DE ALERTAS POP-UP FLOTANTES IN-APP -->
   <div id="popup-notifications" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
 
+  <!-- ELEMENTO DE AUDIO REMOTO WEBRTC -->
+  <audio id="remote-audio" autoplay playsinline class="hidden"></audio>
+
+  <!-- MODAL: LLAMADA ENTRANTE WEBRTC -->
+  <div id="incoming-call-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-7 w-full max-w-sm flex flex-col items-center text-center gap-4 shadow-wa-float border border-waBorder">
+      <div class="relative">
+        <div id="incoming-call-avatar" class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-lg font-mono">
+          0000
+        </div>
+        <span class="w-6 h-6 rounded-full bg-waGreen absolute -bottom-1 -right-1 border-2 border-white flex items-center justify-center text-white text-xs pulse-record">📞</span>
+      </div>
+      <div>
+        <h3 id="incoming-call-name" class="font-bold text-base sm:text-lg text-waTextPrimary">SYNC-XXXX - Usuario</h3>
+        <p class="text-xs text-waTeal font-semibold mt-0.5 animate-pulse">Llamada de voz entrante...</p>
+      </div>
+      <div class="flex items-center justify-center gap-6 w-full pt-3 border-t border-waBorder">
+        <button id="reject-call-btn" type="button" title="Rechazar llamada"
+          class="flex flex-col items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 transition-transform active:scale-95 cursor-pointer">
+          <div class="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center text-lg shadow-md">
+            ✕
+          </div>
+          <span>Rechazar</span>
+        </button>
+        <button id="accept-call-btn" type="button" title="Aceptar llamada"
+          class="flex flex-col items-center gap-1.5 text-xs font-bold text-waDarkTeal hover:text-waTeal transition-transform active:scale-95 cursor-pointer">
+          <div class="w-12 h-12 rounded-full bg-waGreen hover:bg-emerald-600 text-white flex items-center justify-center text-xl shadow-md pulse-online">
+            📞
+          </div>
+          <span>Aceptar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LLAMADA ACTIVA / SALIENTE WEBRTC -->
+  <div id="active-call-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 sm:p-7 w-full max-w-sm flex flex-col items-center text-center gap-4 shadow-wa-float border border-waBorder">
+      <div class="relative">
+        <div id="active-call-peer-avatar" class="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-lg font-mono">
+          0000
+        </div>
+        <span id="active-call-pulse-dot" class="w-5 h-5 rounded-full bg-waGreen absolute -bottom-1 -right-1 border-2 border-white pulse-online"></span>
+      </div>
+      <div>
+        <h3 id="active-call-peer-name" class="font-bold text-base sm:text-lg text-waTextPrimary">SYNC-XXXX - Contacto</h3>
+        <p id="active-call-status-label" class="text-xs text-waTeal font-bold mt-0.5">Llamando...</p>
+        <span id="active-call-timer" class="text-sm font-mono font-bold text-waTextSecondary hidden mt-1 inline-block">00:00</span>
+      </div>
+
+      <!-- Controles de la Llamada: Silenciar Micrófono & Colgar -->
+      <div class="flex items-center justify-center gap-6 w-full pt-4 border-t border-waBorder">
+        <button id="toggle-call-mute-btn" type="button" title="Silenciar / Activar micrófono"
+          class="flex flex-col items-center gap-1.5 text-xs font-semibold text-waTextSecondary hover:text-waTextPrimary transition-all cursor-pointer">
+          <div id="mute-btn-icon-wrapper" class="w-12 h-12 rounded-full bg-waBg hover:bg-gray-200 text-waTextPrimary flex items-center justify-center text-lg border border-waBorder shadow-sm">
+            🎤
+          </div>
+          <span id="mute-btn-label">Silenciar</span>
+        </button>
+        <button id="hangup-call-btn" type="button" title="Colgar llamada"
+          class="flex flex-col items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 transition-transform active:scale-95 cursor-pointer">
+          <div class="w-12 h-12 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center text-xl shadow-md">
+            🔴
+          </div>
+          <span>Colgar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
 <script>
   // ESTADO GLOBAL DE LA APLICACIÓN
   const SERVER_URL = window.location.origin;
@@ -495,6 +573,44 @@
   const modalDownloadBtn = document.getElementById('modal-download-btn');
   const closeImageModalBtn = document.getElementById('close-image-modal-btn');
   const popupNotifications = document.getElementById('popup-notifications');
+
+  // Referencias DOM WebRTC (Llamadas de Voz P2P)
+  const startCallBtn = document.getElementById('start-call-btn');
+  const remoteAudio = document.getElementById('remote-audio');
+  const incomingCallModal = document.getElementById('incoming-call-modal');
+  const incomingCallAvatar = document.getElementById('incoming-call-avatar');
+  const incomingCallName = document.getElementById('incoming-call-name');
+  const acceptCallBtn = document.getElementById('accept-call-btn');
+  const rejectCallBtn = document.getElementById('reject-call-btn');
+
+  const activeCallModal = document.getElementById('active-call-modal');
+  const activeCallPeerAvatar = document.getElementById('active-call-peer-avatar');
+  const activeCallPeerName = document.getElementById('active-call-peer-name');
+  const activeCallStatusLabel = document.getElementById('active-call-status-label');
+  const activeCallTimer = document.getElementById('active-call-timer');
+  const toggleCallMuteBtn = document.getElementById('toggle-call-mute-btn');
+  const muteBtnIconWrapper = document.getElementById('mute-btn-icon-wrapper');
+  const muteBtnLabel = document.getElementById('mute-btn-label');
+  const hangupCallBtn = document.getElementById('hangup-call-btn');
+
+  // Configuración y Estado WebRTC (STUN Público)
+  const rtcConfig = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' }
+    ]
+  };
+
+  let peerConnection = null;
+  let localAudioStream = null;
+  let activeCallPeerSyncId = null;
+  let callTimerInterval = null;
+  let callSeconds = 0;
+  let isAudioMuted = false;
+  let incomingCallOfferData = null;
+  let audioContext = null;
+  let ringtoneInterval = null;
 
   let isRegisterMode = false;
 
@@ -655,6 +771,7 @@
   }
 
   logoutBtn.addEventListener('click', () => {
+    endCall(true);
     localStorage.removeItem(TOKEN_KEY);
     currentToken = null;
     currentUser = null;
@@ -882,6 +999,10 @@
     chatWelcome.classList.add('hidden');
     chatMessages.innerHTML = '';
 
+    if (startCallBtn) {
+      startCallBtn.classList.remove('opacity-40', 'pointer-events-none');
+    }
+
     try {
       const res = await fetch('/api/messages/' + syncId, {
         headers: { 'Authorization': 'Bearer ' + currentToken }
@@ -898,6 +1019,316 @@
 
     loadContacts();
     chatTextarea.focus();
+  }
+
+  // FUNCIONES DE LLAMADA DE VOZ P2P WEBRTC (AUDIO EXCLUSIVO)
+  function playTone(freq1, freq2, durationMs) {
+    try {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      gain.gain.value = 0.05;
+      osc1.frequency.value = freq1;
+      osc2.frequency.value = freq2;
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioContext.destination);
+      osc1.start();
+      osc2.start();
+      setTimeout(() => {
+        try {
+          osc1.stop();
+          osc2.stop();
+        } catch (e) {}
+      }, durationMs);
+    } catch (e) {}
+  }
+
+  function startRingtone() {
+    stopRingtone();
+    playTone(440, 480, 1000);
+    ringtoneInterval = setInterval(() => {
+      playTone(440, 480, 1000);
+    }, 2800);
+  }
+
+  function stopRingtone() {
+    if (ringtoneInterval) {
+      clearInterval(ringtoneInterval);
+      ringtoneInterval = null;
+    }
+  }
+
+  function startCallTimer() {
+    stopCallTimer();
+    callSeconds = 0;
+    activeCallTimer.textContent = '00:00';
+    activeCallTimer.classList.remove('hidden');
+    callTimerInterval = setInterval(() => {
+      callSeconds++;
+      const mins = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+      const secs = String(callSeconds % 60).padStart(2, '0');
+      activeCallTimer.textContent = `${mins}:${secs}`;
+    }, 1000);
+  }
+
+  function stopCallTimer() {
+    if (callTimerInterval) {
+      clearInterval(callTimerInterval);
+      callTimerInterval = null;
+    }
+    activeCallTimer.classList.add('hidden');
+  }
+
+  function updateMuteButtonUI() {
+    if (isAudioMuted) {
+      muteBtnIconWrapper.textContent = '🔇';
+      muteBtnIconWrapper.className = 'w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-lg border border-red-300 shadow-sm';
+      muteBtnLabel.textContent = 'Silenciado';
+      muteBtnLabel.className = 'text-red-600 font-bold';
+    } else {
+      muteBtnIconWrapper.textContent = '🎤';
+      muteBtnIconWrapper.className = 'w-12 h-12 rounded-full bg-waBg hover:bg-gray-200 text-waTextPrimary flex items-center justify-center text-lg border border-waBorder shadow-sm';
+      muteBtnLabel.textContent = 'Silenciar';
+      muteBtnLabel.className = 'text-waTextSecondary font-medium';
+    }
+  }
+
+  function toggleCallMute() {
+    if (!localAudioStream) return;
+    isAudioMuted = !isAudioMuted;
+    localAudioStream.getAudioTracks().forEach((track) => {
+      track.enabled = !isAudioMuted;
+    });
+    updateMuteButtonUI();
+  }
+
+  function createPeerConnection(remoteSyncId) {
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+
+    peerConnection = new RTCPeerConnection(rtcConfig);
+
+    // Agregar tracks locales de micrófono
+    if (localAudioStream) {
+      localAudioStream.getAudioTracks().forEach((track) => {
+        peerConnection.addTrack(track, localAudioStream);
+      });
+    }
+
+    // Receptor de audio remoto conectado al elemento HTML <audio id="remote-audio">
+    peerConnection.ontrack = (event) => {
+      console.log('[WEBRTC] Track remoto de audio recibido');
+      if (remoteAudio && event.streams && event.streams[0]) {
+        remoteAudio.srcObject = event.streams[0];
+        remoteAudio.play().catch((err) => console.warn('[WEBRTC] Autoplay de audio diferido:', err));
+      }
+    };
+
+    // Candidatos ICE locales
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate && activeCallPeerSyncId) {
+        socket.emit('ice-candidate', {
+          toSyncId: activeCallPeerSyncId,
+          candidate: event.candidate
+        });
+      }
+    };
+
+    peerConnection.oniceconnectionstatechange = () => {
+      console.log('[WEBRTC] Estado de conexión ICE:', peerConnection.iceConnectionState);
+      if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+        stopRingtone();
+        activeCallStatusLabel.textContent = 'En llamada';
+        activeCallStatusLabel.className = 'text-xs text-waGreen font-bold mt-0.5';
+        startCallTimer();
+      } else if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
+        triggerPopupNotification('Llamada Finalizada', 'La conexión de voz se interrumpió', '📞');
+        endCall(false);
+      }
+    };
+
+    return peerConnection;
+  }
+
+  async function startVoiceCall() {
+    if (!activeContactSyncId || !socket) return;
+    const contact = contactsMap.get(activeContactSyncId);
+    if (!contact) return;
+    if (!contact.isOnline) {
+      alert('El contacto no se encuentra en línea para recibir llamadas.');
+      return;
+    }
+
+    try {
+      localAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (err) {
+      alert('No se pudo acceder al micrófono: ' + err.message);
+      return;
+    }
+
+    activeCallPeerSyncId = activeContactSyncId;
+    isAudioMuted = false;
+
+    // Configurar modal de llamada saliente
+    activeCallPeerAvatar.textContent = contact.syncId.replace('SYNC-', '');
+    activeCallPeerName.textContent = contact.formattedName;
+    activeCallStatusLabel.textContent = 'Llamando...';
+    activeCallStatusLabel.className = 'text-xs text-waTeal font-bold mt-0.5';
+    activeCallTimer.classList.add('hidden');
+    activeCallModal.classList.remove('hidden');
+
+    updateMuteButtonUI();
+    startRingtone();
+
+    createPeerConnection(activeCallPeerSyncId);
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    socket.emit('call-user', {
+      toSyncId: activeCallPeerSyncId,
+      offer: offer
+    });
+  }
+
+  function handleIncomingCall(data) {
+    if (!data || !data.fromSyncId || !data.offer) return;
+
+    if (activeCallPeerSyncId) {
+      socket.emit('reject-call', { toSyncId: data.fromSyncId });
+      return;
+    }
+
+    incomingCallOfferData = data;
+    incomingCallAvatar.textContent = data.fromSyncId.replace('SYNC-', '');
+    incomingCallName.textContent = data.fromName || data.fromSyncId;
+    incomingCallModal.classList.remove('hidden');
+    startRingtone();
+    triggerPopupNotification('Llamada Entrante', `${data.fromName || data.fromSyncId} te está llamando...`, '📞');
+  }
+
+  async function acceptIncomingCall() {
+    if (!incomingCallOfferData) return;
+    stopRingtone();
+    incomingCallModal.classList.add('hidden');
+
+    const callerSyncId = incomingCallOfferData.fromSyncId;
+    const callerName = incomingCallOfferData.fromName || callerSyncId;
+    const offer = incomingCallOfferData.offer;
+
+    try {
+      localAudioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch (err) {
+      alert('No se pudo acceder al micrófono para responder la llamada: ' + err.message);
+      socket.emit('reject-call', { toSyncId: callerSyncId });
+      incomingCallOfferData = null;
+      return;
+    }
+
+    activeCallPeerSyncId = callerSyncId;
+    isAudioMuted = false;
+
+    activeCallPeerAvatar.textContent = callerSyncId.replace('SYNC-', '');
+    activeCallPeerName.textContent = callerName;
+    activeCallStatusLabel.textContent = 'Conectando audio...';
+    activeCallStatusLabel.className = 'text-xs text-waTeal font-bold mt-0.5';
+    activeCallTimer.classList.add('hidden');
+    activeCallModal.classList.remove('hidden');
+    updateMuteButtonUI();
+
+    createPeerConnection(callerSyncId);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+
+    socket.emit('make-answer', {
+      toSyncId: callerSyncId,
+      answer: answer
+    });
+
+    incomingCallOfferData = null;
+  }
+
+  function rejectIncomingCall() {
+    stopRingtone();
+    incomingCallModal.classList.add('hidden');
+    if (incomingCallOfferData) {
+      socket.emit('reject-call', { toSyncId: incomingCallOfferData.fromSyncId });
+      incomingCallOfferData = null;
+    }
+  }
+
+  async function handleAnswerMade(data) {
+    if (!peerConnection || !data || !data.answer) return;
+    stopRingtone();
+    activeCallStatusLabel.textContent = 'Conectando audio...';
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+  }
+
+  async function handleRemoteIceCandidate(data) {
+    if (peerConnection && data.candidate) {
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+      } catch (err) {
+        console.warn('[WEBRTC] Error al agregar candidato ICE:', err);
+      }
+    }
+  }
+
+  function handleCallRejected(data) {
+    stopRingtone();
+    triggerPopupNotification('Llamada Rechazada', `${data.fromName || data.fromSyncId} rechazó la llamada`, '📞');
+    endCall(false);
+  }
+
+  function handleCallEnded() {
+    stopRingtone();
+    triggerPopupNotification('Llamada Finalizada', 'La llamada ha terminado', '📞');
+    endCall(false);
+  }
+
+  function handleCallUnavailable(data) {
+    stopRingtone();
+    triggerPopupNotification('No Disponible', data.message || 'Contacto no disponible', '⚠️');
+    endCall(false);
+  }
+
+  function endCall(notifyPeer = true) {
+    stopRingtone();
+    stopCallTimer();
+
+    if (notifyPeer && activeCallPeerSyncId && socket) {
+      socket.emit('end-call', { toSyncId: activeCallPeerSyncId });
+    }
+
+    if (localAudioStream) {
+      localAudioStream.getTracks().forEach((track) => track.stop());
+      localAudioStream = null;
+    }
+
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+
+    if (remoteAudio) {
+      remoteAudio.srcObject = null;
+    }
+
+    activeCallPeerSyncId = null;
+    incomingCallOfferData = null;
+    isAudioMuted = false;
+
+    incomingCallModal.classList.add('hidden');
+    activeCallModal.classList.add('hidden');
   }
 
   // SOCKET.IO & LIMPIEZA DE LISTENERS (PREVENCIÓN DE DUPLICACIÓN)
@@ -918,6 +1349,12 @@
     socket.off('contact-status-changed');
     socket.off('receive-private-message');
     socket.off('user-typing');
+    socket.off('call-made');
+    socket.off('answer-made');
+    socket.off('ice-candidate');
+    socket.off('call-rejected');
+    socket.off('call-ended');
+    socket.off('call-unavailable');
 
     socket.on('connect', () => {
       socket.emit('authenticate', { token: currentToken });
@@ -939,6 +1376,14 @@
         loadContacts();
       }
     });
+
+    // Eventos WebRTC Señalización
+    socket.on('call-made', handleIncomingCall);
+    socket.on('answer-made', handleAnswerMade);
+    socket.on('ice-candidate', handleRemoteIceCandidate);
+    socket.on('call-rejected', handleCallRejected);
+    socket.on('call-ended', handleCallEnded);
+    socket.on('call-unavailable', handleCallUnavailable);
 
     socket.on('receive-private-message', (msg) => {
       if (!msg || !msg.id) return;
@@ -1350,6 +1795,16 @@
       }
     }
   });
+
+  // Eventos de Botones de Llamada WebRTC
+  startCallBtn.addEventListener('click', startVoiceCall);
+  acceptCallBtn.addEventListener('click', acceptIncomingCall);
+  rejectCallBtn.addEventListener('click', rejectIncomingCall);
+  hangupCallBtn.addEventListener('click', () => endCall(true));
+  toggleCallMuteBtn.addEventListener('click', toggleCallMute);
+
+  // Inicialmente deshabilitar botón de llamada hasta seleccionar un contacto
+  startCallBtn.classList.add('opacity-40', 'pointer-events-none');
 
   // INICIO DE LA APLICACIÓN
   checkExistingAuth();

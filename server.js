@@ -242,6 +242,108 @@ io.on("connection", function (socket) {
     }
   });
 
+  // SEÑALIZACIÓN WEBRTC (LLAMADAS DE VOZ P2P EN TIEMPO REAL)
+  // 1. Iniciar llamada enviando oferta SDP
+  socket.on("call-user", function (data) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !data || !data.toSyncId || !data.offer) return;
+
+    const targetSyncId = String(data.toSyncId).trim().toUpperCase();
+    const targetSockets = onlineUsers.get(targetSyncId);
+
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("call-made", {
+          offer: data.offer,
+          fromSyncId: sender.syncId,
+          fromName: sender.formattedName
+        });
+      });
+      console.log(`[CALL] Oferta de llamada de ${sender.syncId} para ${targetSyncId}`);
+    } else {
+      socket.emit("call-unavailable", {
+        toSyncId: targetSyncId,
+        message: "El contacto no se encuentra en línea para recibir llamadas"
+      });
+    }
+  });
+
+  // 2. Aceptar llamada enviando respuesta SDP
+  socket.on("make-answer", function (data) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !data || !data.toSyncId || !data.answer) return;
+
+    const targetSyncId = String(data.toSyncId).trim().toUpperCase();
+    const targetSockets = onlineUsers.get(targetSyncId);
+
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("answer-made", {
+          answer: data.answer,
+          fromSyncId: sender.syncId,
+          fromName: sender.formattedName
+        });
+      });
+      console.log(`[CALL] Respuesta de llamada aceptada de ${sender.syncId} para ${targetSyncId}`);
+    }
+  });
+
+  // 3. Intercambio de candidatos de red WebRTC (ICE Candidate)
+  socket.on("ice-candidate", function (data) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !data || !data.toSyncId || !data.candidate) return;
+
+    const targetSyncId = String(data.toSyncId).trim().toUpperCase();
+    const targetSockets = onlineUsers.get(targetSyncId);
+
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("ice-candidate", {
+          candidate: data.candidate,
+          fromSyncId: sender.syncId
+        });
+      });
+    }
+  });
+
+  // 4. Rechazar llamada
+  socket.on("reject-call", function (data) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !data || !data.toSyncId) return;
+
+    const targetSyncId = String(data.toSyncId).trim().toUpperCase();
+    const targetSockets = onlineUsers.get(targetSyncId);
+
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("call-rejected", {
+          fromSyncId: sender.syncId,
+          fromName: sender.formattedName
+        });
+      });
+      console.log(`[CALL] Llamada rechazada por ${sender.syncId} para ${targetSyncId}`);
+    }
+  });
+
+  // 5. Finalizar o colgar llamada activa
+  socket.on("end-call", function (data) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !data || !data.toSyncId) return;
+
+    const targetSyncId = String(data.toSyncId).trim().toUpperCase();
+    const targetSockets = onlineUsers.get(targetSyncId);
+
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("call-ended", {
+          fromSyncId: sender.syncId,
+          fromName: sender.formattedName
+        });
+      });
+      console.log(`[CALL] Llamada finalizada entre ${sender.syncId} y ${targetSyncId}`);
+    }
+  });
+
   // Desconexión
   socket.on("disconnect", function () {
     const user = socketToUser.get(socket.id);
