@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYNC ENGINE | By Barrantes Co.</title>
+<title>SYNC ENGINE | Chat de Sincronización en Tiempo Real</title>
+
+<!-- Metadatos PWA -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SyncEngine">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A1A3A'/%3E%3Cpath d='M30 50 L45 65 L70 35' stroke='%2338B6FF' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='50' cy='50' r='42' stroke='%23C5A059' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+<link rel="manifest" href="/manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +23,14 @@
   tailwind.config = {
     theme: {
       extend: {
-        colors: { noche: '#0A1A3A', abismo: '#050D1D', oro: '#C5A059', tech: '#38B6FF' },
+        colors: {
+          noche: '#0A1A3A',
+          abismo: '#050D1D',
+          oro: '#C5A059',
+          tech: '#38B6FF',
+          azulLocal: '#1D3560',
+          azulRemoto: '#112347'
+        },
         fontFamily: {
           heading: ['Montserrat', 'sans-serif'],
           sans: ['Inter', 'sans-serif'],
@@ -41,13 +55,14 @@
   }
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.5); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.4); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(197,160,89,0.7); }
   ::-webkit-scrollbar-track { background: transparent; }
 
   .glass {
-    background: rgba(10, 26, 58, 0.42);
-    backdrop-filter: blur(20px);
+    background: rgba(10, 26, 58, 0.52);
     -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
   }
 
   .infinito {
@@ -59,8 +74,8 @@
 
   .gauge-ring {
     --pct: 0%;
-    width: 168px;
-    height: 168px;
+    width: 136px;
+    height: 136px;
     border-radius: 9999px;
     background: conic-gradient(#38B6FF var(--pct), rgba(255,255,255,0.08) 0);
     display: flex;
@@ -73,10 +88,10 @@
   .gauge-ring::after {
     content: '';
     position: absolute;
-    inset: 12px;
+    inset: 10px;
     border-radius: 9999px;
     background: radial-gradient(circle at 30% 20%, #123068 0%, #050D1D 78%);
-    box-shadow: inset 0 0 22px rgba(0,0,0,0.55);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.55);
   }
   .gauge-value { position: relative; z-index: 1; text-align: center; }
 
@@ -86,235 +101,275 @@
     50% { opacity: .5; transform: scale(1.3); }
   }
 
-  .flash-sync { animation: flash-sync 0.8s ease-out; }
-  @keyframes flash-sync {
-    0% { box-shadow: 0 0 0 0 rgba(56,182,255,0.9), inset 0 0 0 0 rgba(56,182,255,0.55); }
-    35% { box-shadow: 0 0 0 5px rgba(56,182,255,0.2), inset 0 0 30px rgba(56,182,255,0.32); }
-    100% { box-shadow: 0 0 0 0 rgba(56,182,255,0), inset 0 0 0 0 rgba(56,182,255,0); }
-  }
-
-  .log-enter { animation: log-enter 0.35s ease-out; }
+  .log-enter { animation: log-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
   @keyframes log-enter {
-    from { opacity: 0; transform: translateY(-6px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .pulse-dot, .flash-sync, .log-enter { animation: none; }
+  .flash-sync { animation: flash-sync 0.8s ease-out; }
+  @keyframes flash-sync {
+    0% { box-shadow: 0 0 0 0 rgba(56,182,255,0.9); }
+    35% { box-shadow: 0 0 0 6px rgba(56,182,255,0.25); }
+    100% { box-shadow: 0 0 0 0 rgba(56,182,255,0); }
   }
 
-  #drop-zone.drop-active { border-color: #38B6FF; background: rgba(56,182,255,0.09); }
-
+  #drop-overlay.active { display: flex; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar { -ms-overflow-style: none; }
 </style>
 </head>
-<body class="font-sans text-gray-100 antialiased">
+<body class="font-sans text-gray-100 antialiased selection:bg-tech/30 selection:text-white">
 
+  <!-- Fondos luminosos sutiles -->
   <div aria-hidden="true" class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
     <div class="absolute -top-32 -left-32 w-[560px] h-[560px] bg-tech/10 blur-[140px] rounded-full"></div>
     <div class="absolute top-1/3 -right-40 w-[520px] h-[520px] bg-oro/10 blur-[160px] rounded-full"></div>
     <div class="absolute bottom-[-10%] left-1/4 w-[460px] h-[380px] bg-indigo-500/10 blur-[150px] rounded-full"></div>
   </div>
 
-  <header class="sticky top-0 z-30 border-b border-oro/25 bg-abismo/70 backdrop-blur-xl">
-    <div class="max-w-[1600px] mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+  <!-- Header Superior -->
+  <header class="sticky top-0 z-40 border-b border-oro/25 bg-abismo/85 backdrop-blur-xl">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4 flex-wrap">
       <div class="flex items-center gap-3">
         <span class="font-heading text-2xl font-black tracking-tight infinito">JB∞</span>
         <span class="text-oro/40 font-light">|</span>
-        <span class="text-sm md:text-base font-medium text-gray-300">Barrantes Co.</span>
+        <span class="text-sm font-semibold tracking-wide text-gray-200">Barrantes Co.</span>
       </div>
 
       <div class="flex flex-col items-center leading-tight">
-        <h1 class="font-heading text-lg md:text-2xl font-extrabold tracking-[0.15em] text-tech">SYNC ENGINE</h1>
-        <p class="text-[10px] md:text-xs text-gray-400 tracking-widest">Latencia P2P &lt;100ms</p>
+        <h1 class="font-heading text-lg sm:text-xl font-extrabold tracking-[0.14em] text-tech">SYNC ENGINE</h1>
+        <p class="text-[10px] sm:text-xs text-gray-400 tracking-wider">Chat &amp; Portapapeles P2P en Tiempo Real</p>
       </div>
 
-      <div id="status-badge" class="flex items-center gap-2 px-4 py-2 rounded-full bg-abismo/60 border-2 border-red-500/60 shadow-glow-red transition-colors duration-500">
-        <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-dot flex-shrink-0"></span>
-        <span id="status-text" class="text-xs font-bold tracking-wider text-red-400 whitespace-nowrap">RECONECTANDO</span>
+      <div class="flex items-center gap-3">
+        <div id="status-badge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-abismo/70 border border-red-500/60 shadow-glow-red transition-all duration-500">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-dot flex-shrink-0"></span>
+          <span id="status-text" class="text-xs font-bold tracking-wider text-red-400 whitespace-nowrap">RECONECTANDO</span>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-[1600px] mx-auto px-6 py-8 grid grid-cols-1 xl:grid-cols-12 gap-6">
+  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
 
-    <!-- Hero: estado del enlace -->
-    <section class="xl:col-span-5 glass rounded-3xl border border-oro/25 p-7 flex flex-col gap-6">
-      <div>
-        <p class="text-xs uppercase tracking-widest text-oro/70 font-semibold">Estado del enlace</p>
-        <h2 id="hero-status-line" class="font-heading text-2xl font-extrabold mt-1">Buscando servidor local…</h2>
-        <p id="hero-sub" class="text-sm text-gray-400 mt-1">Conectando con el servidor configurado.</p>
-      </div>
-
-      <div class="flex items-center gap-6">
+    <!-- Panel Superior Colapsable / Resumen de Conexión & KPIs -->
+    <section class="glass rounded-3xl border border-oro/25 p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+      <!-- Columna Enlace -->
+      <div class="lg:col-span-4 flex items-center gap-4">
         <div id="gauge-ring" class="gauge-ring">
           <div class="gauge-value">
-            <span id="gauge-pct" class="block font-heading text-3xl font-extrabold text-tech">0%</span>
-            <span class="block text-[10px] tracking-wider text-gray-400 uppercase mt-0.5">disponibilidad</span>
+            <span id="gauge-pct" class="block font-heading text-2xl font-extrabold text-tech">0%</span>
+            <span class="block text-[9px] tracking-wider text-gray-400 uppercase">disponible</span>
           </div>
         </div>
-        <div class="flex-1 flex flex-col gap-3 min-w-0">
-          <div>
-            <div class="flex items-baseline gap-2">
-              <span id="latency-value" class="font-heading text-2xl font-extrabold text-gray-100">—</span>
-              <span class="text-xs text-gray-400">latencia de conexión</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[10px] uppercase tracking-widest text-oro font-semibold">Estado P2P</p>
+          <h2 id="hero-status-line" class="font-heading text-lg font-bold truncate mt-0.5">Conectando...</h2>
+          <p id="hero-sub" class="text-xs text-gray-400 truncate mt-0.5">Sincronizando socket</p>
+          <div class="flex items-center gap-3 mt-2 text-xs">
+            <span class="text-gray-400">Latencia: <strong id="latency-value" class="text-tech font-mono">—</strong></span>
+            <span class="text-gray-400">Sesión: <strong id="uptime-clock" class="text-oro font-mono">00:00:00</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Dispositivos y KPIs Rápidos -->
+      <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="rounded-2xl bg-abismo/60 border border-tech/20 p-3">
+          <p class="text-[10px] uppercase text-gray-400 tracking-wider">Dispositivo Local</p>
+          <p id="device-label" class="font-heading text-xs font-bold text-gray-100 truncate mt-1">Detectando…</p>
+          <p id="server-label" class="text-[10px] text-gray-500 truncate mt-0.5">—</p>
+        </div>
+
+        <div class="rounded-2xl bg-abismo/60 border border-tech/20 p-3 flex flex-col justify-between">
+          <span class="text-[10px] uppercase text-gray-400 tracking-wider">Portapapeles</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-xs text-tech">↑ <span id="kpi-clip-out">0</span></span>
+            <span class="text-xs text-oro">↓ <span id="kpi-clip-in">0</span></span>
+          </div>
+          <span class="text-[9px] text-gray-500">enviados / recibidos</span>
+        </div>
+
+        <div class="rounded-2xl bg-abismo/60 border border-oro/20 p-3 flex flex-col justify-between">
+          <span class="text-[10px] uppercase text-gray-400 tracking-wider">Archivos</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-xs text-tech">↑ <span id="kpi-file-out">0</span></span>
+            <span class="text-xs text-oro">↓ <span id="kpi-file-in">0</span></span>
+          </div>
+          <span class="text-[9px] text-gray-500">enviados / recibidos</span>
+        </div>
+
+        <div class="rounded-2xl bg-abismo/60 border border-amber-400/20 p-3 flex flex-col justify-between">
+          <span class="text-[10px] uppercase text-gray-400 tracking-wider">Eventos Totales</span>
+          <p id="kpi-events" class="font-heading text-xl font-black text-gray-100 mt-0.5">0</p>
+          <span id="activity-count" class="text-[9px] text-gray-500">0 sincronizaciones</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ÁREA PRINCIPAL: CHAT FEED + PANEL DE EVENTOS -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+      <!-- SECCIÓN DEL CHAT DE SINCRONIZACIÓN (FEED / MOBILE-FIRST) -->
+      <section class="xl:col-span-8 glass rounded-3xl border border-oro/25 flex flex-col h-[740px] max-h-[86vh] relative shadow-2xl overflow-hidden">
+        
+        <!-- Header del Chat -->
+        <div class="px-5 py-3.5 border-b border-oro/20 bg-abismo/80 backdrop-blur-md flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-tech/20 to-oro/20 border border-tech/30 flex items-center justify-center text-tech flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h2 class="font-heading text-sm sm:text-base font-bold text-gray-100 flex items-center gap-2 truncate">
+                Feed de Sincronización
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/15 text-green-400 border border-green-500/30">En Vivo</span>
+              </h2>
+              <p class="text-[11px] text-gray-400 truncate">Transmisión instantánea de texto, portapapeles y archivos</p>
             </div>
           </div>
-          <div class="h-px bg-oro/15"></div>
-          <div>
-            <div class="flex items-baseline gap-2">
-              <span id="uptime-clock" class="font-heading text-xl font-bold text-gray-200">00:00:00</span>
-              <span class="text-xs text-gray-400">sesión activa</span>
-            </div>
+
+          <div class="flex items-center gap-2">
+            <button id="clear-chat-btn" title="Limpiar feed local" class="px-2.5 py-1.5 rounded-lg bg-abismo/70 text-gray-400 hover:text-gray-200 border border-white/10 hover:border-oro/30 text-xs transition-colors flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span class="hidden sm:inline">Limpiar</span>
+            </button>
           </div>
         </div>
-      </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-xl bg-abismo/60 border border-tech/20 p-4 min-w-0">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400">Dispositivo</p>
-          <p id="device-label" class="font-heading text-sm font-bold mt-1 truncate">Detectando…</p>
+        <!-- Drop Overlay para Drag and Drop de archivos -->
+        <div id="drop-overlay" class="absolute inset-0 z-30 bg-abismo/90 border-2 border-dashed border-tech backdrop-blur-md hidden flex-col items-center justify-center gap-3 p-6 text-center transition-all pointer-events-none">
+          <div class="w-16 h-16 rounded-2xl bg-tech/20 border border-tech/40 flex items-center justify-center text-tech animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/>
+            </svg>
+          </div>
+          <p class="font-heading text-lg font-bold text-tech">Suelta el archivo aquí para transmitirlo</p>
+          <p class="text-xs text-gray-400">Se enviará inmediatamente a los dispositivos emparejados</p>
         </div>
-        <div class="rounded-xl bg-abismo/60 border border-oro/20 p-4 min-w-0">
-          <p class="text-[10px] uppercase tracking-wider text-gray-400">Servidor</p>
-          <p id="server-label" class="font-heading text-sm font-bold mt-1 truncate">—</p>
-          <p id="server-since" class="text-[10px] text-gray-500 mt-0.5">Sin conexión aún</p>
+
+        <!-- CONTENEDOR PRINCIPAL: CHAT FEED -->
+        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth">
+          <!-- Mensaje de bienvenida / Estado vacío inicial -->
+          <div id="chat-empty" class="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500">
+            <div class="w-14 h-14 rounded-2xl bg-tech/10 border border-tech/25 flex items-center justify-center text-tech/60 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+              </svg>
+            </div>
+            <p class="text-sm font-semibold text-gray-300">Canal de Sincronización Listo</p>
+            <p class="text-xs text-gray-500 max-w-sm mt-1">Escribe un mensaje, pega el portapapeles o adjunta archivos para compartirlos en tiempo real.</p>
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- KPIs -->
-    <section class="xl:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-4 content-start">
+        <!-- ÁREA INFERIOR DE ENTRADA (INPUT BAR) -->
+        <div id="input-bar" class="p-3 sm:p-4 bg-abismo/90 border-t border-oro/20 backdrop-blur-xl flex flex-col gap-2.5">
+          
+          <!-- Fila de Acciones Rápidas (Pegar & Adjuntar) -->
+          <div class="flex items-center justify-between gap-2 px-1">
+            <div class="flex items-center gap-2">
+              <!-- Botón Pegar Portapapeles -->
+              <button id="paste-clipboard-btn" type="button" title="Pegar y enviar desde el portapapeles del sistema"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-oro/15 hover:bg-oro/25 text-oro border border-oro/30 text-xs font-semibold active:scale-95 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <span>Pegar del portapapeles</span>
+              </button>
 
-      <div class="glass rounded-2xl border border-tech/20 p-4 flex flex-col gap-3">
-        <div class="w-9 h-9 rounded-lg bg-tech/10 flex items-center justify-center text-tech">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <!-- Botón Adjuntar Archivo (Clip) -->
+              <button id="attach-file-btn" type="button" title="Adjuntar archivo o imagen"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-tech/15 hover:bg-tech/25 text-tech border border-tech/30 text-xs font-semibold active:scale-95 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                </svg>
+                <span>Adjuntar archivo</span>
+              </button>
+              <input type="file" id="chat-file-input" title="Seleccionar archivo para enviar" aria-label="Seleccionar archivo para enviar" class="hidden">
+            </div>
+
+            <span id="char-counter" class="text-[10px] text-gray-500 font-mono hidden sm:inline">Shift+Enter para salto de línea</span>
+          </div>
+
+          <!-- Fila de Entrada Principal -->
+          <div class="flex items-end gap-2">
+            <div class="flex-1 relative">
+              <label for="chat-input" class="sr-only">Mensaje o texto a sincronizar</label>
+              <textarea id="chat-input" rows="1" placeholder="Escribe o pega texto (Enter para enviar)..."
+                class="w-full resize-none rounded-2xl bg-noche/80 border border-tech/30 focus:border-tech focus:ring-2 focus:ring-tech/25 outline-none px-4 py-3 text-sm text-gray-100 placeholder-gray-500 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
+            </div>
+
+            <!-- Botón de Enviar -->
+            <button id="chat-send-btn" type="button" title="Enviar mensaje (Enter)"
+              class="h-11 px-5 rounded-2xl bg-gradient-to-r from-tech via-[#2C9CE6] to-azulLocal text-white font-bold text-sm shadow-glow-tech hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 transition-all flex-shrink-0">
+              <span>Enviar</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div>
-          <p id="kpi-events" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
-          <p class="text-[11px] text-gray-400 mt-0.5">Eventos totales</p>
+
+      </section>
+
+      <!-- COLUMNA LATERAL: LOG DE ACTIVIDAD & TELEMETRÍA EN VIVO -->
+      <aside class="xl:col-span-4 flex flex-col gap-6">
+
+        <!-- Actividad Reciente (Tarjetas Horizontales) -->
+        <div class="glass rounded-3xl border border-oro/25 p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-heading text-xs uppercase tracking-wider text-oro font-bold">Actividad Reciente</h3>
+            <span class="text-[10px] text-gray-400 font-mono" id="feed-time-indicator">Sincronizado</span>
+          </div>
+          <div id="activity-feed" class="flex flex-col gap-2.5 max-h-48 overflow-y-auto pr-1">
+            <p id="activity-empty" class="text-xs text-gray-500 italic py-4 text-center">Sin actividad reciente aún.</p>
+          </div>
         </div>
-      </div>
 
-      <div class="glass rounded-2xl border border-oro/20 p-4 flex flex-col gap-3">
-        <div class="w-9 h-9 rounded-lg bg-oro/10 flex items-center justify-center text-oro">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        <!-- Log de Eventos en Tiempo Real -->
+        <div class="glass rounded-3xl border border-oro/25 p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-heading text-xs uppercase tracking-wider text-tech font-bold flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-tech pulse-dot"></span>
+              Telemetría en Vivo
+            </h3>
+            <span class="text-[10px] text-gray-500 font-mono">Socket.IO</span>
+          </div>
+          <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[380px] pr-1 font-mono text-xs"></div>
         </div>
-        <div>
-          <p id="kpi-clip-out" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
-          <p class="text-[11px] text-gray-400 mt-0.5">Portapapeles enviado</p>
-        </div>
-      </div>
 
-      <div class="glass rounded-2xl border border-tech/20 p-4 flex flex-col gap-3">
-        <div class="w-9 h-9 rounded-lg bg-tech/10 flex items-center justify-center text-tech">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        </div>
-        <div>
-          <p id="kpi-clip-in" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
-          <p class="text-[11px] text-gray-400 mt-0.5">Portapapeles recibido</p>
-        </div>
-      </div>
+      </aside>
 
-      <div class="glass rounded-2xl border border-oro/20 p-4 flex flex-col gap-3">
-        <div class="w-9 h-9 rounded-lg bg-oro/10 flex items-center justify-center text-oro">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/></svg>
-        </div>
-        <div>
-          <p id="kpi-file-out" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
-          <p class="text-[11px] text-gray-400 mt-0.5">Archivos enviados</p>
-        </div>
-      </div>
-
-      <div class="glass rounded-2xl border border-tech/20 p-4 flex flex-col gap-3">
-        <div class="w-9 h-9 rounded-lg bg-tech/10 flex items-center justify-center text-tech">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M12 16V4M8 8l4-4 4 4"/></svg>
-        </div>
-        <div>
-          <p id="kpi-file-in" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
-          <p class="text-[11px] text-gray-400 mt-0.5">Archivos recibidos</p>
-        </div>
-      </div>
-
-      <div class="glass rounded-2xl border border-amber-400/20 p-4 flex flex-col gap-3">
-        <div class="w-9 h-9 rounded-lg bg-amber-400/10 flex items-center justify-center text-amber-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        </div>
-        <div>
-          <p id="kpi-reconnect" class="font-heading text-2xl font-extrabold text-gray-100">0</p>
-          <p class="text-[11px] text-gray-400 mt-0.5">Reconexiones</p>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- Actividad reciente -->
-    <section class="xl:col-span-12 glass rounded-3xl border border-oro/25 p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="font-heading text-base font-bold text-gray-100">Actividad reciente</h2>
-        <span id="activity-count" class="text-xs font-semibold px-3 py-1 rounded-full bg-oro/10 text-oro border border-oro/30">0 eventos</span>
-      </div>
-      <div id="activity-feed" class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
-        <p id="activity-empty" class="text-sm text-gray-500 italic py-6">Aún no hay actividad. Los eventos de portapapeles y archivos aparecerán aquí en tiempo real.</p>
-      </div>
-    </section>
-
-    <!-- Portapapeles -->
-    <section id="clipboard-card" class="xl:col-span-4 glass rounded-3xl border border-oro/25 p-6 flex flex-col gap-4">
-      <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-oro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-        <h2 class="font-heading text-base font-bold text-gray-100">Portapapeles instantáneo</h2>
-      </div>
-
-      <label for="clipboard-text" class="sr-only">Texto del portapapeles</label>
-      <textarea id="clipboard-text" rows="7" placeholder="Escribe o pega texto para sincronizar entre dispositivos..."
-        class="w-full resize-none rounded-xl bg-abismo/70 border border-tech/25 focus:border-tech focus:ring-2 focus:ring-tech/25 outline-none p-4 text-sm text-gray-100 placeholder-gray-500 transition-colors"></textarea>
-
-      <button id="sync-clipboard-btn"
-        class="w-full py-3 rounded-xl bg-gradient-to-r from-[#8A6A31] via-oro to-[#EED9A6] text-abismo font-bold tracking-wide text-sm shadow-glow-oro hover:shadow-glow-oro-hover active:scale-[0.98] transition-all duration-200">
-        Sincronizar portapapeles
-      </button>
-    </section>
-
-    <!-- Archivos -->
-    <section class="xl:col-span-4 glass rounded-3xl border border-oro/25 p-6 flex flex-col gap-4">
-      <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-oro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
-        <h2 class="font-heading text-base font-bold text-gray-100">Transferencia de archivos</h2>
-      </div>
-
-      <div id="drop-zone" role="button" tabindex="0" aria-label="Seleccionar archivo para enviar"
-        class="min-h-[130px] rounded-xl border-2 border-dashed border-oro/40 flex flex-col items-center justify-center gap-2 text-center px-4 py-6 cursor-pointer transition-colors hover:border-tech/60 focus:outline-none focus:border-tech/70">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-tech/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/></svg>
-        <p class="text-sm text-gray-300">Arrastra un archivo aquí</p>
-        <p class="text-xs text-gray-500">o haz clic para seleccionar</p>
-        <input type="file" id="file-input" class="hidden">
-      </div>
-
-      <div>
-        <p class="text-[11px] uppercase tracking-wider text-gray-400 mb-2">Recibidos</p>
-        <div id="received-files" class="flex flex-col gap-2 max-h-40 overflow-y-auto">
-          <p id="files-empty" class="text-xs text-gray-500 italic">Aún no se han recibido archivos.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Log -->
-    <section class="xl:col-span-4 glass rounded-3xl border border-oro/25 p-6 flex flex-col gap-3">
-      <div class="flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-oro" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        <h2 class="font-heading text-base font-bold text-gray-100">Actividad en tiempo real</h2>
-      </div>
-      <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[420px] pr-1"></div>
-    </section>
+    </div>
 
   </main>
 
-<script>
-  const SERVER_URL = window.location.origin;
-  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB: límite defensivo para transferencias en Base64 sobre el socket
+  <!-- Modal para visualización de imágenes -->
+  <div id="image-modal" class="fixed inset-0 z-50 hidden bg-abismo/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+      <button id="close-modal-btn" class="absolute -top-10 right-0 text-gray-300 hover:text-white px-3 py-1 text-sm font-semibold rounded-lg bg-white/10">✕ Cerrar</button>
+      <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-2xl border border-white/20">
+      <div class="mt-4 flex items-center gap-3">
+        <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-tech text-abismo font-bold text-xs shadow-glow-tech flex items-center gap-2 hover:brightness-110 transition-all">
+          ⬇ Descargar imagen
+        </a>
+      </div>
+    </div>
+  </div>
 
+  <!-- Contenedor de Toasts Flotantes -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+<script>
+  // Constantes de Configuración
+  const SERVER_URL = window.location.origin;
+  const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+
+  // Iconos SVG
   const FILE_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>';
   const CLIP_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>';
 
@@ -330,20 +385,26 @@
   const uptimeClock = document.getElementById('uptime-clock');
   const deviceLabel = document.getElementById('device-label');
   const serverLabel = document.getElementById('server-label');
-  const serverSince = document.getElementById('server-since');
-  const clipboardCard = document.getElementById('clipboard-card');
-  const clipboardText = document.getElementById('clipboard-text');
-  const syncBtn = document.getElementById('sync-clipboard-btn');
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('file-input');
-  const receivedFiles = document.getElementById('received-files');
-  const filesEmpty = document.getElementById('files-empty');
+  const chatFeed = document.getElementById('chat-feed');
+  const chatEmpty = document.getElementById('chat-empty');
+  const chatInput = document.getElementById('chat-input');
+  const chatSendBtn = document.getElementById('chat-send-btn');
+  const pasteClipboardBtn = document.getElementById('paste-clipboard-btn');
+  const attachFileBtn = document.getElementById('attach-file-btn');
+  const chatFileInput = document.getElementById('chat-file-input');
+  const clearChatBtn = document.getElementById('clear-chat-btn');
+  const dropOverlay = document.getElementById('drop-overlay');
   const activityFeed = document.getElementById('activity-feed');
   const activityEmpty = document.getElementById('activity-empty');
   const activityCount = document.getElementById('activity-count');
   const eventLog = document.getElementById('event-log');
+  const imageModal = document.getElementById('image-modal');
+  const modalImg = document.getElementById('modal-img');
+  const modalDownloadBtn = document.getElementById('modal-download-btn');
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  const toastContainer = document.getElementById('toast-container');
 
-  // Estado de sesión (métricas reales, no simuladas)
+  // Estado de Sesión y Métricas
   const sessionStart = Date.now();
   let lastTick = sessionStart;
   let totalConnectedMs = 0;
@@ -351,18 +412,62 @@
   let connectAttemptStart = performance.now();
   let activityTotal = 0;
   const counters = { events: 0, clipOut: 0, clipIn: 0, fileOut: 0, fileIn: 0, reconnect: 0 };
+  const sentMessageIds = new Set();
 
   serverLabel.textContent = SERVER_URL;
+
+  // Detección Completa de Dispositivo Local
+  function getDeviceDetails() {
+    const ua = navigator.userAgent;
+    let os = 'Dispositivo';
+    let icon = '💻';
+    let isMobile = false;
+
+    if (/Android/i.test(ua)) {
+      os = 'Android';
+      icon = '📱';
+      isMobile = true;
+    } else if (/iPhone|iPad|iPod/i.test(ua)) {
+      os = /iPad/i.test(ua) ? 'iPad' : 'iPhone';
+      icon = '📱';
+      isMobile = true;
+    } else if (/Windows/i.test(ua)) {
+      os = 'Windows';
+      icon = '💻';
+    } else if (/Mac OS/i.test(ua)) {
+      os = 'macOS';
+      icon = '💻';
+    } else if (/Linux/i.test(ua)) {
+      os = 'Linux';
+      icon = '💻';
+    }
+
+    let browser = 'Navegador';
+    if (/Edg\//i.test(ua)) browser = 'Edge';
+    else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browser = 'Chrome';
+    else if (/Firefox\//i.test(ua)) browser = 'Firefox';
+    else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browser = 'Safari';
+
+    return {
+      icon: icon,
+      deviceType: isMobile ? 'Móvil' : 'Laptop/PC',
+      name: `${icon} ${isMobile ? 'Móvil' : 'Laptop'} ${browser}`,
+      shortName: `${icon} ${browser} · ${os}`
+    };
+  }
+
+  const localDeviceInfo = getDeviceDetails();
+  deviceLabel.textContent = localDeviceInfo.shortName;
 
   function timestamp() {
     return new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
   function formatSize(bytes) {
-    if (bytes === undefined || bytes === null) return '—';
+    if (bytes === undefined || bytes === null || isNaN(bytes)) return '—';
     const units = ['B', 'KB', 'MB', 'GB'];
     let i = 0;
-    let value = bytes;
+    let value = Number(bytes);
     while (value >= 1024 && i < units.length - 1) { value /= 1024; i++; }
     return value.toFixed(value < 10 && i > 0 ? 1 : 0) + ' ' + units[i];
   }
@@ -375,34 +480,41 @@
     return h + ':' + m + ':' + s;
   }
 
-  function detectDevice() {
-    const ua = navigator.userAgent;
-    let os = 'dispositivo desconocido';
-    if (/Windows/i.test(ua)) os = 'Windows';
-    else if (/Mac OS/i.test(ua)) os = 'macOS';
-    else if (/Android/i.test(ua)) os = 'Android';
-    else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
-    else if (/Linux/i.test(ua)) os = 'Linux';
-    let browser = 'navegador';
-    if (/Edg\//.test(ua)) browser = 'Edge';
-    else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) browser = 'Chrome';
-    else if (/Firefox\//.test(ua)) browser = 'Firefox';
-    else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
-    return browser + ' · ' + os;
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
-  deviceLabel.textContent = detectDevice();
+
+  // Notificaciones Toast Flotantes
+  function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    const borderColor = type === 'error' ? 'border-red-500/60 text-red-300' : type === 'warn' ? 'border-amber-400/60 text-amber-300' : 'border-tech/50 text-gray-200';
+    toast.className = `log-enter pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-abismo/95 border ${borderColor} shadow-2xl text-xs backdrop-blur-xl transition-all duration-300`;
+    toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, 2800);
+  }
 
   function logEvent(message, tone) {
     const toneColor = tone === 'error' ? 'border-red-500/50' : tone === 'success' ? 'border-green-500/50' : tone === 'warn' ? 'border-amber-400/50' : 'border-tech/40';
     const entry = document.createElement('div');
-    entry.className = 'log-enter text-xs text-gray-300 border-l-2 ' + toneColor + ' pl-3 py-1';
+    entry.className = 'log-enter text-xs text-gray-300 border-l-2 ' + toneColor + ' pl-2.5 py-0.5 truncate';
     const ts = document.createElement('span');
-    ts.className = 'text-oro/70 font-mono';
+    ts.className = 'text-oro/70 font-mono text-[10px] mr-1.5';
     ts.textContent = timestamp();
     entry.appendChild(ts);
-    entry.appendChild(document.createTextNode(' — ' + message));
+    entry.appendChild(document.createTextNode(message));
     eventLog.prepend(entry);
-    while (eventLog.children.length > 80) eventLog.removeChild(eventLog.lastChild);
+    while (eventLog.children.length > 50) eventLog.removeChild(eventLog.lastChild);
   }
 
   function updateKpis() {
@@ -411,7 +523,7 @@
     document.getElementById('kpi-clip-in').textContent = counters.clipIn;
     document.getElementById('kpi-file-out').textContent = counters.fileOut;
     document.getElementById('kpi-file-in').textContent = counters.fileIn;
-    document.getElementById('kpi-reconnect').textContent = counters.reconnect;
+    activityCount.textContent = counters.events + (counters.events === 1 ? ' evento' : ' eventos');
   }
 
   function bump(key) {
@@ -419,99 +531,483 @@
     updateKpis();
   }
 
-  function flashCard(el) {
-    el.classList.remove('flash-sync');
-    void el.offsetWidth;
-    el.classList.add('flash-sync');
-  }
-
   function addActivityCard(type, title, detail) {
     if (activityEmpty) activityEmpty.remove();
     activityTotal++;
-    activityCount.textContent = activityTotal + (activityTotal === 1 ? ' evento' : ' eventos');
 
     const accents = {
-      'clip-out': { icon: CLIP_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/10 text-tech' },
-      'clip-in': { icon: CLIP_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/10 text-oro' },
-      'file-out': { icon: FILE_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/10 text-tech' },
-      'file-in': { icon: FILE_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/10 text-oro' },
+      'clip-out': { icon: CLIP_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/15 text-tech' },
+      'clip-in': { icon: CLIP_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/15 text-oro' },
+      'file-out': { icon: FILE_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/15 text-tech' },
+      'file-in': { icon: FILE_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/15 text-oro' },
     };
     const cfg = accents[type] || accents['file-in'];
 
     const card = document.createElement('div');
-    card.className = 'log-enter flex-shrink-0 w-56 rounded-2xl bg-abismo/60 border ' + cfg.ring + ' p-4 flex flex-col gap-2';
+    card.className = 'log-enter flex items-center justify-between gap-2.5 rounded-xl bg-abismo/60 border ' + cfg.ring + ' p-2.5';
 
     const iconWrap = document.createElement('div');
-    iconWrap.className = 'w-8 h-8 rounded-lg flex items-center justify-center ' + cfg.chip;
+    iconWrap.className = 'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ' + cfg.chip;
     iconWrap.innerHTML = cfg.icon;
 
+    const info = document.createElement('div');
+    info.className = 'min-w-0 flex-1';
+
     const titleEl = document.createElement('p');
-    titleEl.className = 'text-sm font-semibold text-gray-100 truncate';
+    titleEl.className = 'text-xs font-semibold text-gray-200 truncate';
     titleEl.textContent = title;
 
     const detailEl = document.createElement('p');
-    detailEl.className = 'text-[11px] text-gray-400 truncate';
+    detailEl.className = 'text-[10px] text-gray-400 truncate';
     detailEl.textContent = detail;
 
-    const timeEl = document.createElement('p');
-    timeEl.className = 'text-[10px] text-gray-500 font-mono mt-1';
+    info.appendChild(titleEl);
+    info.appendChild(detailEl);
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'text-[9px] text-gray-500 font-mono flex-shrink-0';
     timeEl.textContent = timestamp();
 
     card.appendChild(iconWrap);
-    card.appendChild(titleEl);
-    card.appendChild(detailEl);
+    card.appendChild(info);
     card.appendChild(timeEl);
 
     activityFeed.prepend(card);
-    while (activityFeed.children.length > 12) activityFeed.removeChild(activityFeed.lastChild);
+    while (activityFeed.children.length > 8) activityFeed.removeChild(activityFeed.lastChild);
   }
 
-  function renderReceivedFile(data) {
-    if (filesEmpty) filesEmpty.remove();
-    const name = (data && data.name) ? data.name : 'archivo';
-    const size = data ? formatSize(data.size) : '';
-    const href = (data && typeof data.data === 'string') ? data.data : '';
+  // Copia al Portapapeles con Retroalimentación Visual
+  async function copyToClipboard(text, buttonEl) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      if (buttonEl) {
+        const label = buttonEl.querySelector('.copy-label') || buttonEl;
+        const origText = label.textContent;
+        label.textContent = '✓ ¡Copiado!';
+        buttonEl.classList.add('bg-green-500/25', 'text-green-300', 'border-green-500/50');
+        showToast('Texto copiado al portapapeles');
+        setTimeout(() => {
+          label.textContent = origText;
+          buttonEl.classList.remove('bg-green-500/25', 'text-green-300', 'border-green-500/50');
+        }, 2000);
+      }
+    } catch (err) {
+      showToast('No se pudo copiar: permiso denegado', 'error');
+    }
+  }
 
-    const item = document.createElement('div');
-    item.className = 'log-enter flex items-center justify-between gap-3 rounded-xl bg-abismo/60 border border-tech/20 px-3 py-2.5';
+  // Creación de Burbujas de Texto (Estilo Chat Feed)
+  function createTextBubble({ id, isLocal, senderDevice, time, text }) {
+    const wrapper = document.createElement('div');
+    wrapper.id = id;
+    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
+
+    // Encabezado de la Burbuja
+    const header = document.createElement('div');
+    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-tech/90' : 'text-oro/90'}`;
+    header.innerHTML = `
+      <span class="font-semibold">${escapeHtml(senderDevice)}</span>
+      <span class="text-gray-400 font-mono text-[10px]">${escapeHtml(time)}</span>
+      ${isLocal ? '<span class="status-check text-[10px] text-tech font-bold" title="Transmitido">✓✓</span>' : ''}
+    `;
+
+    // Cuerpo de la Burbuja
+    const bubble = document.createElement('div');
+    bubble.className = `relative rounded-2xl p-3.5 sm:p-4 text-sm shadow-xl transition-all ${
+      isLocal 
+        ? 'bg-azulLocal border border-tech/40 text-gray-100 rounded-tr-sm shadow-glow-tech/15'
+        : 'bg-azulRemoto border border-oro/40 text-gray-100 rounded-tl-sm shadow-glow-oro/15'
+    }`;
+
+    const textEl = document.createElement('div');
+    textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words';
+    textEl.textContent = text;
+
+    // Botón Flotante "📋 Copiar"
+    const footerBar = document.createElement('div');
+    footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-1 border-t border-white/10';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+      isLocal
+        ? 'bg-tech/15 hover:bg-tech/30 text-tech border border-tech/30'
+        : 'bg-oro/15 hover:bg-oro/30 text-oro border border-oro/30'
+    }`;
+    copyBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+      </svg>
+      <span class="copy-label">📋 Copiar</span>
+    `;
+    copyBtn.addEventListener('click', () => copyToClipboard(text, copyBtn));
+
+    const lengthHint = document.createElement('span');
+    lengthHint.className = 'text-[10px] text-gray-400 font-mono';
+    lengthHint.textContent = text.length + ' caracteres';
+
+    footerBar.appendChild(copyBtn);
+    footerBar.appendChild(lengthHint);
+
+    bubble.appendChild(textEl);
+    bubble.appendChild(footerBar);
+    wrapper.appendChild(header);
+    wrapper.appendChild(bubble);
+
+    return wrapper;
+  }
+
+  // Creación de Burbujas de Archivo / Imagen
+  function createFileBubble({ id, isLocal, senderDevice, time, fileData }) {
+    const wrapper = document.createElement('div');
+    wrapper.id = id;
+    wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
+
+    const header = document.createElement('div');
+    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-tech/90' : 'text-oro/90'}`;
+    header.innerHTML = `
+      <span class="font-semibold">${escapeHtml(senderDevice)}</span>
+      <span class="text-gray-400 font-mono text-[10px]">${escapeHtml(time)}</span>
+      ${isLocal ? '<span class="status-check text-[10px] text-tech font-bold" title="Transmitido">✓✓</span>' : ''}
+    `;
+
+    const bubble = document.createElement('div');
+    bubble.className = `relative rounded-2xl p-3.5 sm:p-4 text-sm shadow-xl w-full max-w-sm sm:max-w-md ${
+      isLocal 
+        ? 'bg-azulLocal border border-tech/40 text-gray-100 rounded-tr-sm shadow-glow-tech/15'
+        : 'bg-azulRemoto border border-oro/40 text-gray-100 rounded-tl-sm shadow-glow-oro/15'
+    }`;
+
+    const fileName = fileData && fileData.name ? fileData.name : 'archivo';
+    const fileSize = formatSize(fileData ? fileData.size : 0);
+    const fileType = fileData && fileData.type ? fileData.type : '';
+    const fileHref = (fileData && typeof fileData.data === 'string') ? fileData.data : '';
+    const isImage = fileType.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(fileName);
+
+    // Si es Imagen: Vista previa destacada
+    if (isImage && fileHref) {
+      const imgWrap = document.createElement('div');
+      imgWrap.className = 'mb-3 rounded-xl overflow-hidden bg-abismo/80 border border-white/10 max-h-60 flex items-center justify-center cursor-pointer group relative';
+      imgWrap.innerHTML = `
+        <img src="${fileHref}" alt="${escapeHtml(fileName)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.02] transition-transform duration-300">
+        <div class="absolute inset-0 bg-abismo/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold backdrop-blur-[2px]">
+          🔍 Clic para ampliar
+        </div>
+      `;
+      imgWrap.addEventListener('click', () => openImageModal(fileHref, fileName));
+      bubble.appendChild(imgWrap);
+    }
+
+    // Tarjeta del Archivo
+    const card = document.createElement('div');
+    card.className = 'flex items-center justify-between gap-3 p-3 rounded-xl bg-abismo/70 border border-white/10';
 
     const left = document.createElement('div');
-    left.className = 'flex items-center gap-3 min-w-0';
-    const iconWrap = document.createElement('span');
-    iconWrap.className = 'text-tech flex-shrink-0';
-    iconWrap.innerHTML = FILE_ICON_SVG;
+    left.className = 'flex items-center gap-2.5 min-w-0';
+
+    const iconWrap = document.createElement('div');
+    iconWrap.className = `p-2 rounded-lg ${isLocal ? 'bg-tech/15 text-tech' : 'bg-oro/15 text-oro'} flex-shrink-0`;
+    iconWrap.innerHTML = isImage
+      ? `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`
+      : `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
+
     const info = document.createElement('div');
     info.className = 'min-w-0';
-    const nameEl = document.createElement('p');
-    nameEl.className = 'text-xs font-semibold text-gray-100 truncate';
-    nameEl.textContent = name;
-    const sizeEl = document.createElement('p');
-    sizeEl.className = 'text-[10px] text-gray-400';
-    sizeEl.textContent = size;
-    info.appendChild(nameEl);
-    info.appendChild(sizeEl);
+    info.innerHTML = `
+      <p class="font-semibold text-xs sm:text-sm text-gray-100 truncate" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</p>
+      <p class="text-[10px] text-gray-400 font-mono mt-0.5">${escapeHtml(fileSize)}</p>
+    `;
+
     left.appendChild(iconWrap);
     left.appendChild(info);
 
-    const link = document.createElement('a');
-    link.className = 'flex-shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-tech/15 text-tech border border-tech/40 hover:bg-tech/25 transition-colors';
-    if (href) {
-      link.href = href;
-      link.setAttribute('download', name);
-      link.textContent = 'Descargar';
+    const downloadLink = document.createElement('a');
+    downloadLink.className = `flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+      isLocal 
+        ? 'bg-tech/20 text-tech hover:bg-tech/30 border border-tech/40' 
+        : 'bg-oro/20 text-oro hover:bg-oro/30 border border-oro/40'
+    } ${!fileHref ? 'opacity-40 pointer-events-none' : ''}`;
+    
+    if (fileHref) {
+      downloadLink.href = fileHref;
+      downloadLink.download = fileName;
+      downloadLink.textContent = '⬇ Descargar';
     } else {
-      link.href = '#';
-      link.classList.add('opacity-40', 'pointer-events-none');
-      link.textContent = 'Sin datos';
+      downloadLink.href = '#';
+      downloadLink.textContent = 'Sin datos';
     }
 
-    item.appendChild(left);
-    item.appendChild(link);
-    receivedFiles.prepend(item);
-    while (receivedFiles.children.length > 6) receivedFiles.removeChild(receivedFiles.lastChild);
+    card.appendChild(left);
+    card.appendChild(downloadLink);
+    bubble.appendChild(card);
+
+    // Barra de Transferencia
+    const transferWrap = document.createElement('div');
+    transferWrap.className = 'mt-2.5 pt-2 border-t border-white/10';
+    transferWrap.innerHTML = `
+      <div class="w-full bg-abismo/80 rounded-full h-1.5 overflow-hidden border border-white/5">
+        <div class="bg-gradient-to-r ${isLocal ? 'from-tech to-[#54C7EC]' : 'from-oro to-[#F3D9A4]'} h-full rounded-full w-full"></div>
+      </div>
+      <div class="flex items-center justify-between text-[10px] text-gray-400 mt-1">
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Transferencia 100% completada</span>
+        <span class="font-mono text-gray-400">${escapeHtml(fileSize)}</span>
+      </div>
+    `;
+    bubble.appendChild(transferWrap);
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(bubble);
+
+    return wrapper;
   }
 
-  // Reloj de sesión y disponibilidad (gauge). Se recalcula cada segundo con tiempos reales.
+  // Agrega burbuja al Chat Feed con auto-desplazamiento
+  function appendChatBubble(el) {
+    if (chatEmpty && !chatEmpty.classList.contains('hidden')) {
+      chatEmpty.classList.add('hidden');
+    }
+    chatFeed.appendChild(el);
+    chatFeed.scrollTo({
+      top: chatFeed.scrollHeight,
+      behavior: 'smooth'
+    });
+
+    while (chatFeed.children.length > 100) {
+      const firstChild = chatFeed.querySelector('.log-enter');
+      if (firstChild) firstChild.remove();
+      else break;
+    }
+  }
+
+  function markBubbleSynced(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const check = el.querySelector('.status-check');
+    if (check) {
+      check.textContent = '✓✓';
+      check.classList.add('text-green-400');
+    }
+  }
+
+  // Envío de Mensaje de Texto (Emite 'send-clipboard')
+  function sendTextMessage(text) {
+    if (!text || !text.trim()) return;
+    const cleanText = text.trim();
+    const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    sentMessageIds.add(msgId);
+
+    const timeStr = timestamp();
+
+    // Renderiza inmediatamente burbuja local (derecha)
+    const bubbleEl = createTextBubble({
+      id: msgId,
+      isLocal: true,
+      senderDevice: localDeviceInfo.name + ' (Tú)',
+      time: timeStr,
+      text: cleanText
+    });
+    appendChatBubble(bubbleEl);
+
+    // Emite evento Socket.IO
+    socket.emit('send-clipboard', {
+      id: msgId,
+      senderId: socket.id,
+      senderDevice: localDeviceInfo.name,
+      text: cleanText,
+      timestamp: Date.now()
+    });
+
+    bump('clipOut');
+    bump('events');
+    const preview = cleanText.length > 50 ? cleanText.slice(0, 50) + '…' : cleanText;
+    logEvent('Portapapeles enviado: ' + preview);
+    addActivityCard('clip-out', 'Portapapeles enviado', preview);
+  }
+
+  // Envío de Archivo (Emite 'send-file')
+  function handleOutgoingFile(file) {
+    if (!file) return;
+    if (file.size > MAX_FILE_SIZE) {
+      showToast('El archivo supera el límite de ' + formatSize(MAX_FILE_SIZE), 'error');
+      logEvent('Archivo "' + file.name + '" supera el límite de ' + formatSize(MAX_FILE_SIZE) + '.', 'error');
+      return;
+    }
+
+    const fileMsgId = 'file_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    sentMessageIds.add(fileMsgId);
+
+    const timeStr = timestamp();
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const payload = {
+        id: fileMsgId,
+        senderId: socket.id,
+        senderDevice: localDeviceInfo.name,
+        name: file.name,
+        size: file.size,
+        type: file.type || 'application/octet-stream',
+        data: reader.result
+      };
+
+      // Renderiza inmediatamente burbuja local
+      const bubbleEl = createFileBubble({
+        id: fileMsgId,
+        isLocal: true,
+        senderDevice: localDeviceInfo.name + ' (Tú)',
+        time: timeStr,
+        fileData: payload
+      });
+      appendChatBubble(bubbleEl);
+
+      // Emite evento Socket.IO
+      socket.emit('send-file', payload);
+
+      bump('fileOut');
+      bump('events');
+      logEvent('Archivo enviado: ' + file.name + ' (' + formatSize(file.size) + ').', 'success');
+      addActivityCard('file-out', file.name, formatSize(file.size));
+      showToast('Archivo enviado: ' + file.name);
+    };
+
+    reader.onerror = () => {
+      showToast('Error al leer el archivo para envío', 'error');
+      logEvent('No se pudo leer el archivo "' + file.name + '".', 'error');
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  // Pegar desde Portapapeles del Sistema
+  async function handlePasteFromClipboard() {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim()) {
+          sendTextMessage(text.trim());
+          showToast('Portapapeles sincronizado exitosamente');
+          return;
+        } else {
+          showToast('El portapapeles del sistema está vacío', 'warn');
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Permiso de lectura de portapapeles bloqueado:', err);
+    }
+    chatInput.focus();
+    showToast('Pega directamente en el campo de texto (Ctrl+V)', 'warn');
+  }
+
+  // Auto-expansión del Campo de Texto
+  function autoResizeInput() {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+  }
+
+  chatInput.addEventListener('input', autoResizeInput);
+
+  // Manejo de Tecla Enter (Enter envía, Shift+Enter salto de línea)
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const val = chatInput.value;
+      if (val.trim()) {
+        sendTextMessage(val);
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+      }
+    }
+  });
+
+  chatSendBtn.addEventListener('click', () => {
+    const val = chatInput.value;
+    if (val.trim()) {
+      sendTextMessage(val);
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      chatInput.focus();
+    }
+  });
+
+  pasteClipboardBtn.addEventListener('click', handlePasteFromClipboard);
+
+  attachFileBtn.addEventListener('click', () => chatFileInput.click());
+
+  chatFileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length) {
+      handleOutgoingFile(e.target.files[0]);
+      chatFileInput.value = '';
+    }
+  });
+
+  clearChatBtn.addEventListener('click', () => {
+    chatFeed.innerHTML = '';
+    if (chatEmpty) {
+      chatEmpty.classList.remove('hidden');
+      chatFeed.appendChild(chatEmpty);
+    }
+    showToast('Feed de mensajes limpiado');
+  });
+
+  // Drag and Drop de Archivos sobre el Chat Feed
+  ['dragenter', 'dragover'].forEach((evt) => {
+    window.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropOverlay.classList.remove('hidden');
+      dropOverlay.classList.add('flex');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach((evt) => {
+    dropOverlay.addEventListener(evt, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropOverlay.classList.remove('flex');
+      dropOverlay.classList.add('hidden');
+    });
+  });
+
+  dropOverlay.addEventListener('drop', (e) => {
+    const files = e.dataTransfer.files;
+    if (files && files.length) {
+      handleOutgoingFile(files[0]);
+    }
+  });
+
+  // Modal de Imágenes
+  function openImageModal(src, title) {
+    modalImg.src = src;
+    modalDownloadBtn.href = src;
+    modalDownloadBtn.download = title || 'imagen';
+    imageModal.classList.remove('hidden');
+  }
+
+  closeModalBtn.addEventListener('click', () => {
+    imageModal.classList.add('hidden');
+    modalImg.src = '';
+  });
+
+  imageModal.addEventListener('click', (e) => {
+    if (e.target === imageModal) {
+      imageModal.classList.add('hidden');
+      modalImg.src = '';
+    }
+  });
+
+  // Reloj de Sesión y Disponibilidad
   function tick() {
     const now = Date.now();
     const delta = now - lastTick;
@@ -539,7 +1035,7 @@
     statusDot.classList.add('bg-green-500');
     statusText.classList.remove('text-red-400');
     statusText.classList.add('text-green-400');
-    statusText.textContent = 'P2P CONECTADO';
+    statusText.textContent = 'P2P ACTIVO';
     statusBadge.classList.remove('border-red-500/60', 'shadow-glow-red');
     statusBadge.classList.add('border-green-500/60', 'shadow-glow-green');
   }
@@ -558,126 +1054,115 @@
     const rtt = Math.round(performance.now() - connectAttemptStart);
     latencyValue.textContent = rtt + ' ms';
     isConnected = true;
-    serverSince.textContent = 'Conectado desde ' + timestamp();
-    heroStatusLine.textContent = 'Todo conectado. Listo para avanzar.';
-    heroSub.textContent = 'Enlace P2P estable con ' + SERVER_URL;
+    heroStatusLine.textContent = 'Enlace P2P Sincronizado';
+    heroSub.textContent = 'Conectado a ' + SERVER_URL;
     setConnectedUI();
     bump('events');
-    logEvent('Conexión P2P establecida con ' + SERVER_URL + '.', 'success');
+    logEvent('Conectado a SYNC ENGINE (' + SERVER_URL + ')', 'success');
   });
 
   socket.on('disconnect', () => {
     isConnected = false;
     connectAttemptStart = performance.now();
-    serverSince.textContent = 'Conexión perdida';
-    heroStatusLine.textContent = 'Enlace interrumpido.';
-    heroSub.textContent = 'Reintentando conexión con ' + SERVER_URL;
+    heroStatusLine.textContent = 'Enlace Interrumpido';
+    heroSub.textContent = 'Reintentando con ' + SERVER_URL;
     setDisconnectedUI();
     bump('events');
-    logEvent('Conexión perdida. Intentando reconectar...', 'error');
+    logEvent('Desconectado del servidor. Reconectando...', 'error');
   });
 
   socket.on('connect_error', (err) => {
     isConnected = false;
     setDisconnectedUI();
-    logEvent('Error de conexión: ' + (err && err.message ? err.message : 'servidor no disponible') + '.', 'error');
+    logEvent('Fallo de conexión: ' + (err && err.message ? err.message : 'no disponible'), 'error');
   });
 
   socket.on('reconnect_attempt', () => {
     bump('reconnect');
-    logEvent('Reintentando conexión con el servidor local...', 'warn');
+    logEvent('Reintentando enlace P2P...', 'warn');
   });
 
-  // Portapapeles
-  syncBtn.addEventListener('click', () => {
-    const text = clipboardText.value;
-    if (!text.trim()) return;
-    socket.emit('send-clipboard', { text });
-    flashCard(clipboardCard);
-    bump('clipOut');
-    bump('events');
-    const preview = text.length > 60 ? text.slice(0, 60) + '…' : text;
-    logEvent('Portapapeles enviado al dispositivo emparejado.');
-    addActivityCard('clip-out', 'Portapapeles enviado', preview);
-  });
-
+  // Manejo de 'receive-clipboard'
   socket.on('receive-clipboard', (data) => {
-    const text = (data && typeof data.text === 'string') ? data.text : '';
-    clipboardText.value = text;
-    flashCard(clipboardCard);
-    bump('clipIn');
-    bump('events');
-    const preview = text.length > 60 ? text.slice(0, 60) + '…' : text;
-    logEvent('Portapapeles recibido y actualizado.');
-    addActivityCard('clip-in', 'Portapapeles recibido', preview || '(vacío)');
-  });
+    const text = (data && typeof data === 'object' && typeof data.text === 'string') 
+      ? data.text 
+      : (typeof data === 'string' ? data : '');
 
-  // Archivos: lectura real vía FileReader (Base64 / DataURL)
-  ['dragenter', 'dragover'].forEach((evt) => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropZone.classList.add('drop-active');
-    });
-  });
+    if (!text) return;
 
-  ['dragleave', 'drop'].forEach((evt) => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropZone.classList.remove('drop-active');
-    });
-  });
+    const msgId = (data && data.id) ? data.id : null;
 
-  dropZone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files && files.length) handleOutgoingFile(files[0]);
-  });
-
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      fileInput.click();
-    }
-  });
-
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files.length) {
-      handleOutgoingFile(e.target.files[0]);
-      fileInput.value = '';
-    }
-  });
-
-  function handleOutgoingFile(file) {
-    if (file.size > MAX_FILE_SIZE) {
-      logEvent('Archivo "' + file.name + '" supera el límite de ' + formatSize(MAX_FILE_SIZE) + '. No se envió.', 'error');
+    // Si es nuestro propio mensaje retransmitido por io.emit:
+    if (msgId && sentMessageIds.has(msgId)) {
+      markBubbleSynced(msgId);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      socket.emit('send-file', { name: file.name, size: file.size, type: file.type, data: reader.result });
-      bump('fileOut');
-      bump('events');
-      logEvent('Archivo enviado: ' + file.name + ' (' + formatSize(file.size) + ').');
-      addActivityCard('file-out', file.name, formatSize(file.size));
-    };
-    reader.onerror = () => {
-      logEvent('No se pudo leer el archivo "' + file.name + '" para el envío.', 'error');
-    };
-    reader.readAsDataURL(file);
-  }
 
-  socket.on('receive-file', (data) => {
-    bump('fileIn');
+    // Mensaje Remoto Recibido
+    bump('clipIn');
     bump('events');
-    const name = (data && data.name) ? data.name : 'desconocido';
-    logEvent('Archivo recibido: ' + name + '.');
-    renderReceivedFile(data);
-    addActivityCard('file-in', name, data ? formatSize(data.size) : '');
+    const senderDevice = (data && data.senderDevice) ? data.senderDevice : '📱 Dispositivo remoto';
+    const rxId = msgId || ('rx_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+
+    const bubbleEl = createTextBubble({
+      id: rxId,
+      isLocal: false,
+      senderDevice: senderDevice,
+      time: timestamp(),
+      text: text
+    });
+    appendChatBubble(bubbleEl);
+
+    const preview = text.length > 50 ? text.slice(0, 50) + '…' : text;
+    logEvent('Portapapeles recibido de ' + senderDevice + ': ' + preview);
+    addActivityCard('clip-in', 'Portapapeles recibido', preview);
+    showToast('Nuevo texto recibido de ' + senderDevice);
   });
 
-  logEvent('Interfaz SYNC ENGINE inicializada. Buscando servidor local en ' + SERVER_URL + '...');
+  // Manejo de 'receive-file'
+  socket.on('receive-file', (data) => {
+    if (!data) return;
+    const msgId = data.id || null;
+
+    // Si es nuestro propio archivo retransmitido por io.emit:
+    if (msgId && sentMessageIds.has(msgId)) {
+      markBubbleSynced(msgId);
+      return;
+    }
+
+    // Archivo Remoto Recibido
+    bump('fileIn');
+    bump('events');
+    const name = data.name || 'archivo';
+    const senderDevice = data.senderDevice || '📱 Dispositivo remoto';
+    const rxId = msgId || ('rx_file_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+
+    const bubbleEl = createFileBubble({
+      id: rxId,
+      isLocal: false,
+      senderDevice: senderDevice,
+      time: timestamp(),
+      fileData: data
+    });
+    appendChatBubble(bubbleEl);
+
+    logEvent('Archivo recibido de ' + senderDevice + ': ' + name + ' (' + formatSize(data.size) + ').', 'success');
+    addActivityCard('file-in', name, formatSize(data.size));
+    showToast('Archivo recibido: ' + name);
+  });
+
+  // Registro de Service Worker para PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        logEvent('Service Worker PWA registrado (' + reg.scope + ')');
+      }).catch((err) => {
+        console.warn('Registro de Service Worker PWA:', err.message);
+      });
+    });
+  }
+
+  logEvent('SYNC ENGINE listo en ' + SERVER_URL);
 </script>
 
 </body>
