@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYNC ENGINE | Chat de Sincronización en Tiempo Real</title>
+<title>SYNC ENGINE | Dark Mode Tech Dashboard &amp; P2P Chat</title>
 
 <!-- Metadatos PWA -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SyncEngine">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230A1A3A'/%3E%3Cpath d='M30 50 L45 65 L70 35' stroke='%2338B6FF' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='50' cy='50' r='42' stroke='%23C5A059' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231E202A'/%3E%3Cpath d='M30 50 L45 65 L70 35' stroke='%23FF5500' stroke-width='10' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='50' cy='50' r='42' stroke='%23FF5500' stroke-width='4' fill='none'/%3E%3C/svg%3E">
 <link rel="manifest" href="/manifest.json">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.socket.io/4.8.3/socket.io.min.js" integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0" crossorigin="anonymous"></script>
@@ -24,23 +24,23 @@
     theme: {
       extend: {
         colors: {
-          noche: '#0A1A3A',
-          abismo: '#050D1D',
-          oro: '#C5A059',
-          tech: '#38B6FF',
-          azulLocal: '#1D3560',
-          azulRemoto: '#112347'
+          darkBg: '#121316',
+          panel: '#1E202A',
+          panelDark: '#161820',
+          panelCard: '#252834',
+          borderMuted: '#2D313D',
+          neonOrange: '#FF5500',
+          neonOrangeHover: '#FF6B1A',
+          textMuted: '#A0A5B1',
         },
         fontFamily: {
-          heading: ['Montserrat', 'sans-serif'],
           sans: ['Inter', 'sans-serif'],
+          heading: ['Inter', 'sans-serif'],
         },
         boxShadow: {
-          'glow-oro': '0 0 22px rgba(197,160,89,0.5), 0 0 44px rgba(197,160,89,0.2)',
-          'glow-oro-hover': '0 0 32px rgba(197,160,89,0.8), 0 0 60px rgba(197,160,89,0.3)',
-          'glow-tech': '0 0 18px rgba(56,182,255,0.35)',
-          'glow-green': '0 0 16px rgba(34,197,94,0.7)',
-          'glow-red': '0 0 16px rgba(239,68,68,0.7)',
+          'glow-orange': '0 0 20px rgba(255, 85, 0, 0.4), 0 0 40px rgba(255, 85, 0, 0.15)',
+          'glow-orange-subtle': '0 0 12px rgba(255, 85, 0, 0.25)',
+          'panel-depth': '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.3)',
         },
       },
     },
@@ -49,35 +49,28 @@
 
 <style>
   html, body {
-    background: radial-gradient(ellipse 120% 80% at 12% -10%, #10285C 0%, #0A1A3A 45%, #050D1D 85%, #030812 100%);
-    background-attachment: fixed;
+    background-color: #121316;
+    color: #FFFFFF;
     min-height: 100vh;
   }
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.4); border-radius: 999px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(197,160,89,0.7); }
+  ::-webkit-scrollbar-thumb { background: #2D313D; border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #FF5500; }
   ::-webkit-scrollbar-track { background: transparent; }
 
-  .glass {
-    background: rgba(10, 26, 58, 0.52);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-  }
-
-  .infinito {
-    background: linear-gradient(135deg, #F3D9A4 0%, #C5A059 42%, #8A6A31 68%, #EED9A6 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .bento-card {
+    background-color: #1E202A;
+    border: 1px solid #2D313D;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
   }
 
   .gauge-ring {
     --pct: 0%;
-    width: 136px;
-    height: 136px;
+    width: 120px;
+    height: 120px;
     border-radius: 9999px;
-    background: conic-gradient(#38B6FF var(--pct), rgba(255,255,255,0.08) 0);
+    background: conic-gradient(#FF5500 var(--pct), rgba(255,255,255,0.06) 0);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -88,30 +81,23 @@
   .gauge-ring::after {
     content: '';
     position: absolute;
-    inset: 10px;
+    inset: 8px;
     border-radius: 9999px;
-    background: radial-gradient(circle at 30% 20%, #123068 0%, #050D1D 78%);
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.55);
+    background: #161820;
+    box-shadow: inset 0 0 14px rgba(0,0,0,0.7);
   }
   .gauge-value { position: relative; z-index: 1; text-align: center; }
 
-  .pulse-dot { animation: pulse-dot 1.7s ease-in-out infinite; }
-  @keyframes pulse-dot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: .5; transform: scale(1.3); }
+  .pulse-dot { animation: pulse-orange 1.8s ease-in-out infinite; }
+  @keyframes pulse-orange {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #FF5500; }
+    50% { opacity: 0.6; transform: scale(1.25); box-shadow: 0 0 18px #FF5500; }
   }
 
-  .log-enter { animation: log-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+  .log-enter { animation: log-enter 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
   @keyframes log-enter {
-    from { opacity: 0; transform: translateY(8px); }
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
-  }
-
-  .flash-sync { animation: flash-sync 0.8s ease-out; }
-  @keyframes flash-sync {
-    0% { box-shadow: 0 0 0 0 rgba(56,182,255,0.9); }
-    35% { box-shadow: 0 0 0 6px rgba(56,182,255,0.25); }
-    100% { box-shadow: 0 0 0 0 rgba(56,182,255,0); }
   }
 
   #drop-overlay.active { display: flex; }
@@ -119,120 +105,159 @@
   .no-scrollbar { -ms-overflow-style: none; }
 </style>
 </head>
-<body class="font-sans text-gray-100 antialiased selection:bg-tech/30 selection:text-white">
+<body class="font-sans text-gray-100 antialiased selection:bg-[#FF5500]/30 selection:text-white">
 
-  <!-- Fondos luminosos sutiles -->
-  <div aria-hidden="true" class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-    <div class="absolute -top-32 -left-32 w-[560px] h-[560px] bg-tech/10 blur-[140px] rounded-full"></div>
-    <div class="absolute top-1/3 -right-40 w-[520px] h-[520px] bg-oro/10 blur-[160px] rounded-full"></div>
-    <div class="absolute bottom-[-10%] left-1/4 w-[460px] h-[380px] bg-indigo-500/10 blur-[150px] rounded-full"></div>
-  </div>
-
-  <!-- Header Superior -->
-  <header class="sticky top-0 z-40 border-b border-oro/25 bg-abismo/85 backdrop-blur-xl">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4 flex-wrap">
+  <!-- Header Superior Compacto (Dark Mode Tech) -->
+  <header class="sticky top-0 z-40 border-b border-[#2D313D] bg-[#1E202A]/90 backdrop-blur-xl">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+      
+      <!-- Brand & Título -->
       <div class="flex items-center gap-3">
-        <span class="font-heading text-2xl font-black tracking-tight infinito">JB∞</span>
-        <span class="text-oro/40 font-light">|</span>
-        <span class="text-sm font-semibold tracking-wide text-gray-200">Barrantes Co.</span>
-      </div>
-
-      <div class="flex flex-col items-center leading-tight">
-        <h1 class="font-heading text-lg sm:text-xl font-extrabold tracking-[0.14em] text-tech">SYNC ENGINE</h1>
-        <p class="text-[10px] sm:text-xs text-gray-400 tracking-wider">Chat &amp; Portapapeles P2P en Tiempo Real</p>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div id="status-badge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-abismo/70 border border-red-500/60 shadow-glow-red transition-all duration-500">
-          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 pulse-dot flex-shrink-0"></span>
-          <span id="status-text" class="text-xs font-bold tracking-wider text-red-400 whitespace-nowrap">RECONECTANDO</span>
+        <div class="w-8 h-8 rounded-lg bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] font-black tracking-tight text-sm shadow-glow-orange-subtle">
+          JB
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base sm:text-lg tracking-wide text-white">SYNC ENGINE</h1>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF5500]/15 text-[#FF5500] border border-[#FF5500]/30">PRO</span>
+          </div>
+          <p class="text-[11px] text-[#A0A5B1]">P2P Realtime Sync Engine · Barrantes Co.</p>
         </div>
       </div>
+
+      <!-- Indicador de Estado Activo Naranja Neón -->
+      <div class="flex items-center gap-3">
+        <div id="status-badge" class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#161820] border border-[#2D313D] transition-all duration-300">
+          <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-[#FF5500] pulse-dot flex-shrink-0"></span>
+          <span id="status-text" class="text-xs font-bold tracking-wider text-[#FF5500] whitespace-nowrap">CONECTANDO</span>
+        </div>
+      </div>
+
     </div>
   </header>
 
   <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
 
-    <!-- Panel Superior Colapsable / Resumen de Conexión & KPIs -->
-    <section class="glass rounded-3xl border border-oro/25 p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-      <!-- Columna Enlace -->
-      <div class="lg:col-span-4 flex items-center gap-4">
+    <!-- BENTO GRID DASHBOARD: ESTADO, DISPOSITIVOS & KPIS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
+      
+      <!-- Bento 1: Disponibilidad y Latencia (lg:col-span-4) -->
+      <div class="bento-card rounded-2xl p-5 flex items-center gap-4 lg:col-span-4">
         <div id="gauge-ring" class="gauge-ring">
           <div class="gauge-value">
-            <span id="gauge-pct" class="block font-heading text-2xl font-extrabold text-tech">0%</span>
-            <span class="block text-[9px] tracking-wider text-gray-400 uppercase">disponible</span>
+            <span id="gauge-pct" class="block font-black text-2xl text-[#FF5500]">0%</span>
+            <span class="block text-[9px] tracking-wider text-[#A0A5B1] uppercase font-semibold">uptime</span>
           </div>
         </div>
         <div class="min-w-0 flex-1">
-          <p class="text-[10px] uppercase tracking-widest text-oro font-semibold">Estado P2P</p>
-          <h2 id="hero-status-line" class="font-heading text-lg font-bold truncate mt-0.5">Conectando...</h2>
-          <p id="hero-sub" class="text-xs text-gray-400 truncate mt-0.5">Sincronizando socket</p>
+          <p class="text-[10px] uppercase tracking-widest text-[#FF5500] font-bold">Estado del Enlace</p>
+          <h2 id="hero-status-line" class="font-bold text-base text-white truncate mt-0.5">Sincronizando socket...</h2>
+          <p id="hero-sub" class="text-xs text-[#A0A5B1] truncate mt-0.5">Buscando enlace local</p>
           <div class="flex items-center gap-3 mt-2 text-xs">
-            <span class="text-gray-400">Latencia: <strong id="latency-value" class="text-tech font-mono">—</strong></span>
-            <span class="text-gray-400">Sesión: <strong id="uptime-clock" class="text-oro font-mono">00:00:00</strong></span>
+            <span class="text-[#A0A5B1]">Latencia: <strong id="latency-value" class="text-[#FF5500] font-mono">—</strong></span>
+            <span class="text-[#A0A5B1]">Sesión: <strong id="uptime-clock" class="text-white font-mono">00:00:00</strong></span>
           </div>
         </div>
       </div>
 
-      <!-- Columna Dispositivos y KPIs Rápidos -->
-      <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="rounded-2xl bg-abismo/60 border border-tech/20 p-3">
-          <p class="text-[10px] uppercase text-gray-400 tracking-wider">Dispositivo Local</p>
-          <p id="device-label" class="font-heading text-xs font-bold text-gray-100 truncate mt-1">Detectando…</p>
-          <p id="server-label" class="text-[10px] text-gray-500 truncate mt-0.5">—</p>
+      <!-- Bento 2: Dispositivo Local Detectado (lg:col-span-3) -->
+      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Dispositivo Local</span>
+          <span class="w-2 h-2 rounded-full bg-[#FF5500]"></span>
         </div>
-
-        <div class="rounded-2xl bg-abismo/60 border border-tech/20 p-3 flex flex-col justify-between">
-          <span class="text-[10px] uppercase text-gray-400 tracking-wider">Portapapeles</span>
-          <div class="flex items-baseline justify-between mt-1">
-            <span class="text-xs text-tech">↑ <span id="kpi-clip-out">0</span></span>
-            <span class="text-xs text-oro">↓ <span id="kpi-clip-in">0</span></span>
-          </div>
-          <span class="text-[9px] text-gray-500">enviados / recibidos</span>
+        <div class="my-2">
+          <p id="device-label" class="font-bold text-sm text-white truncate">Detectando equipo…</p>
+          <p id="server-label" class="text-[11px] text-[#A0A5B1] font-mono truncate mt-0.5">—</p>
         </div>
-
-        <div class="rounded-2xl bg-abismo/60 border border-oro/20 p-3 flex flex-col justify-between">
-          <span class="text-[10px] uppercase text-gray-400 tracking-wider">Archivos</span>
-          <div class="flex items-baseline justify-between mt-1">
-            <span class="text-xs text-tech">↑ <span id="kpi-file-out">0</span></span>
-            <span class="text-xs text-oro">↓ <span id="kpi-file-in">0</span></span>
-          </div>
-          <span class="text-[9px] text-gray-500">enviados / recibidos</span>
-        </div>
-
-        <div class="rounded-2xl bg-abismo/60 border border-amber-400/20 p-3 flex flex-col justify-between">
-          <span class="text-[10px] uppercase text-gray-400 tracking-wider">Eventos Totales</span>
-          <p id="kpi-events" class="font-heading text-xl font-black text-gray-100 mt-0.5">0</p>
-          <span id="activity-count" class="text-[9px] text-gray-500">0 sincronizaciones</span>
+        <div class="text-[10px] text-[#A0A5B1] pt-2 border-t border-[#2D313D] flex items-center justify-between">
+          <span>Modo: WebSocket P2P</span>
+          <span class="text-[#FF5500] font-semibold">Listo</span>
         </div>
       </div>
+
+      <!-- Bento 3: Métricas de Portapapeles (lg:col-span-2) -->
+      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Portapapeles</span>
+          <div class="p-1 rounded bg-[#FF5500]/10 text-[#FF5500]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between my-2">
+          <div>
+            <span class="text-xs text-[#A0A5B1] block">Enviados</span>
+            <span id="kpi-clip-out" class="font-black text-xl text-white">0</span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-[#A0A5B1] block">Recibidos</span>
+            <span id="kpi-clip-in" class="font-black text-xl text-[#FF5500]">0</span>
+          </div>
+        </div>
+        <p class="text-[9px] text-[#A0A5B1] pt-2 border-t border-[#2D313D]">Sincronización instantánea</p>
+      </div>
+
+      <!-- Bento 4: Métricas de Archivos (lg:col-span-2) -->
+      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Archivos</span>
+          <div class="p-1 rounded bg-[#FF5500]/10 text-[#FF5500]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/>
+            </svg>
+          </div>
+        </div>
+        <div class="flex items-baseline justify-between my-2">
+          <div>
+            <span class="text-xs text-[#A0A5B1] block">Enviados</span>
+            <span id="kpi-file-out" class="font-black text-xl text-white">0</span>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-[#A0A5B1] block">Recibidos</span>
+            <span id="kpi-file-in" class="font-black text-xl text-[#FF5500]">0</span>
+          </div>
+        </div>
+        <p class="text-[9px] text-[#A0A5B1] pt-2 border-t border-[#2D313D]">Límite hasta 20 MB</p>
+      </div>
+
+      <!-- Bento 5: Total Eventos (lg:col-span-1) -->
+      <div class="bento-card rounded-2xl p-5 flex flex-col justify-between lg:col-span-1">
+        <span class="text-[10px] uppercase text-[#A0A5B1] font-bold tracking-wider">Total</span>
+        <div class="my-1">
+          <p id="kpi-events" class="font-black text-2xl text-[#FF5500]">0</p>
+        </div>
+        <span id="activity-count" class="text-[9px] text-[#A0A5B1] truncate">0 eventos</span>
+      </div>
+
     </section>
 
-    <!-- ÁREA PRINCIPAL: CHAT FEED + PANEL DE EVENTOS -->
+    <!-- ÁREA PRINCIPAL: BENTO CHAT FEED & LATERAL TELEMETRÍA -->
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
 
-      <!-- SECCIÓN DEL CHAT DE SINCRONIZACIÓN (FEED / MOBILE-FIRST) -->
-      <section class="xl:col-span-8 glass rounded-3xl border border-oro/25 flex flex-col h-[740px] max-h-[86vh] relative shadow-2xl overflow-hidden">
+      <!-- PANEL PRINCIPAL: CHAT DE TRANSMISIÓN (Dark Mode Tech Naranja) -->
+      <section class="xl:col-span-8 bento-card rounded-2xl flex flex-col h-[740px] max-h-[86vh] relative overflow-hidden">
         
-        <!-- Header del Chat -->
-        <div class="px-5 py-3.5 border-b border-oro/20 bg-abismo/80 backdrop-blur-md flex items-center justify-between gap-3">
+        <!-- Header del Feed -->
+        <div class="px-5 py-3.5 border-b border-[#2D313D] bg-[#161820]/90 backdrop-blur-md flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-tech/20 to-oro/20 border border-tech/30 flex items-center justify-center text-tech flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div class="w-8 h-8 rounded-lg bg-[#FF5500]/15 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
               </svg>
             </div>
             <div class="min-w-0">
-              <h2 class="font-heading text-sm sm:text-base font-bold text-gray-100 flex items-center gap-2 truncate">
-                Feed de Sincronización
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/15 text-green-400 border border-green-500/30">En Vivo</span>
+              <h2 class="font-bold text-sm sm:text-base text-white flex items-center gap-2 truncate">
+                Feed de Transmisión
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF5500]/15 text-[#FF5500] border border-[#FF5500]/30">Activo</span>
               </h2>
-              <p class="text-[11px] text-gray-400 truncate">Transmisión instantánea de texto, portapapeles y archivos</p>
+              <p class="text-[11px] text-[#A0A5B1] truncate">Canal P2P cifrado · Portapapeles, texto y archivos</p>
             </div>
           </div>
 
           <div class="flex items-center gap-2">
-            <button id="clear-chat-btn" title="Limpiar feed local" class="px-2.5 py-1.5 rounded-lg bg-abismo/70 text-gray-400 hover:text-gray-200 border border-white/10 hover:border-oro/30 text-xs transition-colors flex items-center gap-1">
+            <button id="clear-chat-btn" title="Limpiar feed local" class="px-3 py-1.5 rounded-lg bg-[#252834] text-[#A0A5B1] hover:text-white border border-[#2D313D] hover:border-[#FF5500]/40 text-xs font-semibold transition-all flex items-center gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
@@ -242,49 +267,49 @@
         </div>
 
         <!-- Drop Overlay para Drag and Drop de archivos -->
-        <div id="drop-overlay" class="absolute inset-0 z-30 bg-abismo/90 border-2 border-dashed border-tech backdrop-blur-md hidden flex-col items-center justify-center gap-3 p-6 text-center transition-all pointer-events-none">
-          <div class="w-16 h-16 rounded-2xl bg-tech/20 border border-tech/40 flex items-center justify-center text-tech animate-bounce">
+        <div id="drop-overlay" class="absolute inset-0 z-30 bg-[#121316]/95 border-2 border-dashed border-[#FF5500] backdrop-blur-md hidden flex-col items-center justify-center gap-3 p-6 text-center transition-all pointer-events-none">
+          <div class="w-16 h-16 rounded-2xl bg-[#FF5500]/20 border border-[#FF5500]/40 flex items-center justify-center text-[#FF5500] animate-bounce shadow-glow-orange">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M7 9l5-5 5 5M12 4v12"/>
             </svg>
           </div>
-          <p class="font-heading text-lg font-bold text-tech">Suelta el archivo aquí para transmitirlo</p>
-          <p class="text-xs text-gray-400">Se enviará inmediatamente a los dispositivos emparejados</p>
+          <p class="font-bold text-lg text-[#FF5500]">Suelta el archivo aquí para transmitirlo</p>
+          <p class="text-xs text-[#A0A5B1]">Se sincronizará en tiempo real con todos los dispositivos</p>
         </div>
 
         <!-- CONTENEDOR PRINCIPAL: CHAT FEED -->
-        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth">
-          <!-- Mensaje de bienvenida / Estado vacío inicial -->
-          <div id="chat-empty" class="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500">
-            <div class="w-14 h-14 rounded-2xl bg-tech/10 border border-tech/25 flex items-center justify-center text-tech/60 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 scroll-smooth bg-[#121316]/40">
+          <div id="chat-empty" class="h-full flex flex-col items-center justify-center text-center p-6 text-[#A0A5B1]">
+            <div class="w-12 h-12 rounded-xl bg-[#252834] border border-[#2D313D] flex items-center justify-center text-[#FF5500] mb-3 shadow-panel-depth">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
               </svg>
             </div>
-            <p class="text-sm font-semibold text-gray-300">Canal de Sincronización Listo</p>
-            <p class="text-xs text-gray-500 max-w-sm mt-1">Escribe un mensaje, pega el portapapeles o adjunta archivos para compartirlos en tiempo real.</p>
+            <p class="text-sm font-semibold text-white">Canal de Sincronización Vacío</p>
+            <p class="text-xs text-[#A0A5B1] max-w-sm mt-1">Envía un mensaje de texto, pega tu portapapeles o adjunta archivos para compartirlos al instante.</p>
           </div>
         </div>
 
-        <!-- ÁREA INFERIOR DE ENTRADA (INPUT BAR) -->
-        <div id="input-bar" class="p-3 sm:p-4 bg-abismo/90 border-t border-oro/20 backdrop-blur-xl flex flex-col gap-2.5">
+        <!-- BARRA DE ENTRADA INFERIOR (Dark Mode Tech & Naranja Neón) -->
+        <div id="input-bar" class="p-3 sm:p-4 bg-[#161820] border-t border-[#2D313D] flex flex-col gap-2.5">
           
-          <!-- Fila de Acciones Rápidas (Pegar & Adjuntar) -->
+          <!-- Botones de Acción Rápida -->
           <div class="flex items-center justify-between gap-2 px-1">
             <div class="flex items-center gap-2">
-              <!-- Botón Pegar Portapapeles -->
-              <button id="paste-clipboard-btn" type="button" title="Pegar y enviar desde el portapapeles del sistema"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-oro/15 hover:bg-oro/25 text-oro border border-oro/30 text-xs font-semibold active:scale-95 transition-all">
+              
+              <!-- Botón Pegar Portapapeles (Destacado Naranja) -->
+              <button id="paste-clipboard-btn" type="button" title="Pegar y transmitir desde el portapapeles del sistema"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30 text-xs font-semibold active:scale-95 transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
-                <span>Pegar del portapapeles</span>
+                <span>Pegar portapapeles</span>
               </button>
 
               <!-- Botón Adjuntar Archivo (Clip) -->
               <button id="attach-file-btn" type="button" title="Adjuntar archivo o imagen"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-tech/15 hover:bg-tech/25 text-tech border border-tech/30 text-xs font-semibold active:scale-95 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D] text-xs font-semibold active:scale-95 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#FF5500]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                 </svg>
                 <span>Adjuntar archivo</span>
@@ -292,22 +317,22 @@
               <input type="file" id="chat-file-input" title="Seleccionar archivo para enviar" aria-label="Seleccionar archivo para enviar" class="hidden">
             </div>
 
-            <span id="char-counter" class="text-[10px] text-gray-500 font-mono hidden sm:inline">Shift+Enter para salto de línea</span>
+            <span class="text-[10px] text-[#A0A5B1] font-mono hidden sm:inline">Enter para enviar · Shift+Enter para salto</span>
           </div>
 
-          <!-- Fila de Entrada Principal -->
+          <!-- Campo de Texto y Botón de Enviar de Alto Contraste -->
           <div class="flex items-end gap-2">
             <div class="flex-1 relative">
               <label for="chat-input" class="sr-only">Mensaje o texto a sincronizar</label>
-              <textarea id="chat-input" rows="1" placeholder="Escribe o pega texto (Enter para enviar)..."
-                class="w-full resize-none rounded-2xl bg-noche/80 border border-tech/30 focus:border-tech focus:ring-2 focus:ring-tech/25 outline-none px-4 py-3 text-sm text-gray-100 placeholder-gray-500 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
+              <textarea id="chat-input" rows="1" placeholder="Escribe o pega texto para sincronizar..."
+                class="w-full resize-none rounded-xl bg-[#121316] border border-[#2D313D] focus:border-[#FF5500] focus:ring-1 focus:ring-[#FF5500]/30 outline-none px-4 py-3 text-sm text-white placeholder-[#A0A5B1]/50 max-h-36 overflow-y-auto leading-relaxed transition-all"></textarea>
             </div>
 
-            <!-- Botón de Enviar -->
+            <!-- Botón de Envío Naranja Neón de Alto Impacto -->
             <button id="chat-send-btn" type="button" title="Enviar mensaje (Enter)"
-              class="h-11 px-5 rounded-2xl bg-gradient-to-r from-tech via-[#2C9CE6] to-azulLocal text-white font-bold text-sm shadow-glow-tech hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 transition-all flex-shrink-0">
+              class="h-11 px-5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-sm shadow-glow-orange active:scale-95 flex items-center justify-center gap-2 transition-all flex-shrink-0 cursor-pointer">
               <span>Enviar</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
               </svg>
             </button>
@@ -316,28 +341,31 @@
 
       </section>
 
-      <!-- COLUMNA LATERAL: LOG DE ACTIVIDAD & TELEMETRÍA EN VIVO -->
+      <!-- COLUMNA LATERAL: ACTIVIDAD RECIENTE & TELEMETRÍA EN VIVO -->
       <aside class="xl:col-span-4 flex flex-col gap-6">
 
-        <!-- Actividad Reciente (Tarjetas Horizontales) -->
-        <div class="glass rounded-3xl border border-oro/25 p-5">
+        <!-- Actividad Reciente -->
+        <div class="bento-card rounded-2xl p-5">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="font-heading text-xs uppercase tracking-wider text-oro font-bold">Actividad Reciente</h3>
-            <span class="text-[10px] text-gray-400 font-mono" id="feed-time-indicator">Sincronizado</span>
+            <h3 class="font-bold text-xs uppercase tracking-wider text-white flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#FF5500]"></span>
+              Actividad Reciente
+            </h3>
+            <span class="text-[10px] text-[#A0A5B1] font-mono">En vivo</span>
           </div>
-          <div id="activity-feed" class="flex flex-col gap-2.5 max-h-48 overflow-y-auto pr-1">
-            <p id="activity-empty" class="text-xs text-gray-500 italic py-4 text-center">Sin actividad reciente aún.</p>
+          <div id="activity-feed" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+            <p id="activity-empty" class="text-xs text-[#A0A5B1] italic py-4 text-center">Sin actividad reciente registrada.</p>
           </div>
         </div>
 
-        <!-- Log de Eventos en Tiempo Real -->
-        <div class="glass rounded-3xl border border-oro/25 p-5 flex flex-col gap-3">
+        <!-- Telemetría y Log del Socket -->
+        <div class="bento-card rounded-2xl p-5 flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <h3 class="font-heading text-xs uppercase tracking-wider text-tech font-bold flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-tech pulse-dot"></span>
-              Telemetría en Vivo
+            <h3 class="font-bold text-xs uppercase tracking-wider text-[#FF5500] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#FF5500] pulse-dot"></span>
+              Telemetría de Socket
             </h3>
-            <span class="text-[10px] text-gray-500 font-mono">Socket.IO</span>
+            <span class="text-[10px] text-[#A0A5B1] font-mono">v4.8.3</span>
           </div>
           <div id="event-log" class="flex flex-col-reverse gap-2 overflow-y-auto max-h-[380px] pr-1 font-mono text-xs"></div>
         </div>
@@ -348,14 +376,14 @@
 
   </main>
 
-  <!-- Modal para visualización de imágenes -->
-  <div id="image-modal" class="fixed inset-0 z-50 hidden bg-abismo/90 backdrop-blur-md flex items-center justify-center p-4">
+  <!-- Modal para Visualización de Imágenes -->
+  <div id="image-modal" class="fixed inset-0 z-50 hidden bg-[#121316]/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-      <button id="close-modal-btn" class="absolute -top-10 right-0 text-gray-300 hover:text-white px-3 py-1 text-sm font-semibold rounded-lg bg-white/10">✕ Cerrar</button>
-      <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-2xl border border-white/20">
+      <button id="close-modal-btn" class="absolute -top-10 right-0 text-[#A0A5B1] hover:text-white px-3 py-1 text-xs font-semibold rounded-lg bg-[#1E202A] border border-[#2D313D]">✕ Cerrar</button>
+      <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-panel-depth border border-[#2D313D]">
       <div class="mt-4 flex items-center gap-3">
-        <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-tech text-abismo font-bold text-xs shadow-glow-tech flex items-center gap-2 hover:brightness-110 transition-all">
-          ⬇ Descargar imagen
+        <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-[#FF5500] hover:bg-[#FF6B1A] text-black font-extrabold text-xs shadow-glow-orange flex items-center gap-2 transition-all">
+          ⬇ Descargar archivo original
         </a>
       </div>
     </div>
@@ -416,7 +444,7 @@
 
   serverLabel.textContent = SERVER_URL;
 
-  // Detección Completa de Dispositivo Local
+  // Detección de Dispositivo Local
   function getDeviceDetails() {
     const ua = navigator.userAgent;
     let os = 'Dispositivo';
@@ -450,8 +478,8 @@
 
     return {
       icon: icon,
-      deviceType: isMobile ? 'Móvil' : 'Laptop/PC',
-      name: `${icon} ${isMobile ? 'Móvil' : 'Laptop'} ${browser}`,
+      deviceType: isMobile ? 'Móvil' : 'PC',
+      name: `${icon} ${isMobile ? 'Móvil' : 'PC'} ${browser}`,
       shortName: `${icon} ${browser} · ${os}`
     };
   }
@@ -490,12 +518,12 @@
       .replace(/'/g, '&#039;');
   }
 
-  // Notificaciones Toast Flotantes
+  // Notificaciones Toast Flotantes (Dark Mode Naranja)
   function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    const borderColor = type === 'error' ? 'border-red-500/60 text-red-300' : type === 'warn' ? 'border-amber-400/60 text-amber-300' : 'border-tech/50 text-gray-200';
-    toast.className = `log-enter pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-abismo/95 border ${borderColor} shadow-2xl text-xs backdrop-blur-xl transition-all duration-300`;
-    toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+    const borderColor = type === 'error' ? 'border-red-500/80 text-red-300' : type === 'warn' ? 'border-[#FF5500] text-[#FF5500]' : 'border-[#FF5500]/60 text-white';
+    toast.className = `log-enter pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1E202A] border ${borderColor} shadow-panel-depth text-xs backdrop-blur-xl transition-all duration-300`;
+    toast.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-[#FF5500]"></span><span>${escapeHtml(message)}</span>`;
     toastContainer.appendChild(toast);
     setTimeout(() => {
       toast.style.opacity = '0';
@@ -505,11 +533,11 @@
   }
 
   function logEvent(message, tone) {
-    const toneColor = tone === 'error' ? 'border-red-500/50' : tone === 'success' ? 'border-green-500/50' : tone === 'warn' ? 'border-amber-400/50' : 'border-tech/40';
+    const toneColor = tone === 'error' ? 'border-red-500' : tone === 'success' ? 'border-[#FF5500]' : tone === 'warn' ? 'border-amber-400' : 'border-[#2D313D]';
     const entry = document.createElement('div');
-    entry.className = 'log-enter text-xs text-gray-300 border-l-2 ' + toneColor + ' pl-2.5 py-0.5 truncate';
+    entry.className = 'log-enter text-xs text-[#A0A5B1] border-l-2 ' + toneColor + ' pl-2.5 py-0.5 truncate';
     const ts = document.createElement('span');
-    ts.className = 'text-oro/70 font-mono text-[10px] mr-1.5';
+    ts.className = 'text-[#FF5500] font-mono text-[10px] mr-1.5';
     ts.textContent = timestamp();
     entry.appendChild(ts);
     entry.appendChild(document.createTextNode(message));
@@ -536,15 +564,15 @@
     activityTotal++;
 
     const accents = {
-      'clip-out': { icon: CLIP_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/15 text-tech' },
-      'clip-in': { icon: CLIP_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/15 text-oro' },
-      'file-out': { icon: FILE_ICON_SVG, ring: 'border-tech/25', chip: 'bg-tech/15 text-tech' },
-      'file-in': { icon: FILE_ICON_SVG, ring: 'border-oro/25', chip: 'bg-oro/15 text-oro' },
+      'clip-out': { icon: CLIP_ICON_SVG, ring: 'border-[#2D313D]', chip: 'bg-[#FF5500]/15 text-[#FF5500]' },
+      'clip-in': { icon: CLIP_ICON_SVG, ring: 'border-[#FF5500]/30', chip: 'bg-[#FF5500]/20 text-[#FF5500]' },
+      'file-out': { icon: FILE_ICON_SVG, ring: 'border-[#2D313D]', chip: 'bg-[#252834] text-white' },
+      'file-in': { icon: FILE_ICON_SVG, ring: 'border-[#FF5500]/30', chip: 'bg-[#FF5500]/20 text-[#FF5500]' },
     };
     const cfg = accents[type] || accents['file-in'];
 
     const card = document.createElement('div');
-    card.className = 'log-enter flex items-center justify-between gap-2.5 rounded-xl bg-abismo/60 border ' + cfg.ring + ' p-2.5';
+    card.className = 'log-enter flex items-center justify-between gap-2.5 rounded-xl bg-[#161820] border ' + cfg.ring + ' p-2.5';
 
     const iconWrap = document.createElement('div');
     iconWrap.className = 'w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ' + cfg.chip;
@@ -554,18 +582,18 @@
     info.className = 'min-w-0 flex-1';
 
     const titleEl = document.createElement('p');
-    titleEl.className = 'text-xs font-semibold text-gray-200 truncate';
+    titleEl.className = 'text-xs font-semibold text-white truncate';
     titleEl.textContent = title;
 
     const detailEl = document.createElement('p');
-    detailEl.className = 'text-[10px] text-gray-400 truncate';
+    detailEl.className = 'text-[10px] text-[#A0A5B1] truncate';
     detailEl.textContent = detail;
 
     info.appendChild(titleEl);
     info.appendChild(detailEl);
 
     const timeEl = document.createElement('span');
-    timeEl.className = 'text-[9px] text-gray-500 font-mono flex-shrink-0';
+    timeEl.className = 'text-[9px] text-[#A0A5B1] font-mono flex-shrink-0';
     timeEl.textContent = timestamp();
 
     card.appendChild(iconWrap);
@@ -576,7 +604,7 @@
     while (activityFeed.children.length > 8) activityFeed.removeChild(activityFeed.lastChild);
   }
 
-  // Copia al Portapapeles con Retroalimentación Visual
+  // Copia al Portapapeles
   async function copyToClipboard(text, buttonEl) {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -595,11 +623,12 @@
         const label = buttonEl.querySelector('.copy-label') || buttonEl;
         const origText = label.textContent;
         label.textContent = '✓ ¡Copiado!';
-        buttonEl.classList.add('bg-green-500/25', 'text-green-300', 'border-green-500/50');
+        buttonEl.classList.add('bg-[#FF5500]', 'text-black', 'border-[#FF5500]');
+        buttonEl.classList.remove('text-[#FF5500]', 'text-[#A0A5B1]');
         showToast('Texto copiado al portapapeles');
         setTimeout(() => {
           label.textContent = origText;
-          buttonEl.classList.remove('bg-green-500/25', 'text-green-300', 'border-green-500/50');
+          buttonEl.classList.remove('bg-[#FF5500]', 'text-black', 'border-[#FF5500]');
         }, 2000);
       }
     } catch (err) {
@@ -607,55 +636,55 @@
     }
   }
 
-  // Creación de Burbujas de Texto (Estilo Chat Feed)
+  // Creación de Burbujas de Texto (Estilo Tarjetas Flotantes border-radius: 14px)
   function createTextBubble({ id, isLocal, senderDevice, time, text }) {
     const wrapper = document.createElement('div');
     wrapper.id = id;
     wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
 
-    // Encabezado de la Burbuja
+    // Encabezado
     const header = document.createElement('div');
-    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-tech/90' : 'text-oro/90'}`;
+    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
     header.innerHTML = `
-      <span class="font-semibold">${escapeHtml(senderDevice)}</span>
-      <span class="text-gray-400 font-mono text-[10px]">${escapeHtml(time)}</span>
-      ${isLocal ? '<span class="status-check text-[10px] text-tech font-bold" title="Transmitido">✓✓</span>' : ''}
+      <span class="font-bold">${escapeHtml(senderDevice)}</span>
+      <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(time)}</span>
+      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Sincronizado">✓✓</span>' : ''}
     `;
 
     // Cuerpo de la Burbuja
     const bubble = document.createElement('div');
-    bubble.className = `relative rounded-2xl p-3.5 sm:p-4 text-sm shadow-xl transition-all ${
+    bubble.className = `relative rounded-[14px] p-3.5 sm:p-4 text-sm shadow-panel-depth transition-all ${
       isLocal 
-        ? 'bg-azulLocal border border-tech/40 text-gray-100 rounded-tr-sm shadow-glow-tech/15'
-        : 'bg-azulRemoto border border-oro/40 text-gray-100 rounded-tl-sm shadow-glow-oro/15'
+        ? 'bg-[#252834] border border-[#FF5500]/40 text-white' 
+        : 'bg-[#161820] border border-[#2D313D] text-white'
     }`;
 
     const textEl = document.createElement('div');
     textEl.className = 'whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words';
     textEl.textContent = text;
 
-    // Botón Flotante "📋 Copiar"
+    // Barra de Acción / Botón Copiar
     const footerBar = document.createElement('div');
-    footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-1 border-t border-white/10';
+    footerBar.className = 'mt-2.5 flex items-center justify-between gap-3 pt-2 border-t border-[#2D313D]';
 
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
     copyBtn.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
       isLocal
-        ? 'bg-tech/15 hover:bg-tech/30 text-tech border border-tech/30'
-        : 'bg-oro/15 hover:bg-oro/30 text-oro border border-oro/30'
+        ? 'bg-[#FF5500]/15 hover:bg-[#FF5500]/25 text-[#FF5500] border border-[#FF5500]/30'
+        : 'bg-[#252834] hover:bg-[#2D313D] text-[#A0A5B1] hover:text-white border border-[#2D313D]'
     }`;
     copyBtn.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
       </svg>
-      <span class="copy-label">📋 Copiar</span>
+      <span class="copy-label">Copiar</span>
     `;
     copyBtn.addEventListener('click', () => copyToClipboard(text, copyBtn));
 
     const lengthHint = document.createElement('span');
-    lengthHint.className = 'text-[10px] text-gray-400 font-mono';
-    lengthHint.textContent = text.length + ' caracteres';
+    lengthHint.className = 'text-[10px] text-[#A0A5B1] font-mono';
+    lengthHint.textContent = text.length + ' car.';
 
     footerBar.appendChild(copyBtn);
     footerBar.appendChild(lengthHint);
@@ -675,18 +704,18 @@
     wrapper.className = `flex flex-col ${isLocal ? 'items-end ml-auto' : 'items-start mr-auto'} max-w-[92%] sm:max-w-[78%] log-enter`;
 
     const header = document.createElement('div');
-    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-tech/90' : 'text-oro/90'}`;
+    header.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-[#FF5500]' : 'text-[#A0A5B1]'}`;
     header.innerHTML = `
-      <span class="font-semibold">${escapeHtml(senderDevice)}</span>
-      <span class="text-gray-400 font-mono text-[10px]">${escapeHtml(time)}</span>
-      ${isLocal ? '<span class="status-check text-[10px] text-tech font-bold" title="Transmitido">✓✓</span>' : ''}
+      <span class="font-bold">${escapeHtml(senderDevice)}</span>
+      <span class="text-[#A0A5B1] font-mono text-[10px]">${escapeHtml(time)}</span>
+      ${isLocal ? '<span class="status-check text-[10px] text-[#FF5500] font-bold" title="Sincronizado">✓✓</span>' : ''}
     `;
 
     const bubble = document.createElement('div');
-    bubble.className = `relative rounded-2xl p-3.5 sm:p-4 text-sm shadow-xl w-full max-w-sm sm:max-w-md ${
+    bubble.className = `relative rounded-[14px] p-3.5 sm:p-4 text-sm shadow-panel-depth w-full max-w-sm sm:max-w-md ${
       isLocal 
-        ? 'bg-azulLocal border border-tech/40 text-gray-100 rounded-tr-sm shadow-glow-tech/15'
-        : 'bg-azulRemoto border border-oro/40 text-gray-100 rounded-tl-sm shadow-glow-oro/15'
+        ? 'bg-[#252834] border border-[#FF5500]/40 text-white' 
+        : 'bg-[#161820] border border-[#2D313D] text-white'
     }`;
 
     const fileName = fileData && fileData.name ? fileData.name : 'archivo';
@@ -695,14 +724,14 @@
     const fileHref = (fileData && typeof fileData.data === 'string') ? fileData.data : '';
     const isImage = fileType.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(fileName);
 
-    // Si es Imagen: Vista previa destacada
+    // Vista Previa de Imagen
     if (isImage && fileHref) {
       const imgWrap = document.createElement('div');
-      imgWrap.className = 'mb-3 rounded-xl overflow-hidden bg-abismo/80 border border-white/10 max-h-60 flex items-center justify-center cursor-pointer group relative';
+      imgWrap.className = 'mb-3 rounded-xl overflow-hidden bg-[#121316] border border-[#2D313D] max-h-60 flex items-center justify-center cursor-pointer group relative';
       imgWrap.innerHTML = `
         <img src="${fileHref}" alt="${escapeHtml(fileName)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.02] transition-transform duration-300">
-        <div class="absolute inset-0 bg-abismo/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold backdrop-blur-[2px]">
-          🔍 Clic para ampliar
+        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold backdrop-blur-[2px]">
+          🔍 Ampliar imagen
         </div>
       `;
       imgWrap.addEventListener('click', () => openImageModal(fileHref, fileName));
@@ -711,13 +740,13 @@
 
     // Tarjeta del Archivo
     const card = document.createElement('div');
-    card.className = 'flex items-center justify-between gap-3 p-3 rounded-xl bg-abismo/70 border border-white/10';
+    card.className = 'flex items-center justify-between gap-3 p-3 rounded-xl bg-[#121316] border border-[#2D313D]';
 
     const left = document.createElement('div');
     left.className = 'flex items-center gap-2.5 min-w-0';
 
     const iconWrap = document.createElement('div');
-    iconWrap.className = `p-2 rounded-lg ${isLocal ? 'bg-tech/15 text-tech' : 'bg-oro/15 text-oro'} flex-shrink-0`;
+    iconWrap.className = 'p-2 rounded-lg bg-[#FF5500]/15 text-[#FF5500] flex-shrink-0';
     iconWrap.innerHTML = isImage
       ? `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`
       : `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
@@ -725,8 +754,8 @@
     const info = document.createElement('div');
     info.className = 'min-w-0';
     info.innerHTML = `
-      <p class="font-semibold text-xs sm:text-sm text-gray-100 truncate" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</p>
-      <p class="text-[10px] text-gray-400 font-mono mt-0.5">${escapeHtml(fileSize)}</p>
+      <p class="font-bold text-xs sm:text-sm text-white truncate" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</p>
+      <p class="text-[10px] text-[#A0A5B1] font-mono mt-0.5">${escapeHtml(fileSize)}</p>
     `;
 
     left.appendChild(iconWrap);
@@ -734,10 +763,10 @@
 
     const downloadLink = document.createElement('a');
     downloadLink.className = `flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-      isLocal 
-        ? 'bg-tech/20 text-tech hover:bg-tech/30 border border-tech/40' 
-        : 'bg-oro/20 text-oro hover:bg-oro/30 border border-oro/40'
-    } ${!fileHref ? 'opacity-40 pointer-events-none' : ''}`;
+      fileHref 
+        ? 'bg-[#FF5500] hover:bg-[#FF6B1A] text-black shadow-glow-orange-subtle cursor-pointer' 
+        : 'bg-[#252834] text-[#A0A5B1] opacity-40 pointer-events-none'
+    }`;
     
     if (fileHref) {
       downloadLink.href = fileHref;
@@ -752,16 +781,16 @@
     card.appendChild(downloadLink);
     bubble.appendChild(card);
 
-    // Barra de Transferencia
+    // Barra de Transferencia Naranja
     const transferWrap = document.createElement('div');
-    transferWrap.className = 'mt-2.5 pt-2 border-t border-white/10';
+    transferWrap.className = 'mt-2.5 pt-2 border-t border-[#2D313D]';
     transferWrap.innerHTML = `
-      <div class="w-full bg-abismo/80 rounded-full h-1.5 overflow-hidden border border-white/5">
-        <div class="bg-gradient-to-r ${isLocal ? 'from-tech to-[#54C7EC]' : 'from-oro to-[#F3D9A4]'} h-full rounded-full w-full"></div>
+      <div class="w-full bg-[#121316] rounded-full h-1.5 overflow-hidden border border-[#2D313D]">
+        <div class="bg-gradient-to-r from-[#FF5500] to-[#FFA066] h-full rounded-full w-full"></div>
       </div>
-      <div class="flex items-center justify-between text-[10px] text-gray-400 mt-1">
-        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Transferencia 100% completada</span>
-        <span class="font-mono text-gray-400">${escapeHtml(fileSize)}</span>
+      <div class="flex items-center justify-between text-[10px] text-[#A0A5B1] mt-1.5">
+        <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-[#FF5500]"></span> Sincronizado</span>
+        <span class="font-mono text-[#A0A5B1]">${escapeHtml(fileSize)}</span>
       </div>
     `;
     bubble.appendChild(transferWrap);
@@ -772,7 +801,7 @@
     return wrapper;
   }
 
-  // Agrega burbuja al Chat Feed con auto-desplazamiento
+  // Agrega burbuja con desplazamiento automático
   function appendChatBubble(el) {
     if (chatEmpty && !chatEmpty.classList.contains('hidden')) {
       chatEmpty.classList.add('hidden');
@@ -796,11 +825,11 @@
     const check = el.querySelector('.status-check');
     if (check) {
       check.textContent = '✓✓';
-      check.classList.add('text-green-400');
+      check.classList.add('text-[#FF5500]');
     }
   }
 
-  // Envío de Mensaje de Texto (Emite 'send-clipboard')
+  // Envío de Mensaje de Texto (Socket.IO 'send-clipboard')
   function sendTextMessage(text) {
     if (!text || !text.trim()) return;
     const cleanText = text.trim();
@@ -809,7 +838,6 @@
 
     const timeStr = timestamp();
 
-    // Renderiza inmediatamente burbuja local (derecha)
     const bubbleEl = createTextBubble({
       id: msgId,
       isLocal: true,
@@ -819,7 +847,6 @@
     });
     appendChatBubble(bubbleEl);
 
-    // Emite evento Socket.IO
     socket.emit('send-clipboard', {
       id: msgId,
       senderId: socket.id,
@@ -835,7 +862,7 @@
     addActivityCard('clip-out', 'Portapapeles enviado', preview);
   }
 
-  // Envío de Archivo (Emite 'send-file')
+  // Envío de Archivo (Socket.IO 'send-file')
   function handleOutgoingFile(file) {
     if (!file) return;
     if (file.size > MAX_FILE_SIZE) {
@@ -861,7 +888,6 @@
         data: reader.result
       };
 
-      // Renderiza inmediatamente burbuja local
       const bubbleEl = createFileBubble({
         id: fileMsgId,
         isLocal: true,
@@ -871,7 +897,6 @@
       });
       appendChatBubble(bubbleEl);
 
-      // Emite evento Socket.IO
       socket.emit('send-file', payload);
 
       bump('fileOut');
@@ -918,7 +943,7 @@
 
   chatInput.addEventListener('input', autoResizeInput);
 
-  // Manejo de Tecla Enter (Enter envía, Shift+Enter salto de línea)
+  // Manejo de Tecla Enter
   chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -961,7 +986,7 @@
     showToast('Feed de mensajes limpiado');
   });
 
-  // Drag and Drop de Archivos sobre el Chat Feed
+  // Drag and Drop sobre la Ventana
   ['dragenter', 'dragover'].forEach((evt) => {
     window.addEventListener(evt, (e) => {
       e.preventDefault();
@@ -1007,7 +1032,7 @@
     }
   });
 
-  // Reloj de Sesión y Disponibilidad
+  // Reloj de Sesión y Gauge
   function tick() {
     const now = Date.now();
     const delta = now - lastTick;
@@ -1032,30 +1057,30 @@
 
   function setConnectedUI() {
     statusDot.classList.remove('bg-red-500');
-    statusDot.classList.add('bg-green-500');
+    statusDot.classList.add('bg-[#FF5500]');
     statusText.classList.remove('text-red-400');
-    statusText.classList.add('text-green-400');
-    statusText.textContent = 'P2P ACTIVO';
-    statusBadge.classList.remove('border-red-500/60', 'shadow-glow-red');
-    statusBadge.classList.add('border-green-500/60', 'shadow-glow-green');
+    statusText.classList.add('text-[#FF5500]');
+    statusText.textContent = 'EN LÍNEA';
+    statusBadge.classList.remove('border-red-500/60');
+    statusBadge.classList.add('border-[#FF5500]/60', 'shadow-glow-orange-subtle');
   }
 
   function setDisconnectedUI() {
-    statusDot.classList.remove('bg-green-500');
+    statusDot.classList.remove('bg-[#FF5500]');
     statusDot.classList.add('bg-red-500');
-    statusText.classList.remove('text-green-400');
+    statusText.classList.remove('text-[#FF5500]');
     statusText.classList.add('text-red-400');
     statusText.textContent = 'RECONECTANDO';
-    statusBadge.classList.remove('border-green-500/60', 'shadow-glow-green');
-    statusBadge.classList.add('border-red-500/60', 'shadow-glow-red');
+    statusBadge.classList.remove('border-[#FF5500]/60', 'shadow-glow-orange-subtle');
+    statusBadge.classList.add('border-red-500/60');
   }
 
   socket.on('connect', () => {
     const rtt = Math.round(performance.now() - connectAttemptStart);
     latencyValue.textContent = rtt + ' ms';
     isConnected = true;
-    heroStatusLine.textContent = 'Enlace P2P Sincronizado';
-    heroSub.textContent = 'Conectado a ' + SERVER_URL;
+    heroStatusLine.textContent = 'Canal P2P Activo';
+    heroSub.textContent = 'Enlace en ' + SERVER_URL;
     setConnectedUI();
     bump('events');
     logEvent('Conectado a SYNC ENGINE (' + SERVER_URL + ')', 'success');
@@ -1092,13 +1117,11 @@
 
     const msgId = (data && data.id) ? data.id : null;
 
-    // Si es nuestro propio mensaje retransmitido por io.emit:
     if (msgId && sentMessageIds.has(msgId)) {
       markBubbleSynced(msgId);
       return;
     }
 
-    // Mensaje Remoto Recibido
     bump('clipIn');
     bump('events');
     const senderDevice = (data && data.senderDevice) ? data.senderDevice : '📱 Dispositivo remoto';
@@ -1116,7 +1139,7 @@
     const preview = text.length > 50 ? text.slice(0, 50) + '…' : text;
     logEvent('Portapapeles recibido de ' + senderDevice + ': ' + preview);
     addActivityCard('clip-in', 'Portapapeles recibido', preview);
-    showToast('Nuevo texto recibido de ' + senderDevice);
+    showToast('Nuevo texto de ' + senderDevice);
   });
 
   // Manejo de 'receive-file'
@@ -1124,13 +1147,11 @@
     if (!data) return;
     const msgId = data.id || null;
 
-    // Si es nuestro propio archivo retransmitido por io.emit:
     if (msgId && sentMessageIds.has(msgId)) {
       markBubbleSynced(msgId);
       return;
     }
 
-    // Archivo Remoto Recibido
     bump('fileIn');
     bump('events');
     const name = data.name || 'archivo';
