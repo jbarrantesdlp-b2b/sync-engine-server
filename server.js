@@ -114,6 +114,31 @@ app.get("/api/messages/:contactSyncId", requireAuth, (req, res) => {
   res.json({ ok: true, messages: messages });
 });
 
+// Rutas de Mensajes Programados
+app.get("/api/scheduled-messages", requireAuth, (req, res) => {
+  const list = db.getUserScheduledMessages(req.user.syncId);
+  res.json({ ok: true, scheduled: list });
+});
+
+app.post("/api/schedule-message", requireAuth, (req, res) => {
+  try {
+    const { toSyncId, text, scheduledFor } = req.body || {};
+    if (!toSyncId || !text || !scheduledFor) {
+      return res.status(400).json({ error: "toSyncId, text y scheduledFor son requeridos" });
+    }
+    const item = db.saveScheduledMessage(req.user.syncId, toSyncId, text, scheduledFor);
+    res.json({ ok: true, scheduled: item });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete("/api/schedule-message/:id", requireAuth, (req, res) => {
+  const { id } = req.params;
+  const ok = db.deleteScheduledMessage(id, req.user.syncId);
+  res.json({ ok: ok });
+});
+
 app.get("/api/status", function (_req, res) {
   res.json({
     status: "ok",
@@ -416,6 +441,95 @@ io.on("connection", function (socket) {
     }
   });
 
+  // 6. Espejo de Notificaciones (Notification Mirroring)
+  socket.on("mirror-notification", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload) return;
+
+    const notifData = {
+      id: payload.id || ("mirr_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6)),
+      title: payload.title || "Notificación de Móvil",
+      body: payload.body || "",
+      icon: payload.icon || "📱",
+      appName: payload.appName || "Móvil",
+      fromSyncId: payload.fromSyncId || null,
+      fromName: payload.fromName || null,
+      timestamp: payload.timestamp || Date.now()
+    };
+
+    // Emitir a todos los otros sockets del mismo usuario (Laptop u otros clientes)
+    const userSockets = onlineUsers.get(sender.syncId);
+    if (userSockets && userSockets.size > 0) {
+      userSockets.forEach((sockId) => {
+        if (sockId !== socket.id) {
+          io.to(sockId).emit("notification-mirrored", notifData);
+        }
+      });
+    }
+    console.log(`[MIRROR] Notificación reflejada para usuario ${sender.syncId}: ${notifData.title}`);
+  });
+
+  // 7. Respuesta Rápida desde el banner de notificación (Quick Reply)
+  socket.on("quick-reply", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId || !payload.text) return;
+
+    const targetSyncId = String(payload.toSyncId).trim().toUpperCase();
+    const savedMsg = db.saveTextMessage(sender.syncId, targetSyncId, payload.text, null, payload.replyTo || null);
+    savedMsg.fromName = sender.formattedName;
+    savedMsg.toSyncId = targetSyncId;
+
+    // Entregar al destinatario
+    const targetSockets = onlineUsers.get(targetSyncId);
+    if (targetSockets && targetSockets.size > 0) {
+      targetSockets.forEach((sockId) => {
+        io.to(sockId).emit("receive-private-message", savedMsg);
+      });
+    }
+
+    // Sincronizar en todos los sockets del emisor (móvil y laptop)
+    const senderSockets = onlineUsers.get(sender.syncId);
+    if (senderSockets && senderSockets.size > 0) {
+      senderSockets.forEach((sockId) => {
+        io.to(sockId).emit("receive-private-message", savedMsg);
+      });
+    }
+
+    socket.emit("quick-reply-sent", { ok: true, id: savedMsg.id });
+    console.log(`[QUICK-REPLY] De ${sender.syncId} para ${targetSyncId}: ${payload.text}`);
+  });
+
+  // 8. Programación de Mensajes (Scheduled Messages)
+  socket.on("schedule-message", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.toSyncId || !payload.text || !payload.scheduledFor) {
+      socket.emit("schedule-message-error", { message: "Datos incompletos para programar mensaje" });
+      return;
+    }
+
+    try {
+      const scheduled = db.saveScheduledMessage(sender.syncId, payload.toSyncId, payload.text, payload.scheduledFor);
+      socket.emit("schedule-message-saved", scheduled);
+      console.log(`[SCHEDULE] Mensaje programado de ${sender.syncId} para ${payload.toSyncId} en ${new Date(payload.scheduledFor).toLocaleString()}`);
+    } catch (err) {
+      socket.emit("schedule-message-error", { message: err.message });
+    }
+  });
+
+  socket.on("cancel-scheduled-message", function (payload) {
+    const sender = socketToUser.get(socket.id);
+    if (!sender || !payload || !payload.id) return;
+    const ok = db.deleteScheduledMessage(payload.id, sender.syncId);
+    socket.emit("schedule-message-cancelled", { id: payload.id, ok: ok });
+  });
+
+  socket.on("get-scheduled-messages", function () {
+    const sender = socketToUser.get(socket.id);
+    if (!sender) return;
+    const list = db.getUserScheduledMessages(sender.syncId);
+    socket.emit("scheduled-messages-list", { scheduled: list });
+  });
+
   // Desconexión
   socket.on("disconnect", function () {
     const user = socketToUser.get(socket.id);
@@ -443,6 +557,47 @@ function broadcastUserStatus(syncId, isOnline) {
     isOnline: isOnline
   });
 }
+
+// Worker Despachador de Mensajes Programados (cada 3 segundos)
+setInterval(function () {
+  try {
+    const pending = db.getPendingScheduledMessages();
+    if (!pending || pending.length === 0) return;
+
+    const now = Date.now();
+    for (const item of pending) {
+      if (item.scheduledFor <= now) {
+        db.markScheduledMessageDelivered(item.id);
+
+        const sender = db.getUserBySyncId(item.fromId);
+        const savedMsg = db.saveTextMessage(item.fromId, item.toId, item.text, null, null);
+        savedMsg.fromName = sender ? sender.formattedName : item.fromId;
+        savedMsg.toSyncId = item.toId;
+        savedMsg.isScheduled = true;
+
+        // Entregar a destinatario
+        const targetSockets = onlineUsers.get(item.toId);
+        if (targetSockets && targetSockets.size > 0) {
+          targetSockets.forEach((sockId) => {
+            io.to(sockId).emit("receive-private-message", savedMsg);
+          });
+        }
+
+        // Entregar al emisor
+        const senderSockets = onlineUsers.get(item.fromId);
+        if (senderSockets && senderSockets.size > 0) {
+          senderSockets.forEach((sockId) => {
+            io.to(sockId).emit("receive-private-message", savedMsg);
+            io.to(sockId).emit("scheduled-message-delivered", { id: item.id });
+          });
+        }
+        console.log(`[SCHEDULE-DELIVERED] Mensaje programado ${item.id} entregado a ${item.toId}`);
+      }
+    }
+  } catch (err) {
+    console.error("[SCHEDULE-WORKER] Error en despacho de mensajes programados:", err.message);
+  }
+}, 3000);
 
 server.listen(PORT, HOST, function () {
   const localIps = getLocalIPv4Addresses();

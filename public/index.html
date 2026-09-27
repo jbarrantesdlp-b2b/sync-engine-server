@@ -252,6 +252,12 @@
               escribiendo...
             </div>
 
+            <!-- Botón Centro de Medios Compartidos -->
+            <button id="open-media-hub-btn" type="button" title="Archivos y medios compartidos" aria-label="Archivos y medios compartidos"
+              class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
+              📁
+            </button>
+
             <!-- Botón de Búsqueda Interna de Conversación -->
             <button id="toggle-chat-search-btn" type="button" title="Buscar en la conversación" aria-label="Buscar en la conversación"
               class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
@@ -382,10 +388,25 @@
             </button>
             <input type="file" id="file-input" title="Seleccionar archivo" aria-label="Seleccionar archivo" class="hidden">
 
+            <!-- [⏰ Programar Mensaje] -->
+            <button id="schedule-msg-btn" type="button" title="Programar mensaje" aria-label="Programar mensaje"
+              class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
+              ⏰
+            </button>
+
+            <!-- Menú Flotante de Plantillas y Respuestas Rápidas (Comando /) -->
+            <div id="quick-replies-popover" class="hidden absolute bottom-20 left-4 right-4 sm:left-14 sm:right-auto sm:w-96 z-40 p-2.5 rounded-2xl bg-white border border-waBorder shadow-wa-float flex flex-col gap-1 max-h-64 overflow-y-auto">
+              <div class="px-2 py-1 text-[10px] font-bold text-waTextSecondary uppercase tracking-wider border-b border-waBorder flex items-center justify-between">
+                <span>Plantillas Rápidas (/)</span>
+                <span class="text-[9px] lowercase text-gray-400">Tab / Enter · Esc</span>
+              </div>
+              <div id="quick-replies-list" class="flex flex-col gap-0.5 mt-1"></div>
+            </div>
+
             <!-- Textarea Expansible de Múltiples Líneas -->
             <div class="flex-1 relative min-w-0">
               <label for="chat-textarea" class="sr-only">Escribe un mensaje privado</label>
-              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado..."
+              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado o '/' para plantillas..."
                 class="w-full resize-none rounded-2xl bg-white border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none px-4 py-2.5 text-sm text-waTextPrimary placeholder-waTextSecondary max-h-36 overflow-y-auto leading-relaxed shadow-sm transition-all"></textarea>
             </div>
 
@@ -493,8 +514,94 @@
   <!-- CONTENEDOR DE ALERTAS POP-UP FLOTANTES IN-APP -->
   <div id="popup-notifications" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
 
+  <!-- CONTENEDOR DE ESPEJO DE NOTIFICACIONES Y RESPUESTA RÁPIDA (NOTIFICATION MIRRORING) -->
+  <div id="mirrored-notification-container" class="fixed top-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-5 sm:translate-x-0 z-50 flex flex-col gap-3 max-w-sm w-[92vw] sm:w-full pointer-events-auto"></div>
+
   <!-- ELEMENTO DE AUDIO REMOTO WEBRTC -->
   <audio id="remote-audio" autoplay playsinline></audio>
+
+  <!-- MODAL: CENTRO DE ARCHIVOS Y MEDIOS COMPARTIDOS (SHARED MEDIA HUB) -->
+  <div id="media-hub-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-wa-float border border-waBorder overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-waBorder flex items-center justify-between bg-white">
+        <div>
+          <h3 class="font-bold text-base sm:text-lg text-waTextPrimary flex items-center gap-2">
+            <span>📁 Medios y Archivos Compartidos</span>
+          </h3>
+          <p id="media-hub-subtitle" class="text-xs text-waTextSecondary font-mono mt-0.5">SYNC-XXXX</p>
+        </div>
+        <button id="close-media-hub-btn" type="button" class="h-8 w-8 rounded-full hover:bg-waBg text-waTextSecondary hover:text-waTextPrimary flex items-center justify-center font-bold text-sm cursor-pointer">✕</button>
+      </div>
+
+      <div class="flex border-b border-waBorder bg-waBg px-4 pt-2 gap-1 overflow-x-auto select-none">
+        <button id="tab-hub-images" type="button" class="media-hub-tab px-3.5 py-2 font-bold text-xs rounded-t-xl transition-all border-b-2 border-waTeal text-waDarkTeal bg-white shadow-xs">
+          🖼️ Fotos/Videos
+        </button>
+        <button id="tab-hub-docs" type="button" class="media-hub-tab px-3.5 py-2 font-semibold text-xs rounded-t-xl transition-all border-b-2 border-transparent text-waTextSecondary hover:text-waDarkTeal">
+          📄 Documentos
+        </button>
+        <button id="tab-hub-audios" type="button" class="media-hub-tab px-3.5 py-2 font-semibold text-xs rounded-t-xl transition-all border-b-2 border-transparent text-waTextSecondary hover:text-waDarkTeal">
+          🎙️ Audios
+        </button>
+        <button id="tab-hub-links" type="button" class="media-hub-tab px-3.5 py-2 font-semibold text-xs rounded-t-xl transition-all border-b-2 border-transparent text-waTextSecondary hover:text-waDarkTeal">
+          🔗 Enlaces
+        </button>
+      </div>
+
+      <div id="media-hub-content" class="flex-1 overflow-y-auto p-4 sm:p-6 bg-white min-h-[300px]"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: MENSAJES PROGRAMADOS -->
+  <div id="schedule-msg-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md flex flex-col shadow-wa-float border border-waBorder overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-waBorder flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-base text-waTextPrimary flex items-center gap-2">
+            <span>⏰ Programar Mensaje</span>
+          </h3>
+          <p id="schedule-modal-target" class="text-xs text-waTextSecondary font-mono mt-0.5">Destino: SYNC-XXXX</p>
+        </div>
+        <button id="close-schedule-modal-btn" type="button" class="h-8 w-8 rounded-full hover:bg-waBg text-waTextSecondary hover:text-waTextPrimary flex items-center justify-center font-bold text-sm cursor-pointer">✕</button>
+      </div>
+
+      <div class="p-4 sm:p-5 flex flex-col gap-4">
+        <div>
+          <label for="schedule-text-input" class="block text-xs font-semibold text-waTextSecondary mb-1">Contenido del Mensaje</label>
+          <textarea id="schedule-text-input" rows="3" placeholder="Escribe el mensaje a enviar más tarde..."
+            class="w-full resize-none rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none p-3 text-xs text-waTextPrimary"></textarea>
+        </div>
+
+        <div>
+          <label for="schedule-datetime-input" class="block text-xs font-semibold text-waTextSecondary mb-1">Fecha y Hora de Entrega</label>
+          <input type="datetime-local" id="schedule-datetime-input"
+            class="w-full px-3 py-2 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-xs text-waTextPrimary font-mono">
+        </div>
+
+        <!-- Chips de Acceso Rápido -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[11px] text-waTextSecondary font-medium">Accesos rápidos:</span>
+          <button type="button" class="sched-chip px-2.5 py-1 rounded-lg bg-waBg hover:bg-gray-200 text-[11px] font-semibold text-waDarkTeal cursor-pointer" data-mins="15">+15 min</button>
+          <button type="button" class="sched-chip px-2.5 py-1 rounded-lg bg-waBg hover:bg-gray-200 text-[11px] font-semibold text-waDarkTeal cursor-pointer" data-mins="60">+1 hora</button>
+          <button type="button" class="sched-chip px-2.5 py-1 rounded-lg bg-waBg hover:bg-gray-200 text-[11px] font-semibold text-waDarkTeal cursor-pointer" data-tomorrow="9">Mañana 9:00 AM</button>
+        </div>
+
+        <button id="submit-schedule-btn" type="button"
+          class="w-full py-2.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-md transition-all cursor-pointer">
+          ✓ Guardar y Programar Envío
+        </button>
+
+        <!-- Lista de Mensajes Programados Pendientes -->
+        <div class="pt-3 border-t border-waBorder flex flex-col gap-2">
+          <span class="text-xs font-bold text-waTextPrimary flex items-center justify-between">
+            <span>Mensajes en Cola para este Contacto</span>
+            <span id="scheduled-count-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-waDarkTeal font-bold">0</span>
+          </span>
+          <div id="pending-scheduled-list" class="max-h-36 overflow-y-auto flex flex-col gap-1.5 pr-1"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: LLAMADA ENTRANTE WEBRTC -->
   <div id="incoming-call-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -701,6 +808,37 @@
   const replyPreviewText = document.getElementById('reply-preview-text');
   const cancelReplyBtn = document.getElementById('cancel-reply-btn');
 
+  // Referencias DOM Centro de Medios Compartidos (Media Hub)
+  const openMediaHubBtn = document.getElementById('open-media-hub-btn');
+  const mediaHubModal = document.getElementById('media-hub-modal');
+  const closeMediaHubBtn = document.getElementById('close-media-hub-btn');
+  const mediaHubSubtitle = document.getElementById('media-hub-subtitle');
+  const mediaHubContent = document.getElementById('media-hub-content');
+  const tabHubImages = document.getElementById('tab-hub-images');
+  const tabHubDocs = document.getElementById('tab-hub-docs');
+  const tabHubAudios = document.getElementById('tab-hub-audios');
+  const tabHubLinks = document.getElementById('tab-hub-links');
+  let currentMediaHubTab = 'images';
+
+  // Referencias DOM Mensajes Programados y Plantillas
+  const scheduleMsgBtn = document.getElementById('schedule-msg-btn');
+  const scheduleMsgModal = document.getElementById('schedule-msg-modal');
+  const closeScheduleModalBtn = document.getElementById('close-schedule-modal-btn');
+  const scheduleModalTarget = document.getElementById('schedule-modal-target');
+  const scheduleTextInput = document.getElementById('schedule-text-input');
+  const scheduleDatetimeInput = document.getElementById('schedule-datetime-input');
+  const submitScheduleBtn = document.getElementById('submit-schedule-btn');
+  const pendingScheduledList = document.getElementById('pending-scheduled-list');
+  const scheduledCountBadge = document.getElementById('scheduled-count-badge');
+
+  // Referencias DOM Plantillas Rápidas (Comando /)
+  const quickRepliesPopover = document.getElementById('quick-replies-popover');
+  const quickRepliesList = document.getElementById('quick-replies-list');
+
+  // Referencias DOM Espejo de Notificaciones (Mirroring)
+  const mirroredNotificationContainer = document.getElementById('mirrored-notification-container');
+
+  let activeConversationMessages = [];
   let currentReplyTo = null; // { id, fromName, text }
   let currentSearchMatches = [];
   let currentSearchIndex = -1;
@@ -1356,6 +1494,12 @@
     if (startCallBtn) {
       startCallBtn.classList.remove('opacity-40', 'pointer-events-none');
     }
+    if (openMediaHubBtn) {
+      openMediaHubBtn.classList.remove('opacity-40', 'pointer-events-none');
+    }
+    if (scheduleMsgBtn) {
+      scheduleMsgBtn.classList.remove('opacity-40', 'pointer-events-none');
+    }
 
     try {
       const res = await fetch('/api/messages/' + syncId, {
@@ -1363,6 +1507,7 @@
       });
       const data = await res.json();
       if (data.ok && Array.isArray(data.messages)) {
+        activeConversationMessages = data.messages;
         data.messages.forEach((msg) => {
           renderMessageBubble(msg);
         });
@@ -1756,6 +1901,11 @@
     socket.off('call-rejected');
     socket.off('call-ended');
     socket.off('call-unavailable');
+    socket.off('notification-mirrored');
+    socket.off('scheduled-messages-list');
+    socket.off('scheduled-message-saved');
+    socket.off('scheduled-message-delivered');
+    socket.off('scheduled-message-cancelled');
 
     socket.on('connect', () => {
       socket.emit('authenticate', { token: currentToken });
@@ -1809,6 +1959,29 @@
       updateMessageReactionsUI(data);
     });
 
+    // Notificaciones reflejadas (Mirroring móvil a laptop)
+    socket.on('notification-mirrored', (data) => {
+      showMirroredNotificationToast(data);
+    });
+
+    // Mensajes Programados
+    socket.on('scheduled-messages-list', (data) => {
+      renderPendingScheduledList(data.scheduled);
+    });
+
+    socket.on('scheduled-message-saved', (data) => {
+      if (socket) socket.emit('get-scheduled-messages');
+    });
+
+    socket.on('scheduled-message-cancelled', (data) => {
+      if (socket) socket.emit('get-scheduled-messages');
+    });
+
+    socket.on('scheduled-message-delivered', (data) => {
+      triggerPopupNotification('Mensaje Entregado', 'Tu mensaje programado fue entregado con éxito', '⏰');
+      if (socket) socket.emit('get-scheduled-messages');
+    });
+
     // Eventos WebRTC Señalización
     socket.on('call-made', handleIncomingCall);
     socket.on('answer-made', handleAnswerMade);
@@ -1832,6 +2005,9 @@
       );
 
       if (isCurrentConversation) {
+        if (!activeConversationMessages.some(m => m.id === msg.id)) {
+          activeConversationMessages.push(msg);
+        }
         renderMessageBubble(msg);
       }
 
@@ -1840,6 +2016,20 @@
           ? '🎤 Nota de voz recibida' 
           : (msg.type === 'file' ? '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo') : msg.text);
         triggerPopupNotification(msg.fromName || fromId, preview, msg.type === 'audio' ? '🎤' : '💬');
+
+        // Captura en móvil y transmisión en tiempo real a la laptop vía Socket.IO ('mirror-notification')
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+        if (isMobileDevice) {
+          socket.emit('mirror-notification', {
+            id: 'mirr_' + msg.id,
+            title: msg.fromName || fromId,
+            body: preview,
+            fromSyncId: fromId,
+            fromName: msg.fromName || fromId,
+            icon: '📱',
+            timestamp: msg.timestamp
+          });
+        }
       }
 
       loadContacts();
@@ -2436,6 +2626,572 @@
 
   // Evento Cancelar Mensaje Citado (Reply)
   if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', cancelReply);
+
+  // FUNCIONES DE ESPEJO DE NOTIFICACIONES (NOTIFICATION MIRRORING & QUICK REPLY)
+  function showMirroredNotificationToast(data) {
+    if (!data) return;
+    const container = document.getElementById('mirrored-notification-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'msg-enter pointer-events-auto flex flex-col gap-2 p-3.5 rounded-2xl bg-white border border-waTeal/40 shadow-wa-float text-xs backdrop-blur-xl transition-all duration-300 w-full max-w-sm ring-1 ring-waTeal/20';
+
+    const timeStr = new Date(data.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    toast.innerHTML = `
+      <div class="flex items-start justify-between gap-2 border-b border-waBorder/60 pb-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-7 h-7 rounded-full bg-[#E8F5E9] text-waDarkTeal flex items-center justify-center text-sm font-bold flex-shrink-0">
+            ${data.icon || '📱'}
+          </span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold text-waTeal uppercase tracking-wider">Espejo Móvil</span>
+              <span class="text-[10px] text-waTextSecondary font-mono">${timeStr}</span>
+            </div>
+            <p class="font-bold text-waTextPrimary truncate text-xs">${escapeHtml(data.title || 'Notificación')}</p>
+          </div>
+        </div>
+        <button type="button" class="dismiss-mirror-btn text-waTextSecondary hover:text-waTextPrimary p-1 text-xs font-bold cursor-pointer">✕</button>
+      </div>
+
+      <p class="text-xs text-waTextSecondary line-clamp-2 px-0.5">${escapeHtml(data.body || '')}</p>
+
+      <form class="quick-reply-form flex items-center gap-1.5 pt-1">
+        <input type="text" class="quick-reply-input flex-1 px-3 py-1.5 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-1 focus:ring-waTeal/20 text-xs text-waTextPrimary outline-none shadow-xs" placeholder="Respuesta rápida...">
+        <button type="submit" class="px-3 py-1.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center cursor-pointer flex-shrink-0">
+          ➤
+        </button>
+      </form>
+    `;
+
+    const dismissBtn = toast.querySelector('.dismiss-mirror-btn');
+    const form = toast.querySelector('.quick-reply-form');
+    const input = toast.querySelector('.quick-reply-input');
+
+    dismissBtn.addEventListener('click', () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 250);
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const replyText = input.value.trim();
+      if (!replyText) return;
+
+      if (data.fromSyncId) {
+        socket.emit('quick-reply', {
+          toSyncId: data.fromSyncId,
+          text: replyText
+        });
+      }
+
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 250);
+      triggerPopupNotification('Respuesta Enviada', `Respondido a ${data.fromName || data.fromSyncId}: "${replyText}"`, '✓');
+    });
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      if (document.body.contains(toast) && document.activeElement !== input) {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 250);
+      }
+    }, 15000);
+  }
+
+  // FUNCIONES DEL CENTRO DE MEDIOS COMPARTIDOS (SHARED MEDIA HUB)
+  function openMediaHub() {
+    if (!activeContactSyncId) {
+      alert('Por favor selecciona un contacto primero');
+      return;
+    }
+    const contact = contactsMap.get(activeContactSyncId);
+    if (mediaHubSubtitle) {
+      mediaHubSubtitle.textContent = contact ? contact.formattedName : activeContactSyncId;
+    }
+    if (mediaHubModal) mediaHubModal.classList.remove('hidden');
+    switchMediaHubTab(currentMediaHubTab || 'images');
+  }
+
+  function closeMediaHub() {
+    if (mediaHubModal) mediaHubModal.classList.add('hidden');
+  }
+
+  function switchMediaHubTab(tabName) {
+    currentMediaHubTab = tabName;
+    const tabs = [
+      { name: 'images', btn: tabHubImages },
+      { name: 'docs', btn: tabHubDocs },
+      { name: 'audios', btn: tabHubAudios },
+      { name: 'links', btn: tabHubLinks }
+    ];
+
+    tabs.forEach(({ name, btn }) => {
+      if (!btn) return;
+      if (name === tabName) {
+        btn.className = 'media-hub-tab px-3.5 py-2 font-bold text-xs rounded-t-xl transition-all border-b-2 border-waTeal text-waDarkTeal bg-white shadow-xs';
+      } else {
+        btn.className = 'media-hub-tab px-3.5 py-2 font-semibold text-xs rounded-t-xl transition-all border-b-2 border-transparent text-waTextSecondary hover:text-waDarkTeal';
+      }
+    });
+
+    renderMediaHubContent(tabName);
+  }
+
+  function renderMediaHubContent(tabName) {
+    if (!mediaHubContent) return;
+    mediaHubContent.innerHTML = '';
+
+    const messages = activeConversationMessages || [];
+
+    if (tabName === 'images') {
+      const images = messages.filter((m) => {
+        if (m.type !== 'file' || !m.fileData) return false;
+        const fileType = m.fileData.type || '';
+        const fileName = m.fileData.name || '';
+        const fileData = m.fileData.data || '';
+        return fileType.startsWith('image/') || fileData.startsWith('data:image/') || fileName.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+      });
+
+      if (images.length === 0) {
+        mediaHubContent.innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-waTextSecondary">
+            <span class="text-4xl mb-2">🖼️</span>
+            <p class="font-bold text-sm text-waTextPrimary">Sin fotos o videos</p>
+            <p class="text-xs text-waTextSecondary mt-1">Los archivos multimedia compartidos en esta conversación aparecerán aquí.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3';
+
+      images.forEach((imgMsg) => {
+        const item = document.createElement('div');
+        item.className = 'group relative aspect-square rounded-2xl overflow-hidden border border-waBorder shadow-xs bg-waBg cursor-pointer hover:shadow-md transition-all';
+        const imgUrl = imgMsg.fileData.data || imgMsg.fileData.url || '';
+        const dateStr = new Date(imgMsg.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+        item.innerHTML = `
+          <img src="${imgUrl}" alt="${escapeHtml(imgMsg.fileData.name || 'Foto')}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end text-white text-[10px]">
+            <p class="truncate font-semibold">${escapeHtml(imgMsg.fileData.name || 'Foto')}</p>
+            <span class="text-white/80">${dateStr}</span>
+          </div>
+        `;
+
+        item.addEventListener('click', () => {
+          if (modalImg && imageModal) {
+            modalImg.src = imgUrl;
+            if (modalDownloadBtn) {
+              modalDownloadBtn.href = imgUrl;
+              modalDownloadBtn.download = imgMsg.fileData.name || 'foto.png';
+            }
+            imageModal.classList.remove('hidden');
+          }
+        });
+        grid.appendChild(item);
+      });
+      mediaHubContent.appendChild(grid);
+    } else if (tabName === 'docs') {
+      const docs = messages.filter((m) => {
+        if (m.type !== 'file' || !m.fileData) return false;
+        const fileType = m.fileData.type || '';
+        const fileName = m.fileData.name || '';
+        const isImg = fileType.startsWith('image/') || fileName.match(/\.(jpg|jpeg|png|gif|webp)$/i);
+        return !isImg;
+      });
+
+      if (docs.length === 0) {
+        mediaHubContent.innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-waTextSecondary">
+            <span class="text-4xl mb-2">📄</span>
+            <p class="font-bold text-sm text-waTextPrimary">Sin documentos</p>
+            <p class="text-xs text-waTextSecondary mt-1">Los PDFs, hojas de cálculo y documentos compartidos se listarán aquí.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'flex flex-col gap-2';
+
+      docs.forEach((docMsg) => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-2xl bg-waBg hover:bg-gray-100 border border-waBorder flex items-center justify-between gap-3 transition-colors';
+        const fileData = docMsg.fileData;
+        const dateStr = new Date(docMsg.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        item.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-white border border-waBorder text-waDarkTeal flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-xs">
+              📄
+            </div>
+            <div class="min-w-0">
+              <p class="font-bold text-xs text-waTextPrimary truncate">${escapeHtml(fileData.name || 'Documento')}</p>
+              <div class="flex items-center gap-2 mt-0.5 text-[11px] text-waTextSecondary">
+                <span>${formatBytes(fileData.size || 0)}</span>
+                <span>·</span>
+                <span>${dateStr}</span>
+              </div>
+            </div>
+          </div>
+          <a href="${fileData.data || '#'}" download="${escapeHtml(fileData.name || 'documento')}"
+            class="px-3.5 py-1.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 flex-shrink-0">
+            ⬇ Bajar
+          </a>
+        `;
+        list.appendChild(item);
+      });
+      mediaHubContent.appendChild(list);
+    } else if (tabName === 'audios') {
+      const audios = messages.filter((m) => m.type === 'audio');
+
+      if (audios.length === 0) {
+        mediaHubContent.innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-waTextSecondary">
+            <span class="text-4xl mb-2">🎙️</span>
+            <p class="font-bold text-sm text-waTextPrimary">Sin notas de voz</p>
+            <p class="text-xs text-waTextSecondary mt-1">Los audios y notas de voz compartidos se almacenarán aquí.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'flex flex-col gap-2.5';
+
+      audios.forEach((audioMsg) => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-2xl bg-waBg border border-waBorder flex flex-col gap-2';
+        const dateStr = new Date(audioMsg.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const senderLabel = audioMsg.fromId === currentUser?.syncId ? 'Tú' : (audioMsg.fromName || audioMsg.fromId);
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between text-xs text-waTextSecondary">
+            <span class="font-bold text-waDarkTeal flex items-center gap-1.5">
+              <span>🎙️</span>
+              <span>Nota de voz (${escapeHtml(senderLabel)})</span>
+            </span>
+            <span class="text-[10px] font-mono">${dateStr}</span>
+          </div>
+          <audio controls src="${audioMsg.audioData || ''}" class="w-full h-8 mt-1"></audio>
+        `;
+        list.appendChild(item);
+      });
+      mediaHubContent.appendChild(list);
+    } else if (tabName === 'links') {
+      const linkRegex = /(https?:\/\/[^\s]+)/g;
+      const links = [];
+
+      messages.forEach((m) => {
+        if (m.text && typeof m.text === 'string') {
+          const matches = m.text.match(linkRegex);
+          if (matches) {
+            matches.forEach((url) => {
+              links.push({
+                url: url,
+                timestamp: m.timestamp,
+                fromId: m.fromId,
+                fromName: m.fromName
+              });
+            });
+          }
+        }
+      });
+
+      if (links.length === 0) {
+        mediaHubContent.innerHTML = `
+          <div class="h-64 flex flex-col items-center justify-center text-center p-6 text-waTextSecondary">
+            <span class="text-4xl mb-2">🔗</span>
+            <p class="font-bold text-sm text-waTextPrimary">Sin enlaces</p>
+            <p class="text-xs text-waTextSecondary mt-1">Los enlaces web compartidos en esta conversación aparecerán aquí.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'flex flex-col gap-2';
+
+      links.forEach((linkItem) => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-2xl bg-waBg hover:bg-gray-100 border border-waBorder flex items-center justify-between gap-3 transition-colors';
+        const dateStr = new Date(linkItem.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+        let domain = '';
+        try { domain = new URL(linkItem.url).hostname; } catch (e) { domain = 'enlace'; }
+
+        item.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-white border border-waBorder text-waTeal flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-xs">
+              🔗
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-waTeal bg-emerald-50 px-1.5 py-0.5 rounded border border-[#C8E6C9]">${escapeHtml(domain)}</span>
+              <p class="text-xs text-waTextPrimary truncate font-medium mt-0.5">${escapeHtml(linkItem.url)}</p>
+              <span class="text-[10px] text-waTextSecondary">${dateStr}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 flex-shrink-0">
+            <button type="button" class="copy-link-btn px-2.5 py-1.5 rounded-xl bg-white hover:bg-gray-200 border border-waBorder text-xs text-waTextSecondary hover:text-waTextPrimary font-semibold transition-colors cursor-pointer" title="Copiar enlace">
+              📋
+            </button>
+            <a href="${escapeHtml(linkItem.url)}" target="_blank" rel="noopener noreferrer"
+              class="px-3 py-1.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1 cursor-pointer">
+              Abrir ↗
+            </a>
+          </div>
+        `;
+
+        const copyBtn = item.querySelector('.copy-link-btn');
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(linkItem.url).then(() => {
+            copyBtn.textContent = '✓';
+            setTimeout(() => { copyBtn.textContent = '📋'; }, 1500);
+          });
+        });
+
+        list.appendChild(item);
+      });
+      mediaHubContent.appendChild(list);
+    }
+  }
+
+  // FUNCIONES DE MENSAJES PROGRAMADOS Y PLANTILLAS RÁPIDAS
+  const QUICK_TEMPLATES = [
+    { cmd: '/hola', label: 'Saludo cordial', text: '¡Hola! ¿Cómo estás? En breve te respondo.' },
+    { cmd: '/ok', label: 'Confirmación', text: 'Entendido y confirmado. Procedo con ello.' },
+    { cmd: '/reunion', label: 'Llamada de voz', text: '¿Podemos coordinar una llamada de voz en 15 minutos?' },
+    { cmd: '/doc', label: 'Envío de documento', text: 'Ya te comparto el documento solicitado por este medio.' },
+    { cmd: '/gracias', label: 'Agradecimiento', text: '¡Muchas gracias por la confirmación! Quedo a la orden.' },
+    { cmd: '/precio', label: 'Cotización', text: 'Te comparto la cotización formal con el detalle acordado.' },
+    { cmd: '/ubicacion', label: 'Ubicación', text: 'Mi ubicación actual se encuentra confirmada para la sincronización.' },
+    { cmd: '/espera', label: 'Pausa breve', text: 'Dame unos minutos, por favor, ya estoy revisando esto.' }
+  ];
+
+  function setupQuickTemplates() {
+    if (!chatTextarea || !quickRepliesPopover || !quickRepliesList) return;
+
+    chatTextarea.addEventListener('input', () => {
+      const val = chatTextarea.value;
+      if (val.startsWith('/')) {
+        const query = val.slice(1).toLowerCase().trim();
+        const matches = QUICK_TEMPLATES.filter(t => t.cmd.slice(1).toLowerCase().startsWith(query));
+
+        if (matches.length > 0) {
+          quickRepliesList.innerHTML = '';
+          matches.forEach((tpl) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'w-full text-left p-2 rounded-xl hover:bg-waBg transition-colors flex items-center justify-between gap-2.5 cursor-pointer';
+            btn.innerHTML = `
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="font-mono font-bold text-xs text-waTeal bg-[#E8F5E9] px-2 py-0.5 rounded-lg border border-[#C8E6C9] flex-shrink-0">${tpl.cmd}</span>
+                <span class="font-bold text-xs text-waTextPrimary truncate">${tpl.label}</span>
+              </div>
+              <span class="text-[11px] text-waTextSecondary truncate max-w-[160px] text-right">${escapeHtml(tpl.text)}</span>
+            `;
+            btn.addEventListener('click', () => {
+              chatTextarea.value = tpl.text;
+              quickRepliesPopover.classList.add('hidden');
+              chatTextarea.focus();
+            });
+            quickRepliesList.appendChild(btn);
+          });
+          quickRepliesPopover.classList.remove('hidden');
+        } else {
+          quickRepliesPopover.classList.add('hidden');
+        }
+      } else {
+        quickRepliesPopover.classList.add('hidden');
+      }
+    });
+
+    chatTextarea.addEventListener('keydown', (e) => {
+      if (!quickRepliesPopover.classList.contains('hidden')) {
+        if (e.key === 'Escape') {
+          quickRepliesPopover.classList.add('hidden');
+        } else if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+          const firstBtn = quickRepliesList.querySelector('button');
+          if (firstBtn) {
+            e.preventDefault();
+            firstBtn.click();
+          }
+        }
+      }
+    });
+  }
+
+  function setupScheduledMessages() {
+    if (!scheduleMsgBtn || !scheduleMsgModal) return;
+
+    scheduleMsgBtn.addEventListener('click', openScheduleModal);
+    if (closeScheduleModalBtn) closeScheduleModalBtn.addEventListener('click', closeScheduleModal);
+
+    document.querySelectorAll('.sched-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const now = new Date();
+        if (chip.dataset.mins) {
+          const d = new Date(now.getTime() + Number(chip.dataset.mins) * 60000);
+          setDatetimeInputValue(d);
+        } else if (chip.dataset.tomorrow) {
+          const d = new Date(now.getTime() + 24 * 3600000);
+          d.setHours(Number(chip.dataset.tomorrow), 0, 0, 0);
+          setDatetimeInputValue(d);
+        }
+      });
+    });
+
+    if (submitScheduleBtn) {
+      submitScheduleBtn.addEventListener('click', submitScheduledMessage);
+    }
+  }
+
+  function setDatetimeInputValue(dateObj) {
+    if (!scheduleDatetimeInput) return;
+    const tzOffset = dateObj.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(dateObj.getTime() - tzOffset)).toISOString().slice(0, 16);
+    scheduleDatetimeInput.value = localISOTime;
+  }
+
+  function openScheduleModal() {
+    if (!activeContactSyncId) {
+      alert('Por favor selecciona un contacto primero');
+      return;
+    }
+    const contact = contactsMap.get(activeContactSyncId);
+    if (scheduleModalTarget) {
+      scheduleModalTarget.textContent = `Destino: ${contact ? contact.formattedName : activeContactSyncId}`;
+    }
+
+    if (scheduleTextInput) {
+      scheduleTextInput.value = chatTextarea ? chatTextarea.value.trim() : '';
+    }
+
+    const defaultTime = new Date(Date.now() + 15 * 60000);
+    setDatetimeInputValue(defaultTime);
+
+    if (scheduleDatetimeInput) {
+      const minTime = new Date(Date.now() + 60000);
+      const tzOffset = minTime.getTimezoneOffset() * 60000;
+      scheduleDatetimeInput.min = (new Date(minTime.getTime() - tzOffset)).toISOString().slice(0, 16);
+    }
+
+    scheduleMsgModal.classList.remove('hidden');
+
+    if (socket) {
+      socket.emit('get-scheduled-messages');
+    }
+  }
+
+  function closeScheduleModal() {
+    scheduleMsgModal.classList.add('hidden');
+  }
+
+  function submitScheduledMessage() {
+    const text = scheduleTextInput ? scheduleTextInput.value.trim() : '';
+    if (!text) {
+      alert('Por favor ingresa el texto del mensaje');
+      return;
+    }
+
+    if (!scheduleDatetimeInput || !scheduleDatetimeInput.value) {
+      alert('Por favor selecciona la fecha y hora de entrega');
+      return;
+    }
+
+    const scheduledDate = new Date(scheduleDatetimeInput.value);
+    const scheduledTimestamp = scheduledDate.getTime();
+
+    if (isNaN(scheduledTimestamp) || scheduledTimestamp <= Date.now()) {
+      alert('La fecha de programación debe ser posterior al momento actual');
+      return;
+    }
+
+    if (!socket || !activeContactSyncId) return;
+
+    socket.emit('schedule-message', {
+      toSyncId: activeContactSyncId,
+      text: text,
+      scheduledFor: scheduledTimestamp
+    });
+
+    if (chatTextarea && chatTextarea.value.trim() === text) {
+      chatTextarea.value = '';
+    }
+
+    closeScheduleModal();
+    triggerPopupNotification('Mensaje Programado', `Se enviará el ${scheduledDate.toLocaleString()}`, '⏰');
+  }
+
+  function renderPendingScheduledList(allScheduled) {
+    if (!pendingScheduledList) return;
+    pendingScheduledList.innerHTML = '';
+
+    const list = (allScheduled || []).filter(s => s.toId === activeContactSyncId && !s.delivered);
+    if (scheduledCountBadge) scheduledCountBadge.textContent = list.length;
+
+    if (list.length === 0) {
+      pendingScheduledList.innerHTML = `<p class="text-[11px] text-waTextSecondary italic py-1">No hay mensajes pendientes para este contacto.</p>`;
+      return;
+    }
+
+    list.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'p-2 rounded-xl bg-waBg border border-waBorder flex items-center justify-between gap-2 text-xs';
+      const timeStr = new Date(item.scheduledFor).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+      row.innerHTML = `
+        <div class="min-w-0 flex-1">
+          <p class="font-semibold text-waTextPrimary truncate">${escapeHtml(item.text)}</p>
+          <span class="text-[10px] text-waTeal font-mono flex items-center gap-1 mt-0.5">
+            <span>⏰</span>
+            <span>${timeStr}</span>
+          </span>
+        </div>
+        <button type="button" class="cancel-sched-btn h-7 w-7 rounded-lg hover:bg-red-100 text-red-500 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer" title="Cancelar envío">
+          ✕
+        </button>
+      `;
+
+      row.querySelector('.cancel-sched-btn').addEventListener('click', () => {
+        if (socket) {
+          socket.emit('cancel-scheduled-message', { id: item.id });
+        }
+      });
+
+      pendingScheduledList.appendChild(row);
+    });
+  }
+
+  // Inicialización de componentes adicionales
+  if (openMediaHubBtn) openMediaHubBtn.addEventListener('click', openMediaHub);
+  if (closeMediaHubBtn) closeMediaHubBtn.addEventListener('click', closeMediaHub);
+  if (tabHubImages) tabHubImages.addEventListener('click', () => switchMediaHubTab('images'));
+  if (tabHubDocs) tabHubDocs.addEventListener('click', () => switchMediaHubTab('docs'));
+  if (tabHubAudios) tabHubAudios.addEventListener('click', () => switchMediaHubTab('audios'));
+  if (tabHubLinks) tabHubLinks.addEventListener('click', () => switchMediaHubTab('links'));
+
+  setupQuickTemplates();
+  setupScheduledMessages();
+
+  // Escucha de eventos desde el Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'NOTIFICATION_CLICKED') {
+        const notifData = event.data.data || {};
+        if (notifData.fromSyncId) {
+          selectContact(notifData.fromSyncId);
+        }
+      }
+    });
+  }
 
   // INICIO DE LA APLICACIÓN
   checkExistingAuth();

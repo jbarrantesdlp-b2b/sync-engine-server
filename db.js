@@ -15,7 +15,8 @@ function ensureDbFile() {
       users: [],
       sessions: [],
       contacts: {},
-      messages: []
+      messages: [],
+      scheduledMessages: []
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), "utf8");
   }
@@ -30,6 +31,7 @@ function readDb() {
     if (!data.sessions) data.sessions = [];
     if (!data.contacts) data.contacts = {};
     if (!data.messages) data.messages = [];
+    if (!data.scheduledMessages) data.scheduledMessages = [];
     return data;
   } catch (err) {
     console.error("[DB] Error al leer base de datos, inicializando respaldo:", err.message);
@@ -314,6 +316,58 @@ function toPublicUser(user) {
   };
 }
 
+function saveScheduledMessage(fromId, toId, text, scheduledFor) {
+  if (!fromId || !toId || !text || !scheduledFor) {
+    throw new Error("Datos incompletos para programar mensaje");
+  }
+  const db = readDb();
+  const newSched = {
+    id: "sched_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+    fromId: fromId,
+    toId: toId,
+    text: text,
+    scheduledFor: Number(scheduledFor),
+    delivered: false,
+    createdAt: Date.now()
+  };
+  db.scheduledMessages.push(newSched);
+  writeDb(db);
+  return newSched;
+}
+
+function getPendingScheduledMessages() {
+  const db = readDb();
+  return db.scheduledMessages.filter((s) => !s.delivered);
+}
+
+function markScheduledMessageDelivered(id) {
+  const db = readDb();
+  const item = db.scheduledMessages.find((s) => s.id === id);
+  if (item) {
+    item.delivered = true;
+    item.deliveredAt = Date.now();
+    writeDb(db);
+  }
+}
+
+function deleteScheduledMessage(id, userSyncId) {
+  const db = readDb();
+  const initialLen = db.scheduledMessages.length;
+  db.scheduledMessages = db.scheduledMessages.filter(
+    (s) => !(s.id === id && (s.fromId === userSyncId || s.toId === userSyncId))
+  );
+  const changed = db.scheduledMessages.length !== initialLen;
+  if (changed) writeDb(db);
+  return changed;
+}
+
+function getUserScheduledMessages(userSyncId) {
+  const db = readDb();
+  return db.scheduledMessages
+    .filter((s) => s.fromId === userSyncId && !s.delivered)
+    .sort((a, b) => a.scheduledFor - b.scheduledFor);
+}
+
 module.exports = {
   removeEmojis,
   formatFullName,
@@ -326,5 +380,10 @@ module.exports = {
   getUserContacts,
   saveTextMessage,
   updateMessageReaction,
-  getMessagesBetween
+  getMessagesBetween,
+  saveScheduledMessage,
+  getPendingScheduledMessages,
+  markScheduledMessageDelivered,
+  deleteScheduledMessage,
+  getUserScheduledMessages
 };
