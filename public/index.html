@@ -670,12 +670,14 @@
   const configuration = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' }
     ]
   };
 
   let peerConnection = null;
   let localStream = null;
+  let iceCandidatesQueue = [];
   let activeCallPeerSyncId = null;
   let callTimerInterval = null;
   let callSeconds = 0;
@@ -1482,7 +1484,7 @@
       if (event.streams && event.streams[0]) {
         remoteAudio.srcObject = event.streams[0];
         remoteAudio.muted = false;
-        remoteAudio.play().catch(err => console.error("Error reproduciendo audio remoto:", err));
+        remoteAudio.play().catch(console.error);
       }
     };
 
@@ -1515,7 +1517,8 @@
   async function startVoiceCall() {
     const remoteAudio = document.getElementById('remote-audio');
     if (remoteAudio) {
-      remoteAudio.play().catch(() => {});
+      remoteAudio.srcObject = new MediaStream();
+      remoteAudio.play().catch(e => console.log(e));
     }
 
     if (!activeContactSyncId || !socket) return;
@@ -1535,6 +1538,7 @@
 
     activeCallPeerSyncId = activeContactSyncId;
     isAudioMuted = false;
+    iceCandidatesQueue = [];
 
     // Configurar modal de llamada saliente
     activeCallPeerAvatar.textContent = contact.syncId.replace('SYNC-', '');
@@ -1548,7 +1552,7 @@
     startRingtone();
 
     createPeerConnection(activeCallPeerSyncId);
-    const offer = await peerConnection.createOffer();
+    const offer = await peerConnection.createOffer({ offerToReceiveAudio: true });
     await peerConnection.setLocalDescription(offer);
 
     socket.emit('call-user', {
@@ -1576,7 +1580,8 @@
   async function acceptIncomingCall() {
     const remoteAudio = document.getElementById('remote-audio');
     if (remoteAudio) {
-      remoteAudio.play().catch(() => {});
+      remoteAudio.srcObject = new MediaStream();
+      remoteAudio.play().catch(e => console.log(e));
     }
 
     if (!incomingCallOfferData) return;
@@ -1609,6 +1614,17 @@
 
     createPeerConnection(callerSyncId);
     await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+    // Procesar y vaciar cola de candidatos ICE acumulados
+    while (iceCandidatesQueue.length > 0) {
+      const cand = iceCandidatesQueue.shift();
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(cand));
+      } catch (err) {
+        console.warn('[WEBRTC] Error al agregar candidato ICE de la cola:', err);
+      }
+    }
+
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
 
@@ -1634,15 +1650,31 @@
     stopRingtone();
     activeCallStatusLabel.textContent = 'Conectando audio...';
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+
+    // Procesar y vaciar cola de candidatos ICE acumulados en el llamante
+    while (iceCandidatesQueue.length > 0) {
+      const cand = iceCandidatesQueue.shift();
+      try {
+        await peerConnection.addIceCandidate(new RTCIceCandidate(cand));
+      } catch (err) {
+        console.warn('[WEBRTC] Error al agregar candidato ICE de la cola:', err);
+      }
+    }
   }
 
   async function handleRemoteIceCandidate(data) {
-    if (peerConnection && data.candidate) {
-      try {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-      } catch (err) {
-        console.warn('[WEBRTC] Error al agregar candidato ICE:', err);
-      }
+    if (!data || !data.candidate) return;
+
+    if (!peerConnection || !peerConnection.remoteDescription) {
+      console.log('[WEBRTC] remoteDescription no establecido aún. Encolando candidato ICE.');
+      iceCandidatesQueue.push(data.candidate);
+      return;
+    }
+
+    try {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    } catch (err) {
+      console.warn('[WEBRTC] Error al agregar candidato ICE:', err);
     }
   }
 
@@ -1686,6 +1718,7 @@
       remoteAudio.srcObject = null;
     }
 
+    iceCandidatesQueue = [];
     activeCallPeerSyncId = null;
     incomingCallOfferData = null;
     isAudioMuted = false;
@@ -2355,14 +2388,16 @@
   startCallBtn.addEventListener('click', () => {
     const remoteAudioEl = document.getElementById('remote-audio');
     if (remoteAudioEl) {
-      remoteAudioEl.play().catch(() => {});
+      remoteAudioEl.srcObject = new MediaStream();
+      remoteAudioEl.play().catch(e => console.log(e));
     }
     startVoiceCall();
   });
   acceptCallBtn.addEventListener('click', () => {
     const remoteAudioEl = document.getElementById('remote-audio');
     if (remoteAudioEl) {
-      remoteAudioEl.play().catch(() => {});
+      remoteAudioEl.srcObject = new MediaStream();
+      remoteAudioEl.play().catch(e => console.log(e));
     }
     acceptIncomingCall();
   });
