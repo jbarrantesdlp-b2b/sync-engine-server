@@ -16,7 +16,7 @@ function ensureDbFile() {
       sessions: [],
       contacts: {},
       messages: [],
-      scheduledMessages: []
+      pinnedMessages: {}
     };
     fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), "utf8");
   }
@@ -31,11 +31,11 @@ function readDb() {
     if (!data.sessions) data.sessions = [];
     if (!data.contacts) data.contacts = {};
     if (!data.messages) data.messages = [];
-    if (!data.scheduledMessages) data.scheduledMessages = [];
+    if (!data.pinnedMessages) data.pinnedMessages = {};
     return data;
   } catch (err) {
     console.error("[DB] Error al leer base de datos, inicializando respaldo:", err.message);
-    return { users: [], sessions: [], contacts: {}, messages: [] };
+    return { users: [], sessions: [], contacts: {}, messages: [], pinnedMessages: {} };
   }
 }
 
@@ -77,6 +77,15 @@ function generateSyncId(users) {
   return `SYNC-${Date.now().toString().slice(-4)}`;
 }
 
+function toPublicUser(user) {
+  return {
+    syncId: user.syncId,
+    username: user.username,
+    cleanDisplayName: user.cleanDisplayName,
+    formattedName: user.formattedName || formatFullName(user.syncId, user.cleanDisplayName)
+  };
+}
+
 function registerUser(username, password, rawDisplayName) {
   if (!username || !password) {
     throw new Error("Usuario y contraseña son obligatorios");
@@ -115,7 +124,6 @@ function registerUser(username, password, rawDisplayName) {
 
   db.users.push(newUser);
 
-  // Inicializar lista de contactos vacía (sin auto-contacto / Mensajes Guardados)
   if (!db.contacts[syncId]) {
     db.contacts[syncId] = [];
   }
@@ -142,7 +150,6 @@ function loginUser(username, password) {
     throw new Error("Credenciales inválidas");
   }
 
-  // Generar sesión
   const token = crypto.randomBytes(32).toString("hex");
   db.sessions.push({
     token: token,
@@ -150,7 +157,6 @@ function loginUser(username, password) {
     createdAt: Date.now()
   });
 
-  // Limpiar sesiones viejas (> 30 días)
   const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
   db.sessions = db.sessions.filter((s) => s.createdAt > cutoff);
 
@@ -209,7 +215,6 @@ function addContact(userSyncId, targetSyncId) {
     db.contacts[userSyncId].push(targetId);
   }
 
-  // Recíproco
   if (!db.contacts[targetId]) {
     db.contacts[targetId] = [];
   }
@@ -229,7 +234,6 @@ function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
     writeDb(db);
   }
 
-  // Filtrar estrictamente cualquier auto-contacto para evitar chats de "Mensajes Guardados"
   const list = db.contacts[userSyncId].filter((id) => id !== userSyncId);
   const contactsList = [];
 
@@ -239,15 +243,15 @@ function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
       const pub = toPublicUser(u);
       pub.isOnline = onlineSyncIds.has(id);
       
-      // Obtener último mensaje para preview
       const lastMsg = db.messages
         .filter((m) => (m.fromId === userSyncId && m.toId === id) || (m.fromId === id && m.toId === userSyncId))
         .sort((a, b) => b.timestamp - a.timestamp)[0];
       
       pub.lastMessage = lastMsg ? {
-        text: lastMsg.type === 'audio' ? '🎤 Nota de voz' : (lastMsg.type === 'file' ? '📎 ' + (lastMsg.fileName || 'Archivo') : lastMsg.text),
+        text: lastMsg.deletedForEveryone ? '🚫 Este mensaje fue eliminado' : (lastMsg.type === 'audio' ? '🎤 Nota de voz' : (lastMsg.type === 'file' ? '📎 ' + (lastMsg.fileName || 'Archivo') : lastMsg.text)),
         timestamp: lastMsg.timestamp,
-        fromId: lastMsg.fromId
+        fromId: lastMsg.fromId,
+        status: lastMsg.status || (lastMsg.read ? 'read' : 'delivered')
       } : null;
 
       contactsList.push(pub);
@@ -257,7 +261,7 @@ function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
   return contactsList;
 }
 
-function saveTextMessage(fromId, toId, text, customId = null, replyTo = null) {
+function saveTextMessage(fromId, toId, text, customId = null, replyTo = null, linkPreview = null, status = 'sent') {
   const db = readDb();
   const newMsg = {
     id: customId || ("msg_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
@@ -266,14 +270,16 @@ function saveTextMessage(fromId, toId, text, customId = null, replyTo = null) {
     type: "text",
     text: text,
     replyTo: replyTo || null,
+    linkPreview: linkPreview || null,
     reactions: {},
     timestamp: Date.now(),
-    read: false
+    status: status, // 'sent' | 'delivered' | 'read'
+    read: status === 'read',
+    deletedForEveryone: false
   };
 
   db.messages.push(newMsg);
   
-  // Limitar historial a últimos 3000 mensajes globales para preservar almacenamiento
   if (db.messages.length > 3000) {
     db.messages = db.messages.slice(-3000);
   }
@@ -300,72 +306,99 @@ function updateMessageReaction(messageId, userSyncId, emoji) {
   return { [userSyncId]: emoji };
 }
 
+function updateMessageStatus(messageId, status) {
+  const db = readDb();
+  const msg = db.messages.find((m) => m.id === messageId);
+  if (msg) {
+    // Si ya está leído, no degradar
+    if (msg.status === 'read' && status !== 'read') {
+      return msg;
+    }
+    msg.status = status;
+    if (status === 'read') {
+      msg.read = true;
+    }
+    writeDb(db);
+    return msg;
+  }
+  return null;
+}
+
+function markMessagesAsRead(senderSyncId, receiverSyncId) {
+  const db = readDb();
+  const updatedIds = [];
+  db.messages.forEach((m) => {
+    if (m.fromId === senderSyncId && m.toId === receiverSyncId && m.status !== 'read') {
+      m.status = 'read';
+      m.read = true;
+      updatedIds.push(m.id);
+    }
+  });
+
+  if (updatedIds.length > 0) {
+    writeDb(db);
+  }
+  return updatedIds;
+}
+
+function deleteMessageForEveryone(messageId, senderSyncId) {
+  const db = readDb();
+  const msg = db.messages.find((m) => m.id === messageId);
+  if (!msg) return null;
+  if (msg.fromId !== senderSyncId) {
+    throw new Error("No tienes permisos para eliminar este mensaje");
+  }
+
+  msg.deletedForEveryone = true;
+  msg.text = "Este mensaje fue eliminado";
+  msg.type = "text";
+  delete msg.audioData;
+  delete msg.fileData;
+  delete msg.linkPreview;
+  msg.reactions = {};
+
+  writeDb(db);
+  return msg;
+}
+
+function getConversationKey(user1Id, user2Id) {
+  return [user1Id.toUpperCase(), user2Id.toUpperCase()].sort().join(":");
+}
+
+function getPinnedMessage(user1Id, user2Id) {
+  const db = readDb();
+  const key = getConversationKey(user1Id, user2Id);
+  const msgId = db.pinnedMessages[key];
+  if (!msgId) return null;
+  const msg = db.messages.find((m) => m.id === msgId);
+  return msg || null;
+}
+
+function setPinnedMessage(user1Id, user2Id, messageId) {
+  const db = readDb();
+  const key = getConversationKey(user1Id, user2Id);
+  const msg = db.messages.find((m) => m.id === messageId);
+  if (!msg) {
+    throw new Error("Mensaje no encontrado");
+  }
+  db.pinnedMessages[key] = messageId;
+  writeDb(db);
+  return msg;
+}
+
+function unpinMessage(user1Id, user2Id) {
+  const db = readDb();
+  const key = getConversationKey(user1Id, user2Id);
+  delete db.pinnedMessages[key];
+  writeDb(db);
+  return true;
+}
+
 function getMessagesBetween(user1Id, user2Id) {
   const db = readDb();
   return db.messages.filter((m) => {
     return (m.fromId === user1Id && m.toId === user2Id) || (m.fromId === user2Id && m.toId === user1Id);
   }).sort((a, b) => a.timestamp - b.timestamp);
-}
-
-function toPublicUser(user) {
-  return {
-    syncId: user.syncId,
-    username: user.username,
-    cleanDisplayName: user.cleanDisplayName,
-    formattedName: user.formattedName || formatFullName(user.syncId, user.cleanDisplayName)
-  };
-}
-
-function saveScheduledMessage(fromId, toId, text, scheduledFor) {
-  if (!fromId || !toId || !text || !scheduledFor) {
-    throw new Error("Datos incompletos para programar mensaje");
-  }
-  const db = readDb();
-  const newSched = {
-    id: "sched_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-    fromId: fromId,
-    toId: toId,
-    text: text,
-    scheduledFor: Number(scheduledFor),
-    delivered: false,
-    createdAt: Date.now()
-  };
-  db.scheduledMessages.push(newSched);
-  writeDb(db);
-  return newSched;
-}
-
-function getPendingScheduledMessages() {
-  const db = readDb();
-  return db.scheduledMessages.filter((s) => !s.delivered);
-}
-
-function markScheduledMessageDelivered(id) {
-  const db = readDb();
-  const item = db.scheduledMessages.find((s) => s.id === id);
-  if (item) {
-    item.delivered = true;
-    item.deliveredAt = Date.now();
-    writeDb(db);
-  }
-}
-
-function deleteScheduledMessage(id, userSyncId) {
-  const db = readDb();
-  const initialLen = db.scheduledMessages.length;
-  db.scheduledMessages = db.scheduledMessages.filter(
-    (s) => !(s.id === id && (s.fromId === userSyncId || s.toId === userSyncId))
-  );
-  const changed = db.scheduledMessages.length !== initialLen;
-  if (changed) writeDb(db);
-  return changed;
-}
-
-function getUserScheduledMessages(userSyncId) {
-  const db = readDb();
-  return db.scheduledMessages
-    .filter((s) => s.fromId === userSyncId && !s.delivered)
-    .sort((a, b) => a.scheduledFor - b.scheduledFor);
 }
 
 module.exports = {
@@ -380,10 +413,11 @@ module.exports = {
   getUserContacts,
   saveTextMessage,
   updateMessageReaction,
-  getMessagesBetween,
-  saveScheduledMessage,
-  getPendingScheduledMessages,
-  markScheduledMessageDelivered,
-  deleteScheduledMessage,
-  getUserScheduledMessages
+  updateMessageStatus,
+  markMessagesAsRead,
+  deleteMessageForEveryone,
+  getPinnedMessage,
+  setPinnedMessage,
+  unpinMessage,
+  getMessagesBetween
 };

@@ -127,14 +127,14 @@
 </head>
 <body class="font-sans text-waTextPrimary antialiased selection:bg-waTeal/20 selection:text-waDarkTeal bg-[#F0F2F5]">
 
-  <!-- APLICACIÓN PRINCIPAL (VISIBLE TRAS AUTENTICACIÓN) -->
+  <!-- APLICACIÓN PRINCIPAL -->
   <div id="app-container" class="min-h-screen flex flex-col hidden bg-[#F0F2F5]">
     
-    <!-- ENCABEZADO SUPERIOR (VERDE WHATSAPP) -->
+    <!-- ENCABEZADO SUPERIOR -->
     <header class="sticky top-0 z-40 bg-gradient-to-r from-[#075E54] to-[#128C7E] text-white shadow-md">
       <div class="max-w-[1700px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         
-        <!-- Logo Oficial (36px de alto) & Título -->
+        <!-- Logo & Título -->
         <div class="flex items-center gap-3">
           <img src="/assets/logo.png" alt="SYNC ENGINE Logo" class="h-[36px] w-auto object-contain flex-shrink-0 drop-shadow-sm">
           <div class="flex flex-col">
@@ -146,10 +146,9 @@
           </div>
         </div>
 
-        <!-- Identidad Formateada [ID] - [Nombre] e Indicador Verde Permanente -->
+        <!-- Identidad Formateada & Estado -->
         <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
           
-          <!-- Identidad de Usuario: [ID] - [Nombre Personalizado] (Sin Emojis) -->
           <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-xs text-white">
             <span id="user-identity-badge" class="font-bold tracking-wide truncate max-w-[180px] sm:max-w-[300px]">
               <span id="header-user-sync-id" class="text-emerald-300 font-mono">SYNC-0000</span>
@@ -159,13 +158,11 @@
             <button id="open-edit-profile-btn" type="button" title="Editar nombre personalizado" class="text-emerald-200 hover:text-white text-xs pl-1">✎</button>
           </div>
 
-          <!-- Indicador Verde Permanente: "● En línea" (#25D366) -->
           <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#25D366]/20 border border-[#25D366]/40 text-[#25D366]">
             <span class="w-2.5 h-2.5 rounded-full bg-[#25D366] pulse-online flex-shrink-0"></span>
             <span class="text-xs font-bold tracking-wide select-none">● En línea</span>
           </div>
 
-          <!-- Botón Cerrar Sesión -->
           <button id="logout-btn" type="button" title="Cerrar sesión"
             class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs font-semibold transition-all">
             Salir
@@ -176,14 +173,12 @@
       </div>
     </header>
 
-    <!-- CUERPO PRINCIPAL RESPONSIVE (MÓVIL SINGLE-VIEW VS LAPTOP/TV DASHBOARD) -->
+    <!-- CUERPO PRINCIPAL -->
     <main class="flex-1 max-w-[1700px] w-full mx-auto p-0 md:p-3 lg:p-4 flex flex-col md:flex-row gap-0 md:gap-4 overflow-hidden h-[calc(100vh-62px)]">
       
-      <!-- COLUMNA 1: LISTA DE CONTACTOS & BÚSQUEDA POR ID (SIDEBAR) -->
-      <!-- En Móvil: visible si no hay chat activo o si se regresa; En Laptop: columna izquierda fija -->
+      <!-- COLUMNA 1: LISTA DE CONTACTOS (SIDEBAR) -->
       <aside id="sidebar-panel" class="w-full md:w-[350px] lg:w-[400px] flex-shrink-0 bg-white border-r md:border border-waBorder md:rounded-2xl flex flex-col h-full overflow-hidden shadow-wa-card transition-all">
         
-        <!-- Header de Chats y Contador -->
         <div class="p-3.5 border-b border-waBorder bg-white flex items-center justify-between gap-2 flex-shrink-0">
           <div class="flex items-center gap-2">
             <h2 class="font-bold text-base text-waTextPrimary">Chats</h2>
@@ -192,7 +187,6 @@
           <span class="text-xs text-waTextSecondary font-medium">Directorio Privado</span>
         </div>
 
-        <!-- Buscador e Incorporación Rápida por Código ID -->
         <div class="p-3 border-b border-waBorder bg-[#F8FAFC] flex flex-col gap-1.5 flex-shrink-0">
           <div class="flex items-center gap-1.5">
             <div class="relative flex-1">
@@ -208,22 +202,17 @@
           <p id="contact-action-msg" class="text-[11px] text-red-500 hidden px-1 font-medium"></p>
         </div>
 
-        <!-- Lista de Conversaciones/Contactos -->
-        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-waBorder/60 p-1.5 space-y-1 bg-white">
-          <!-- Render dinámico de contactos -->
-        </div>
+        <div id="contacts-list" class="flex-1 overflow-y-auto divide-y divide-waBorder/60 p-1.5 space-y-1 bg-white"></div>
 
       </aside>
 
       <!-- COLUMNA 2: ÁREA CENTRAL DE CONVERSACIÓN (CHAT PANEL) -->
-      <!-- En Móvil: pantalla completa oculta hasta que se abre un contacto; En Laptop: columna derecha continua -->
       <section id="chat-panel" class="hidden md:flex flex-1 bg-white md:border border-waBorder md:rounded-2xl flex flex-col h-full overflow-hidden shadow-wa-card relative">
         
-        <!-- Header del Chat Activo -->
+        <!-- Header del Chat Activo (Limpio, sin "Escribiendo..." ni "Grabando audio...") -->
         <div id="chat-header-bar" class="px-4 py-3 border-b border-waBorder bg-white flex items-center justify-between gap-3 flex-shrink-0 shadow-sm z-10">
           <div class="flex items-center gap-3 min-w-0">
             
-            <!-- Botón Volver a Chats (Solo Visible en Pantallas Móviles) -->
             <button id="back-to-contacts-btn" type="button" title="Volver a la lista de chats"
               class="md:hidden p-1.5 -ml-1 rounded-xl text-waDarkTeal hover:bg-waBg transition-colors flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -231,12 +220,10 @@
               </svg>
             </button>
 
-            <!-- Avatar del Contacto Activo -->
-            <div id="active-chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-waTeal to-waLightTeal text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
+            <div id="active-chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-waTeal to-waLightTeal text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm font-mono">
               💬
             </div>
 
-            <!-- Datos del Contacto Activo -->
             <div class="min-w-0">
               <h2 id="active-chat-name" class="font-bold text-sm sm:text-base text-waTextPrimary truncate">Selecciona un contacto</h2>
               <div class="flex items-center gap-2 mt-0.5">
@@ -247,24 +234,19 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <!-- Indicador de Escritura en Vivo (Secundario) -->
-            <div id="typing-indicator" class="hidden text-xs text-waTeal font-bold animate-pulse">
-              escribiendo...
-            </div>
-
             <!-- Botón Centro de Medios Compartidos -->
             <button id="open-media-hub-btn" type="button" title="Archivos y medios compartidos" aria-label="Archivos y medios compartidos"
               class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
               📁
             </button>
 
-            <!-- Botón de Búsqueda Interna de Conversación -->
+            <!-- Botón Búsqueda Interna -->
             <button id="toggle-chat-search-btn" type="button" title="Buscar en la conversación" aria-label="Buscar en la conversación"
               class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
               🔍
             </button>
 
-            <!-- Botón de Llamada de Voz WebRTC -->
+            <!-- Botón Llamada de Voz WebRTC -->
             <button id="start-call-btn" type="button" title="Iniciar llamada de voz WebRTC" aria-label="Iniciar llamada de voz"
               class="h-9 w-9 rounded-full bg-[#E8F5E9] hover:bg-waTeal text-waDarkTeal hover:text-white flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
               📞
@@ -272,7 +254,21 @@
           </div>
         </div>
 
-        <!-- BARRA DE BÚSQUEDA INTERNA EN EL HISTORIAL DE CHAT -->
+        <!-- BARRA SUPERIOR DE MENSAJE FIJADO (PINNED MESSAGE BAR) -->
+        <div id="pinned-message-bar" class="hidden px-4 py-2 bg-emerald-50/95 border-b border-waBorder flex items-center justify-between gap-3 shadow-xs z-20 cursor-pointer hover:bg-emerald-100/80 transition-colors">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <span class="text-waTeal font-bold text-sm flex-shrink-0">📌</span>
+            <div class="min-w-0 flex-1">
+              <span class="text-[10px] uppercase font-bold text-waTeal tracking-wider block">Mensaje Fijado</span>
+              <p id="pinned-message-text" class="text-xs text-waTextPrimary truncate font-medium">Contenido del mensaje...</p>
+            </div>
+          </div>
+          <button id="unpin-message-btn" type="button" title="Desfijar mensaje" class="p-1 text-waTextSecondary hover:text-red-500 rounded-lg text-xs font-bold transition-colors cursor-pointer flex-shrink-0">
+            ✕
+          </button>
+        </div>
+
+        <!-- BARRA DE BÚSQUEDA INTERNA -->
         <div id="chat-search-bar" class="hidden px-3 sm:px-4 py-2 bg-white border-b border-waBorder flex items-center gap-2 shadow-xs z-20">
           <span class="text-waTextSecondary text-sm flex-shrink-0">🔍</span>
           <input id="chat-search-input" type="text" placeholder="Buscar en la conversación actual..."
@@ -294,7 +290,7 @@
           </div>
         </div>
 
-        <!-- HILO ÚNICO DE CONVERSACIÓN (FONDO WHATSAPP CHAT) -->
+        <!-- HILO DE CONVERSACIÓN -->
         <div id="chat-messages" class="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3 scroll-smooth chat-canvas">
           <div id="chat-welcome" class="h-full flex flex-col items-center justify-center text-center p-6 text-waTextSecondary">
             <div class="w-16 h-16 rounded-full bg-white border border-waBorder flex items-center justify-center text-waTeal mb-3 shadow-wa-card">
@@ -307,10 +303,10 @@
           </div>
         </div>
 
-        <!-- BARRA DE ENTRADA INFERIOR (INPUT BAR) -->
+        <!-- BARRA DE ENTRADA INFERIOR (SIN BOTÓN PROGRAMAR NI POPOVER DE PLANTILLAS) -->
         <div id="input-container" class="p-2.5 sm:p-3.5 bg-[#F0F2F5] border-t border-waBorder flex flex-col gap-2 relative flex-shrink-0">
 
-          <!-- Previsualización de Mensaje Citado (Reply / Citar) -->
+          <!-- Previsualización de Mensaje Citado (Reply) -->
           <div id="reply-preview-bar" class="hidden items-center justify-between p-2 sm:p-2.5 rounded-xl bg-white border-l-4 border-waTeal border border-waBorder shadow-xs">
             <div class="flex flex-col min-w-0 flex-1 pr-2">
               <div class="flex items-center gap-1.5">
@@ -325,7 +321,7 @@
             </button>
           </div>
           
-          <!-- Selector Flotante de Emoticones (Desplegable) -->
+          <!-- Selector Flotante de Emoticones -->
           <div id="emoji-picker" class="hidden absolute bottom-20 left-3 sm:left-6 z-50 p-3 rounded-2xl bg-white border border-waBorder shadow-wa-float w-72 max-w-[90vw]">
             <div class="flex items-center justify-between pb-2 mb-2 border-b border-waBorder text-xs font-bold text-waTextSecondary">
               <span>Emoticones</span>
@@ -361,56 +357,36 @@
               <span id="recording-timer" class="font-mono text-red-900 font-bold">0:00</span>
             </div>
             <div class="flex items-center gap-2">
-              <button id="cancel-recording-btn" type="button" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold">✕ Cancelar</button>
+              <button id="cancel-recording-btn" type="button" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold cursor-pointer">✕ Cancelar</button>
               <button id="send-recording-btn" type="button" class="px-4 py-1.5 rounded-lg bg-waGreen hover:bg-waTeal text-white font-bold shadow-sm cursor-pointer">✓ Enviar Audio</button>
             </div>
           </div>
 
-          <!-- Fila Simétrica de Entrada: [😃], [🎙], [📎], [Textarea], [➤ Enviar] -->
+          <!-- Fila de Entrada: [😃], [🎙], [📎], [Textarea], [➤ Enviar] -->
           <div id="normal-input-bar" class="flex items-end gap-1.5 sm:gap-2">
             
-            <!-- [😃 Emoticones] -->
             <button id="toggle-emoji-btn" type="button" title="Insertar emoticones" aria-label="Insertar emoticones"
               class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
               😃
             </button>
 
-            <!-- [🎙 Grabador de Audio] -->
             <button id="voice-record-btn" type="button" title="Grabar nota de voz" aria-label="Grabar nota de voz"
               class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
               🎙
             </button>
 
-            <!-- [📎 Adjuntar Archivo] -->
             <button id="attach-btn" type="button" title="Adjuntar archivo o imagen" aria-label="Adjuntar archivo o imagen"
               class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
               📎
             </button>
             <input type="file" id="file-input" title="Seleccionar archivo" aria-label="Seleccionar archivo" class="hidden">
 
-            <!-- [⏰ Programar Mensaje] -->
-            <button id="schedule-msg-btn" type="button" title="Programar mensaje" aria-label="Programar mensaje"
-              class="h-11 w-11 rounded-xl bg-white hover:bg-gray-100 text-waTextSecondary hover:text-waTeal border border-waBorder flex items-center justify-center text-lg transition-all flex-shrink-0 cursor-pointer shadow-sm">
-              ⏰
-            </button>
-
-            <!-- Menú Flotante de Plantillas y Respuestas Rápidas (Comando /) -->
-            <div id="quick-replies-popover" class="hidden absolute bottom-20 left-4 right-4 sm:left-14 sm:right-auto sm:w-96 z-40 p-2.5 rounded-2xl bg-white border border-waBorder shadow-wa-float flex flex-col gap-1 max-h-64 overflow-y-auto">
-              <div class="px-2 py-1 text-[10px] font-bold text-waTextSecondary uppercase tracking-wider border-b border-waBorder flex items-center justify-between">
-                <span>Plantillas Rápidas (/)</span>
-                <span class="text-[9px] lowercase text-gray-400">Tab / Enter · Esc</span>
-              </div>
-              <div id="quick-replies-list" class="flex flex-col gap-0.5 mt-1"></div>
-            </div>
-
-            <!-- Textarea Expansible de Múltiples Líneas -->
             <div class="flex-1 relative min-w-0">
               <label for="chat-textarea" class="sr-only">Escribe un mensaje privado</label>
-              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado o '/' para plantillas..."
+              <textarea id="chat-textarea" rows="1" placeholder="Escribe un mensaje privado..."
                 class="w-full resize-none rounded-2xl bg-white border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none px-4 py-2.5 text-sm text-waTextPrimary placeholder-waTextSecondary max-h-36 overflow-y-auto leading-relaxed shadow-sm transition-all"></textarea>
             </div>
 
-            <!-- [➤ Enviar] -->
             <button id="send-btn" type="button" title="Enviar mensaje (Enter)" aria-label="Enviar mensaje"
               class="h-11 w-11 sm:w-auto sm:px-5 rounded-2xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-sm shadow-md active:scale-95 flex items-center justify-center gap-1.5 transition-all flex-shrink-0 cursor-pointer">
               <span class="text-base">➤</span>
@@ -426,26 +402,22 @@
 
   </div>
 
-  <!-- PANTALLA DE AUTENTICACIÓN (LOGIN & REGISTRO LIGHT MODE) -->
+  <!-- PANTALLA DE AUTENTICACIÓN -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#F0F2F5]">
     <div class="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-wa-float border border-waBorder">
       
-      <!-- Logo y Título -->
-      <div class="flex flex-col items-center text-center gap-2">
+      <div class="flex items-center flex-col text-center gap-2">
         <img src="/assets/logo.png" alt="SYNC ENGINE" class="h-12 w-auto object-contain">
         <h2 class="font-bold text-xl text-waDarkTeal">SYNC ENGINE</h2>
         <p class="text-xs text-waTextSecondary">Plataforma Privada de Mensajería &amp; Sincronización</p>
       </div>
 
-      <!-- Selector de Pestañas: Login vs Registro -->
       <div class="grid grid-cols-2 p-1 rounded-2xl bg-waBg border border-waBorder">
         <button id="tab-login" type="button" class="py-2.5 rounded-xl font-bold text-xs bg-waTeal text-white shadow-sm transition-all">Iniciar Sesión</button>
         <button id="tab-register" type="button" class="py-2.5 rounded-xl font-bold text-xs text-waTextSecondary hover:text-waDarkTeal transition-all">Crear Cuenta</button>
       </div>
 
-      <!-- Formulario de Autenticación -->
       <form id="auth-form" class="flex flex-col gap-4">
-        
         <div>
           <label for="auth-username" class="block text-xs font-semibold text-waTextSecondary mb-1">Nombre de Usuario</label>
           <input type="text" id="auth-username" required title="Nombre de usuario" placeholder="ej. jbarrantes"
@@ -471,7 +443,6 @@
           class="w-full py-3 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-sm shadow-md transition-all cursor-pointer">
           Ingresar al Chat
         </button>
-
       </form>
 
     </div>
@@ -492,7 +463,7 @@
         class="w-full px-4 py-2.5 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-sm text-waTextPrimary">
 
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-waBorder">
-        <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-waTextSecondary hover:text-waTextPrimary">Cancelar</button>
+        <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-waTextSecondary hover:text-waTextPrimary cursor-pointer">Cancelar</button>
         <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-sm transition-all cursor-pointer">Guardar</button>
       </div>
     </div>
@@ -501,7 +472,7 @@
   <!-- MODAL: VISOR DE IMÁGENES -->
   <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-      <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-white hover:text-gray-300 px-3 py-1 text-xs font-bold rounded-lg bg-black/50 border border-white/20">✕ Cerrar</button>
+      <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-white hover:text-gray-300 px-3 py-1 text-xs font-bold rounded-lg bg-black/50 border border-white/20 cursor-pointer">✕ Cerrar</button>
       <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-2xl">
       <div class="mt-4 flex items-center gap-3">
         <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-md flex items-center gap-2 transition-all">
@@ -511,16 +482,16 @@
     </div>
   </div>
 
-  <!-- CONTENEDOR DE ALERTAS POP-UP FLOTANTES IN-APP -->
+  <!-- CONTENEDOR DE ALERTAS POP-UP FLOTANTES -->
   <div id="popup-notifications" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none max-w-sm w-full"></div>
 
-  <!-- CONTENEDOR DE ESPEJO DE NOTIFICACIONES Y RESPUESTA RÁPIDA (NOTIFICATION MIRRORING) -->
+  <!-- CONTENEDOR DE ESPEJO DE NOTIFICACIONES -->
   <div id="mirrored-notification-container" class="fixed top-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-5 sm:translate-x-0 z-50 flex flex-col gap-3 max-w-sm w-[92vw] sm:w-full pointer-events-auto"></div>
 
-  <!-- ELEMENTO DE AUDIO REMOTO WEBRTC -->
+  <!-- AUDIO REMOTO WEBRTC -->
   <audio id="remote-audio" autoplay playsinline></audio>
 
-  <!-- MODAL: CENTRO DE ARCHIVOS Y MEDIOS COMPARTIDOS (SHARED MEDIA HUB) -->
+  <!-- MODAL: CENTRO DE ARCHIVOS Y MEDIOS COMPARTIDOS -->
   <div id="media-hub-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-wa-float border border-waBorder overflow-hidden">
       <div class="p-4 sm:p-5 border-b border-waBorder flex items-center justify-between bg-white">
@@ -549,57 +520,6 @@
       </div>
 
       <div id="media-hub-content" class="flex-1 overflow-y-auto p-4 sm:p-6 bg-white min-h-[300px]"></div>
-    </div>
-  </div>
-
-  <!-- MODAL: MENSAJES PROGRAMADOS -->
-  <div id="schedule-msg-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-white rounded-3xl w-full max-w-md flex flex-col shadow-wa-float border border-waBorder overflow-hidden">
-      <div class="p-4 sm:p-5 border-b border-waBorder flex items-center justify-between">
-        <div>
-          <h3 class="font-bold text-base text-waTextPrimary flex items-center gap-2">
-            <span>⏰ Programar Mensaje</span>
-          </h3>
-          <p id="schedule-modal-target" class="text-xs text-waTextSecondary font-mono mt-0.5">Destino: SYNC-XXXX</p>
-        </div>
-        <button id="close-schedule-modal-btn" type="button" class="h-8 w-8 rounded-full hover:bg-waBg text-waTextSecondary hover:text-waTextPrimary flex items-center justify-center font-bold text-sm cursor-pointer">✕</button>
-      </div>
-
-      <div class="p-4 sm:p-5 flex flex-col gap-4">
-        <div>
-          <label for="schedule-text-input" class="block text-xs font-semibold text-waTextSecondary mb-1">Contenido del Mensaje</label>
-          <textarea id="schedule-text-input" rows="3" placeholder="Escribe el mensaje a enviar más tarde..."
-            class="w-full resize-none rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none p-3 text-xs text-waTextPrimary"></textarea>
-        </div>
-
-        <div>
-          <label for="schedule-datetime-input" class="block text-xs font-semibold text-waTextSecondary mb-1">Fecha y Hora de Entrega</label>
-          <input type="datetime-local" id="schedule-datetime-input"
-            class="w-full px-3 py-2 rounded-xl bg-waBg border border-waBorder focus:border-waTeal focus:ring-2 focus:ring-waTeal/20 outline-none text-xs text-waTextPrimary font-mono">
-        </div>
-
-        <!-- Chips de Acceso Rápido -->
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-[11px] text-waTextSecondary font-medium">Accesos rápidos:</span>
-          <button type="button" class="sched-chip px-2.5 py-1 rounded-lg bg-waBg hover:bg-gray-200 text-[11px] font-semibold text-waDarkTeal cursor-pointer" data-mins="15">+15 min</button>
-          <button type="button" class="sched-chip px-2.5 py-1 rounded-lg bg-waBg hover:bg-gray-200 text-[11px] font-semibold text-waDarkTeal cursor-pointer" data-mins="60">+1 hora</button>
-          <button type="button" class="sched-chip px-2.5 py-1 rounded-lg bg-waBg hover:bg-gray-200 text-[11px] font-semibold text-waDarkTeal cursor-pointer" data-tomorrow="9">Mañana 9:00 AM</button>
-        </div>
-
-        <button id="submit-schedule-btn" type="button"
-          class="w-full py-2.5 rounded-xl bg-waTeal hover:bg-waDarkTeal text-white font-bold text-xs shadow-md transition-all cursor-pointer">
-          ✓ Guardar y Programar Envío
-        </button>
-
-        <!-- Lista de Mensajes Programados Pendientes -->
-        <div class="pt-3 border-t border-waBorder flex flex-col gap-2">
-          <span class="text-xs font-bold text-waTextPrimary flex items-center justify-between">
-            <span>Mensajes en Cola para este Contacto</span>
-            <span id="scheduled-count-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-waDarkTeal font-bold">0</span>
-          </span>
-          <div id="pending-scheduled-list" class="max-h-36 overflow-y-auto flex flex-col gap-1.5 pr-1"></div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -650,7 +570,6 @@
         <span id="active-call-timer" class="text-sm font-mono font-bold text-waTextSecondary hidden mt-1 inline-block">00:00</span>
       </div>
 
-      <!-- Controles de la Llamada: Silenciar Micrófono & Colgar -->
       <div class="flex items-center justify-center gap-6 w-full pt-4 border-t border-waBorder">
         <button id="toggle-call-mute-btn" type="button" title="Silenciar / Activar micrófono"
           class="flex flex-col items-center gap-1.5 text-xs font-semibold text-waTextSecondary hover:text-waTextPrimary transition-all cursor-pointer">
@@ -681,8 +600,10 @@
   let contactsMap = new Map();
   let socket = null;
 
-  // Deduplicación local infalible de mensajes
+  // Deduplicación local de mensajes
   const renderedMessageIds = new Set();
+  let activeConversationMessages = [];
+  let currentPinnedMessage = null;
 
   // Grabación de Audio (MediaRecorder API)
   let mediaRecorder = null;
@@ -722,7 +643,6 @@
   const activeChatName = document.getElementById('active-chat-name');
   const activeChatId = document.getElementById('active-chat-id');
   const activeChatStatus = document.getElementById('active-chat-status');
-  const typingIndicator = document.getElementById('typing-indicator');
 
   const chatMessages = document.getElementById('chat-messages');
   const chatWelcome = document.getElementById('chat-welcome');
@@ -754,7 +674,7 @@
   const closeImageModalBtn = document.getElementById('close-image-modal-btn');
   const popupNotifications = document.getElementById('popup-notifications');
 
-  // Referencias DOM WebRTC (Llamadas de Voz P2P)
+  // Referencias DOM WebRTC
   const startCallBtn = document.getElementById('start-call-btn');
   const remoteAudio = document.getElementById('remote-audio');
   const incomingCallModal = document.getElementById('incoming-call-modal');
@@ -773,7 +693,6 @@
   const muteBtnLabel = document.getElementById('mute-btn-label');
   const hangupCallBtn = document.getElementById('hangup-call-btn');
 
-  // Configuración y Estado WebRTC (STUN Público)
   const configuration = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
@@ -793,7 +712,7 @@
   let audioContext = null;
   let ringtoneInterval = null;
 
-  // Referencias DOM Buscador Interno de Conversación
+  // Referencias DOM Buscador Interno
   const toggleChatSearchBtn = document.getElementById('toggle-chat-search-btn');
   const chatSearchBar = document.getElementById('chat-search-bar');
   const chatSearchInput = document.getElementById('chat-search-input');
@@ -802,13 +721,18 @@
   const chatSearchNextBtn = document.getElementById('chat-search-next-btn');
   const chatSearchCloseBtn = document.getElementById('chat-search-close-btn');
 
-  // Referencias DOM Citar y Responder (Reply)
+  // Referencias DOM Citar y Responder
   const replyPreviewBar = document.getElementById('reply-preview-bar');
   const replyPreviewName = document.getElementById('reply-preview-name');
   const replyPreviewText = document.getElementById('reply-preview-text');
   const cancelReplyBtn = document.getElementById('cancel-reply-btn');
 
-  // Referencias DOM Centro de Medios Compartidos (Media Hub)
+  // Referencias DOM Mensaje Fijado
+  const pinnedMessageBar = document.getElementById('pinned-message-bar');
+  const pinnedMessageText = document.getElementById('pinned-message-text');
+  const unpinMessageBtn = document.getElementById('unpin-message-btn');
+
+  // Referencias DOM Centro de Medios Compartidos
   const openMediaHubBtn = document.getElementById('open-media-hub-btn');
   const mediaHubModal = document.getElementById('media-hub-modal');
   const closeMediaHubBtn = document.getElementById('close-media-hub-btn');
@@ -820,32 +744,9 @@
   const tabHubLinks = document.getElementById('tab-hub-links');
   let currentMediaHubTab = 'images';
 
-  // Referencias DOM Mensajes Programados y Plantillas
-  const scheduleMsgBtn = document.getElementById('schedule-msg-btn');
-  const scheduleMsgModal = document.getElementById('schedule-msg-modal');
-  const closeScheduleModalBtn = document.getElementById('close-schedule-modal-btn');
-  const scheduleModalTarget = document.getElementById('schedule-modal-target');
-  const scheduleTextInput = document.getElementById('schedule-text-input');
-  const scheduleDatetimeInput = document.getElementById('schedule-datetime-input');
-  const submitScheduleBtn = document.getElementById('submit-schedule-btn');
-  const pendingScheduledList = document.getElementById('pending-scheduled-list');
-  const scheduledCountBadge = document.getElementById('scheduled-count-badge');
-
-  // Referencias DOM Plantillas Rápidas (Comando /)
-  const quickRepliesPopover = document.getElementById('quick-replies-popover');
-  const quickRepliesList = document.getElementById('quick-replies-list');
-
-  // Referencias DOM Espejo de Notificaciones (Mirroring)
-  const mirroredNotificationContainer = document.getElementById('mirrored-notification-container');
-
-  let activeConversationMessages = [];
-  let currentReplyTo = null; // { id, fromName, text }
+  let currentReplyTo = null;
   let currentSearchMatches = [];
   let currentSearchIndex = -1;
-  let isCurrentlyTyping = false;
-  let typingDebounceTimer = null;
-  let activeContactActivity = null; // 'typing' | 'recording' | null
-
   let isRegisterMode = false;
 
   // Sanitización de Emoticones en Identidad
@@ -859,7 +760,7 @@
       .trim() || 'Usuario';
   }
 
-  // Notificaciones Web & Pop-up flotante in-app
+  // Notificaciones Web & Pop-up flotante
   function initWebNotifications() {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().catch(() => {});
@@ -896,7 +797,7 @@
     }, 3800);
   }
 
-  // Pestañas de Autenticación
+  // Pestañas Auth
   tabLogin.addEventListener('click', () => {
     isRegisterMode = false;
     tabLogin.classList.add('bg-waTeal', 'text-white', 'shadow-sm');
@@ -919,7 +820,6 @@
     authErrorMsg.classList.add('hidden');
   });
 
-  // Envío Formulario Auth
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authErrorMsg.classList.add('hidden');
@@ -951,7 +851,6 @@
     }
   });
 
-  // Comprobar Sesión Existente
   async function checkExistingAuth() {
     if (!currentToken) {
       showAuth();
@@ -994,7 +893,6 @@
     initSocket();
     loadContacts();
 
-    // Comportamiento Responsive Inicial: En móvil se muestra primero la lista de contactos
     if (window.innerWidth < 768) {
       sidebarPanel.classList.remove('hidden');
       chatPanel.classList.add('hidden');
@@ -1014,7 +912,6 @@
     showAuth();
   });
 
-  // Editar Perfil (Nombre Personalizado sin Emojis)
   openEditProfileBtn.addEventListener('click', () => {
     profileNameInput.value = currentUser ? purgeEmojis(currentUser.cleanDisplayName) : '';
     editProfileModal.classList.remove('hidden');
@@ -1050,7 +947,6 @@
     }
   });
 
-  // BOTÓN NAVEGACIÓN MÓVIL: VOLVER A CHATS
   backToContactsBtn.addEventListener('click', () => {
     activeContactSyncId = null;
     sidebarPanel.classList.remove('hidden');
@@ -1058,7 +954,6 @@
     loadContacts();
   });
 
-  // GESTIÓN DE CONTACTOS (SIN MENSAJES GUARDADOS)
   async function loadContacts() {
     try {
       const res = await fetch('/api/contacts', {
@@ -1090,7 +985,6 @@
     contactsMap.clear();
     contactsList.innerHTML = '';
     
-    // Filtrar estrictamente cualquier auto-contacto residual
     const validContacts = contacts.filter((c) => c.syncId !== currentUser.syncId);
     contactsCountBadge.textContent = validContacts.length;
 
@@ -1144,13 +1038,11 @@
       contactsList.appendChild(item);
     });
 
-    // En pantallas grandes (laptop/TV), auto-seleccionar primer chat si ninguno está activo
     if (window.innerWidth >= 768 && !activeContactSyncId && validContacts.length > 0) {
       selectContact(validContacts[0].syncId);
     }
   }
 
-  // BUSCADOR / INCORPORACIÓN POR CÓDIGO ID
   async function handleAddContact() {
     const rawInput = contactSearchInput.value.trim().toUpperCase();
     contactActionMsg.classList.add('hidden');
@@ -1203,21 +1095,15 @@
     });
   });
 
-  // ACTUALIZACIÓN DINÁMICA DE ESTADO EN CABECERA DEL CHAT ("Escribiendo...", "Grabando audio...", "● En línea")
+  // ESTADO LIMPIO EN CABECERA DEL CHAT (SÓLO ● En línea / · Desconectado)
   function updateContactHeaderStatus() {
     if (!activeContactSyncId) return;
     const contact = contactsMap.get(activeContactSyncId);
     if (!contact) return;
 
-    if (activeContactActivity === 'typing') {
-      activeChatStatus.innerHTML = '<span class="text-waGreen font-bold animate-pulse flex items-center gap-1"><span>✏️</span> Escribiendo...</span>';
-    } else if (activeContactActivity === 'recording') {
-      activeChatStatus.innerHTML = '<span class="text-red-500 font-bold animate-pulse flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> Grabando audio...</span>';
-    } else {
-      activeChatStatus.innerHTML = contact.isOnline 
-        ? '<span class="text-waGreen font-bold">● En línea</span>' 
-        : '<span class="text-waTextSecondary">· Desconectado</span>';
-    }
+    activeChatStatus.innerHTML = contact.isOnline 
+      ? '<span class="text-waGreen font-bold">● En línea</span>' 
+      : '<span class="text-waTextSecondary">· Desconectado</span>';
   }
 
   // CITAR Y RESPONDER MENSAJES (REPLY)
@@ -1226,7 +1112,8 @@
     const isLocal = (msg.fromId === currentUser.syncId);
     const name = isLocal ? 'Tú' : (msg.fromName || msg.fromId);
     let summary = msg.text || '';
-    if (msg.type === 'audio') summary = '🎤 Nota de voz';
+    if (msg.deletedForEveryone) summary = '🚫 Mensaje eliminado';
+    else if (msg.type === 'audio') summary = '🎤 Nota de voz';
     else if (msg.type === 'file') summary = '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo');
 
     currentReplyTo = {
@@ -1460,19 +1347,17 @@
     highlightActiveSearchMatch();
   }
 
-  // SELECCIONAR CONTACTO & NAVEGACIÓN RESPONSIVE
+  // SELECCIONAR CONTACTO & GESTIÓN DE LECTURA
   async function selectContact(syncId) {
     if (syncId === currentUser.syncId) return;
     activeContactSyncId = syncId;
     renderedMessageIds.clear();
     cancelReply();
     closeChatSearch();
-    activeContactActivity = null;
 
     const contact = contactsMap.get(syncId);
     if (!contact) return;
 
-    // En pantallas móviles: alternar a la vista única de chat en pantalla completa
     if (window.innerWidth < 768) {
       sidebarPanel.classList.add('hidden');
       chatPanel.classList.remove('hidden');
@@ -1491,15 +1376,8 @@
     chatWelcome.classList.add('hidden');
     chatMessages.innerHTML = '';
 
-    if (startCallBtn) {
-      startCallBtn.classList.remove('opacity-40', 'pointer-events-none');
-    }
-    if (openMediaHubBtn) {
-      openMediaHubBtn.classList.remove('opacity-40', 'pointer-events-none');
-    }
-    if (scheduleMsgBtn) {
-      scheduleMsgBtn.classList.remove('opacity-40', 'pointer-events-none');
-    }
+    if (startCallBtn) startCallBtn.classList.remove('opacity-40', 'pointer-events-none');
+    if (openMediaHubBtn) openMediaHubBtn.classList.remove('opacity-40', 'pointer-events-none');
 
     try {
       const res = await fetch('/api/messages/' + syncId, {
@@ -1511,16 +1389,62 @@
         data.messages.forEach((msg) => {
           renderMessageBubble(msg);
         });
+
+        // Configurar mensaje fijado
+        updatePinnedMessageUI(data.pinnedMessage || null);
       }
     } catch (e) {
       console.warn('Error al cargar historial:', e);
+    }
+
+    // Notificar lectura al servidor
+    if (socket && document.visibilityState === 'visible') {
+      socket.emit('mark-messages-read', { contactSyncId: activeContactSyncId });
     }
 
     loadContacts();
     chatTextarea.focus();
   }
 
-  // FUNCIONES DE LLAMADA DE VOZ P2P WEBRTC (AUDIO EXCLUSIVO)
+  // GESTIÓN DE MENSAJES FIJADOS
+  function updatePinnedMessageUI(pinnedMsg) {
+    currentPinnedMessage = pinnedMsg;
+    if (!pinnedMsg || !pinnedMsg.id) {
+      pinnedMessageBar.classList.add('hidden');
+      return;
+    }
+
+    let summary = pinnedMsg.text || 'Mensaje';
+    if (pinnedMsg.deletedForEveryone) summary = '🚫 Este mensaje fue eliminado';
+    else if (pinnedMsg.type === 'audio') summary = '🎤 Nota de voz';
+    else if (pinnedMsg.type === 'file') summary = '📎 ' + (pinnedMsg.fileData ? pinnedMsg.fileData.name : 'Archivo');
+
+    pinnedMessageText.textContent = summary;
+    pinnedMessageBar.classList.remove('hidden');
+  }
+
+  pinnedMessageBar.addEventListener('click', (e) => {
+    if (e.target.id === 'unpin-message-btn' || e.target.closest('#unpin-message-btn')) {
+      return;
+    }
+    if (!currentPinnedMessage || !currentPinnedMessage.id) return;
+    const targetEl = document.getElementById('msg-' + currentPinnedMessage.id);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      targetEl.classList.add('quote-highlight');
+      setTimeout(() => targetEl.classList.remove('quote-highlight'), 1600);
+    } else {
+      triggerPopupNotification('Mensaje Fijado', 'El mensaje anclado se encuentra fuera del historial activo', '📌');
+    }
+  });
+
+  unpinMessageBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!activeContactSyncId || !socket) return;
+    socket.emit('unpin-message', { toSyncId: activeContactSyncId });
+  });
+
+  // WEBRTC LLAMADAS DE VOZ P2P
   function playTone(freq1, freq2, durationMs) {
     try {
       if (!audioContext) {
@@ -1616,14 +1540,12 @@
 
     peerConnection = new RTCPeerConnection(configuration);
 
-    // Añade explícitamente todas las pistas locales al PeerConnection
     if (localStream) {
       localStream.getTracks().forEach(track => {
         peerConnection.addTrack(track, localStream);
       });
     }
 
-    // Receptor de audio remoto conectado al elemento HTML <audio id="remote-audio">
     peerConnection.ontrack = (event) => {
       const remoteAudio = document.getElementById('remote-audio');
       if (event.streams && event.streams[0]) {
@@ -1633,7 +1555,6 @@
       }
     };
 
-    // Candidatos ICE locales
     peerConnection.onicecandidate = (event) => {
       if (event.candidate && activeCallPeerSyncId) {
         socket.emit('ice-candidate', {
@@ -1644,7 +1565,6 @@
     };
 
     peerConnection.oniceconnectionstatechange = () => {
-      console.log('[WEBRTC] Estado de conexión ICE:', peerConnection.iceConnectionState);
       if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
         stopRingtone();
         activeCallStatusLabel.textContent = 'En llamada';
@@ -1685,7 +1605,6 @@
     isAudioMuted = false;
     iceCandidatesQueue = [];
 
-    // Configurar modal de llamada saliente
     activeCallPeerAvatar.textContent = contact.syncId.replace('SYNC-', '');
     activeCallPeerName.textContent = contact.formattedName;
     activeCallStatusLabel.textContent = 'Llamando...';
@@ -1740,7 +1659,7 @@
     try {
       localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     } catch (err) {
-      alert('No se pudo acceder al micrófono para responder la llamada: ' + err.message);
+      alert('No se pudo acceder al micrófono: ' + err.message);
       socket.emit('reject-call', { toSyncId: callerSyncId });
       incomingCallOfferData = null;
       return;
@@ -1760,7 +1679,6 @@
     createPeerConnection(callerSyncId);
     await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
 
-    // Procesar y vaciar cola de candidatos ICE acumulados
     while (iceCandidatesQueue.length > 0) {
       const cand = iceCandidatesQueue.shift();
       try {
@@ -1796,7 +1714,6 @@
     activeCallStatusLabel.textContent = 'Conectando audio...';
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
 
-    // Procesar y vaciar cola de candidatos ICE acumulados en el llamante
     while (iceCandidatesQueue.length > 0) {
       const cand = iceCandidatesQueue.shift();
       try {
@@ -1811,7 +1728,6 @@
     if (!data || !data.candidate) return;
 
     if (!peerConnection || !peerConnection.remoteDescription) {
-      console.log('[WEBRTC] remoteDescription no establecido aún. Encolando candidato ICE.');
       iceCandidatesQueue.push(data.candidate);
       return;
     }
@@ -1872,7 +1788,7 @@
     activeCallModal.classList.add('hidden');
   }
 
-  // SOCKET.IO & LIMPIEZA DE LISTENERS (PREVENCIÓN DE DUPLICACIÓN)
+  // SOCKET.IO & LISTENERS
   function initSocket() {
     if (socket) {
       socket.disconnect();
@@ -1889,12 +1805,11 @@
     socket.off('auth-error');
     socket.off('contact-status-changed');
     socket.off('receive-private-message');
-    socket.off('user-typing');
-    socket.off('contact-typing-start');
-    socket.off('contact-typing-stop');
-    socket.off('contact-recording-start');
-    socket.off('contact-recording-stop');
     socket.off('message-reaction-updated');
+    socket.off('messages-read-receipt');
+    socket.off('message-deleted-for-everyone');
+    socket.off('message-pinned');
+    socket.off('message-unpinned');
     socket.off('call-made');
     socket.off('answer-made');
     socket.off('ice-candidate');
@@ -1902,10 +1817,6 @@
     socket.off('call-ended');
     socket.off('call-unavailable');
     socket.off('notification-mirrored');
-    socket.off('scheduled-messages-list');
-    socket.off('scheduled-message-saved');
-    socket.off('scheduled-message-delivered');
-    socket.off('scheduled-message-cancelled');
 
     socket.on('connect', () => {
       socket.emit('authenticate', { token: currentToken });
@@ -1926,63 +1837,56 @@
       }
     });
 
-    // Indicadores en Tiempo Real de Actividad
-    socket.on('contact-typing-start', (data) => {
-      if (data && data.fromSyncId === activeContactSyncId) {
-        activeContactActivity = 'typing';
-        updateContactHeaderStatus();
-      }
-    });
-
-    socket.on('contact-typing-stop', (data) => {
-      if (data && data.fromSyncId === activeContactSyncId) {
-        if (activeContactActivity === 'typing') activeContactActivity = null;
-        updateContactHeaderStatus();
-      }
-    });
-
-    socket.on('contact-recording-start', (data) => {
-      if (data && data.fromSyncId === activeContactSyncId) {
-        activeContactActivity = 'recording';
-        updateContactHeaderStatus();
-      }
-    });
-
-    socket.on('contact-recording-stop', (data) => {
-      if (data && data.fromSyncId === activeContactSyncId) {
-        if (activeContactActivity === 'recording') activeContactActivity = null;
-        updateContactHeaderStatus();
-      }
-    });
-
     socket.on('message-reaction-updated', (data) => {
       updateMessageReactionsUI(data);
     });
 
-    // Notificaciones reflejadas (Mirroring móvil a laptop)
+    // RECIBO DE LECTURA (DOBLE CHECK AZUL)
+    socket.on('messages-read-receipt', (data) => {
+      if (!data || !Array.isArray(data.messageIds)) return;
+      data.messageIds.forEach((msgId) => {
+        const msgEl = document.getElementById('msg-' + msgId);
+        if (msgEl) {
+          const statusIcon = msgEl.querySelector('.msg-status-check');
+          if (statusIcon) {
+            statusIcon.textContent = '✓✓';
+            statusIcon.className = 'msg-status-check text-[11px] text-waBlueCheck font-bold';
+            statusIcon.title = 'Leído';
+          }
+        }
+        const cached = activeConversationMessages.find(m => m.id === msgId);
+        if (cached) {
+          cached.status = 'read';
+          cached.read = true;
+        }
+      });
+    });
+
+    // MENSAJE ELIMINADO PARA TODOS
+    socket.on('message-deleted-for-everyone', (data) => {
+      if (!data || !data.messageId) return;
+      applyMessageDeletedUI(data.messageId);
+    });
+
+    // MENSAJE FIJADO / DESFIJADO
+    socket.on('message-pinned', (data) => {
+      if (data && (data.conversationWith === activeContactSyncId || data.toSyncId === activeContactSyncId)) {
+        updatePinnedMessageUI(data.pinnedMessage);
+      }
+    });
+
+    socket.on('message-unpinned', (data) => {
+      if (data && (data.conversationWith === activeContactSyncId || data.toSyncId === activeContactSyncId)) {
+        updatePinnedMessageUI(null);
+      }
+    });
+
+    // Espejo de notificaciones
     socket.on('notification-mirrored', (data) => {
       showMirroredNotificationToast(data);
     });
 
-    // Mensajes Programados
-    socket.on('scheduled-messages-list', (data) => {
-      renderPendingScheduledList(data.scheduled);
-    });
-
-    socket.on('scheduled-message-saved', (data) => {
-      if (socket) socket.emit('get-scheduled-messages');
-    });
-
-    socket.on('scheduled-message-cancelled', (data) => {
-      if (socket) socket.emit('get-scheduled-messages');
-    });
-
-    socket.on('scheduled-message-delivered', (data) => {
-      triggerPopupNotification('Mensaje Entregado', 'Tu mensaje programado fue entregado con éxito', '⏰');
-      if (socket) socket.emit('get-scheduled-messages');
-    });
-
-    // Eventos WebRTC Señalización
+    // Eventos WebRTC
     socket.on('call-made', handleIncomingCall);
     socket.on('answer-made', handleAnswerMade);
     socket.on('ice-candidate', handleRemoteIceCandidate);
@@ -1990,6 +1894,7 @@
     socket.on('call-ended', handleCallEnded);
     socket.on('call-unavailable', handleCallUnavailable);
 
+    // RECIBIR MENSAJE PRIVADO
     socket.on('receive-private-message', (msg) => {
       if (!msg || !msg.id) return;
 
@@ -2009,6 +1914,11 @@
           activeConversationMessages.push(msg);
         }
         renderMessageBubble(msg);
+
+        // Si la ventana está activa y visible, marcar como leído de inmediato
+        if (fromId !== currentUser.syncId && document.visibilityState === 'visible') {
+          socket.emit('mark-messages-read', { contactSyncId: activeContactSyncId });
+        }
       }
 
       if (fromId !== currentUser.syncId) {
@@ -2017,7 +1927,6 @@
           : (msg.type === 'file' ? '📎 ' + (msg.fileData ? msg.fileData.name : 'Archivo') : msg.text);
         triggerPopupNotification(msg.fromName || fromId, preview, msg.type === 'audio' ? '🎤' : '💬');
 
-        // Captura en móvil y transmisión en tiempo real a la laptop vía Socket.IO ('mirror-notification')
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
         if (isMobileDevice) {
           socket.emit('mirror-notification', {
@@ -2034,19 +1943,53 @@
 
       loadContacts();
     });
-
-    socket.on('user-typing', (data) => {
-      if (data.fromSyncId === activeContactSyncId) {
-        if (data.isTyping) {
-          typingIndicator.classList.remove('hidden');
-        } else {
-          typingIndicator.classList.add('hidden');
-        }
-      }
-    });
   }
 
-  // RENDERIZADO DE BURBUJAS (LIGHT MODE ESTILO WHATSAPP)
+  // Notificar lectura cuando el usuario enfoca la pestaña
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && activeContactSyncId && socket) {
+      socket.emit('mark-messages-read', { contactSyncId: activeContactSyncId });
+    }
+  });
+  window.addEventListener('focus', () => {
+    if (activeContactSyncId && socket) {
+      socket.emit('mark-messages-read', { contactSyncId: activeContactSyncId });
+    }
+  });
+
+  // APLICAR TRANSFORMACIÓN DE MENSAJE ELIMINADO EN UI
+  function applyMessageDeletedUI(messageId) {
+    const msgEl = document.getElementById('msg-' + messageId);
+    if (!msgEl) return;
+
+    const bubble = msgEl.querySelector('.chat-bubble-inner');
+    if (bubble) {
+      bubble.innerHTML = `
+        <div class="italic text-gray-500 text-xs py-0.5 flex items-center gap-1.5 select-none">
+          <span class="text-sm">🚫</span>
+          <span>Este mensaje fue eliminado</span>
+        </div>
+      `;
+    }
+
+    // Remover toolbars o barras de hover
+    const tb = msgEl.querySelector('.desktop-msg-toolbar');
+    if (tb) tb.remove();
+    const rx = msgEl.querySelector('.reactions-wrapper');
+    if (rx) rx.remove();
+
+    const cached = activeConversationMessages.find(m => m.id === messageId);
+    if (cached) {
+      cached.deletedForEveryone = true;
+      cached.text = 'Este mensaje fue eliminado';
+    }
+
+    if (currentPinnedMessage && currentPinnedMessage.id === messageId) {
+      updatePinnedMessageUI(null);
+    }
+  }
+
+  // RENDERIZADO DE BURBUJAS DE MENSAJE
   function renderMessageBubble(msg) {
     if (!msg || !msg.id) return;
     if (renderedMessageIds.has(msg.id)) return;
@@ -2063,25 +2006,50 @@
     const timeStr = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
     const senderHeader = isLocal ? 'Tú' : (msg.fromName || msg.fromId);
 
+    // DOBLE CHECK VISUAL DE ESTADO
+    let checkIcon = '';
+    if (isLocal) {
+      const st = msg.status || (msg.read ? 'read' : 'delivered');
+      if (st === 'read') {
+        checkIcon = `<span class="msg-status-check text-[11px] text-waBlueCheck font-bold" title="Leído">✓✓</span>`;
+      } else if (st === 'delivered') {
+        checkIcon = `<span class="msg-status-check text-[11px] text-gray-400 font-bold" title="Entregado">✓✓</span>`;
+      } else {
+        checkIcon = `<span class="msg-status-check text-[11px] text-gray-400 font-bold" title="Enviado">✓</span>`;
+      }
+    }
+
     const headerEl = document.createElement('div');
-    headerEl.className = `flex items-center gap-2 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-waDarkTeal' : 'text-waTextSecondary'}`;
+    headerEl.className = `flex items-center gap-1.5 mb-1 px-1 text-[11px] ${isLocal ? 'flex-row-reverse text-waDarkTeal' : 'text-waTextSecondary'}`;
     headerEl.innerHTML = `
       <span class="font-bold">${escapeHtml(senderHeader)}</span>
       <span class="text-waTextSecondary font-mono text-[10px]">${escapeHtml(timeStr)}</span>
-      ${isLocal ? '<span class="text-[11px] text-waBlueCheck font-bold">✓✓</span>' : ''}
+      ${checkIcon}
     `;
 
-    // Burbuja con paleta WhatsApp:
-    // * Enviados (Propios): Verde Suave (#D9FDD3) alineados a la DERECHA
-    // * Recibidos (Contacto): Blanco (#FFFFFF) alineados a la IZQUIERDA
     const bubble = document.createElement('div');
-    bubble.className = `relative rounded-2xl p-3 sm:p-3.5 text-sm shadow-wa-bubble transition-all ${
+    bubble.className = `chat-bubble-inner relative rounded-2xl p-3 sm:p-3.5 text-sm shadow-wa-bubble transition-all ${
       isLocal 
         ? 'bg-[#D9FDD3] text-waTextPrimary rounded-tr-none' 
         : 'bg-white border border-waBorder text-waTextPrimary rounded-tl-none'
     }`;
 
-    // PREVISUALIZACIÓN DE MENSAJE CITADO (SI APLICA)
+    // SI EL MENSAJE FUE ELIMINADO PARA TODOS
+    if (msg.deletedForEveryone) {
+      bubble.innerHTML = `
+        <div class="italic text-gray-500 text-xs py-0.5 flex items-center gap-1.5 select-none">
+          <span class="text-sm">🚫</span>
+          <span>Este mensaje fue eliminado</span>
+        </div>
+      `;
+      wrapper.appendChild(headerEl);
+      wrapper.appendChild(bubble);
+      chatMessages.appendChild(wrapper);
+      chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+      return;
+    }
+
+    // PREVISUALIZACIÓN DE MENSAJE CITADO (REPLY)
     if (msg.replyTo && (msg.replyTo.text || msg.replyTo.fromName)) {
       const replyBlock = document.createElement('div');
       replyBlock.className = 'mb-2 p-2 rounded-xl bg-black/5 hover:bg-black/10 border-l-4 border-waTeal cursor-pointer transition-colors text-left';
@@ -2102,7 +2070,7 @@
       bubble.appendChild(replyBlock);
     }
 
-    // TIPO 1: NOTA DE VOZ (AUDIO)
+    // NOTA DE VOZ (AUDIO)
     if (msg.type === 'audio' && msg.audioData) {
       const audioCard = document.createElement('div');
       audioCard.className = 'flex items-center gap-3 min-w-[220px] sm:min-w-[270px]';
@@ -2152,7 +2120,7 @@
       audioCard.appendChild(trackInfo);
       bubble.appendChild(audioCard);
     }
-    // TIPO 2: ARCHIVO O IMAGEN
+    // ARCHIVO O IMAGEN
     else if (msg.type === 'file' && msg.fileData) {
       const f = msg.fileData;
       const isImg = (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|gif|webp|svg)$/i.test(f.name);
@@ -2189,12 +2157,46 @@
       `;
       bubble.appendChild(fileCard);
     }
-    // TIPO 3: TEXTO REGULAR
+    // TEXTO REGULAR (CON SOPORTE PARA RICH LINK CARDS)
     else {
       const textEl = document.createElement('div');
       textEl.className = 'msg-text-content whitespace-pre-wrap leading-relaxed select-text font-sans text-xs sm:text-sm break-words text-waTextPrimary';
       textEl.dataset.rawText = msg.text || '';
       textEl.textContent = msg.text || '';
+      bubble.appendChild(textEl);
+
+      // VISTA PREVIA DE ENLACES (RICH LINK CARDS)
+      if (msg.linkPreview && msg.linkPreview.url) {
+        const link = msg.linkPreview;
+        const linkCard = document.createElement('a');
+        linkCard.href = link.url;
+        linkCard.target = '_blank';
+        linkCard.rel = 'noopener noreferrer';
+        linkCard.className = 'mt-2.5 block rounded-xl overflow-hidden border border-waBorder bg-white/95 hover:bg-white shadow-xs hover:shadow-sm transition-all group no-underline text-left';
+
+        const imageHtml = link.image ? `
+          <div class="w-full h-32 bg-gray-100 overflow-hidden relative border-b border-waBorder/60">
+            <img src="${escapeHtml(link.image)}" alt="${escapeHtml(link.title || 'Vista previa')}" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-200" onerror="this.parentElement.style.display='none'">
+          </div>
+        ` : '';
+
+        const descHtml = link.description ? `
+          <p class="text-[11px] text-waTextSecondary line-clamp-2 mt-0.5">${escapeHtml(link.description)}</p>
+        ` : '';
+
+        linkCard.innerHTML = `
+          ${imageHtml}
+          <div class="p-2.5 flex flex-col gap-0.5">
+            <div class="flex items-center gap-1.5">
+              <img src="https://www.google.com/s2/favicons?domain=${escapeHtml(link.domain)}&sz=32" alt="" class="w-3.5 h-3.5 rounded-xs object-contain" onerror="this.style.display='none'">
+              <span class="text-[10px] uppercase font-bold text-waTeal tracking-wider truncate">${escapeHtml(link.domain)}</span>
+            </div>
+            <p class="font-bold text-xs text-waTextPrimary line-clamp-1 group-hover:text-waTeal transition-colors">${escapeHtml(link.title || link.domain)}</p>
+            ${descHtml}
+          </div>
+        `;
+        bubble.appendChild(linkCard);
+      }
 
       const footerBar = document.createElement('div');
       footerBar.className = `mt-2 flex items-center justify-end gap-2 pt-1 border-t ${
@@ -2208,20 +2210,20 @@
       copyBtn.addEventListener('click', () => copyToClipboard(msg.text, copyBtn));
 
       footerBar.appendChild(copyBtn);
-      bubble.appendChild(textEl);
       bubble.appendChild(footerBar);
     }
 
-    // PÍLDORA DE REACCIONES EN ESQUINA INFERIOR
+    // PÍLDORA DE REACCIONES
     const reactionsWrapper = document.createElement('div');
     reactionsWrapper.className = `reactions-wrapper absolute -bottom-2.5 ${isLocal ? 'left-2' : 'right-2'} flex items-center gap-1 z-10`;
     bubble.appendChild(reactionsWrapper);
     renderReactionsPill(reactionsWrapper, msg.reactions, msg.id);
 
-    // TOOLBAR DESKTOP EN HOVER ([↩ Responder] [🙂 Reaccionar])
+    // TOOLBAR DESKTOP EN HOVER ([↩ Responder] [🙂 Reaccionar] [📌 Fijar] [🗑 Eliminar])
     const desktopToolbar = document.createElement('div');
-    desktopToolbar.className = `hidden sm:group-hover:flex items-center gap-1 absolute -top-3.5 ${isLocal ? 'left-2' : 'right-2'} bg-white border border-waBorder rounded-full shadow-sm px-1.5 py-0.5 z-20`;
+    desktopToolbar.className = `desktop-msg-toolbar hidden sm:group-hover:flex items-center gap-1 absolute -top-3.5 ${isLocal ? 'left-2' : 'right-2'} bg-white border border-waBorder rounded-full shadow-sm px-1.5 py-0.5 z-20`;
 
+    // Botón Responder
     const replyBtn = document.createElement('button');
     replyBtn.type = 'button';
     replyBtn.className = 'text-xs text-waTextSecondary hover:text-waTeal p-1 cursor-pointer transition-colors';
@@ -2231,7 +2233,9 @@
       e.stopPropagation();
       setReplyTo(msg);
     });
+    desktopToolbar.appendChild(replyBtn);
 
+    // Botón Reaccionar
     const reactBtn = document.createElement('button');
     reactBtn.type = 'button';
     reactBtn.className = 'text-xs text-waTextSecondary hover:text-waTeal p-1 cursor-pointer transition-colors';
@@ -2241,12 +2245,41 @@
       e.stopPropagation();
       showReactionPicker(bubble, msg.id, isLocal);
     });
-
-    desktopToolbar.appendChild(replyBtn);
     desktopToolbar.appendChild(reactBtn);
+
+    // Botón Fijar Mensaje
+    const pinBtn = document.createElement('button');
+    pinBtn.type = 'button';
+    pinBtn.className = 'text-xs text-waTextSecondary hover:text-waTeal p-1 cursor-pointer transition-colors';
+    pinBtn.title = 'Fijar mensaje [📌]';
+    pinBtn.innerHTML = '📌';
+    pinBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!activeContactSyncId || !socket) return;
+      socket.emit('pin-message', { toSyncId: activeContactSyncId, messageId: msg.id });
+    });
+    desktopToolbar.appendChild(pinBtn);
+
+    // Botón Eliminar para Todos (Solo en mensajes propios)
+    if (isLocal) {
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'text-xs text-waTextSecondary hover:text-red-600 p-1 cursor-pointer transition-colors';
+      deleteBtn.title = 'Eliminar para todos';
+      deleteBtn.innerHTML = '🗑';
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('¿Eliminar este mensaje para todos?')) {
+          if (!activeContactSyncId || !socket) return;
+          socket.emit('delete-message-for-everyone', { messageId: msg.id, toSyncId: activeContactSyncId });
+        }
+      });
+      desktopToolbar.appendChild(deleteBtn);
+    }
+
     bubble.appendChild(desktopToolbar);
 
-    // GESTOS TÁCTILES EN MÓVIL (DESLIZAR A LA DERECHA PARA CITAR + LONG-PRESS PARA REACCIONES)
+    // GESTOS EN MÓVIL
     let touchStartX = 0;
     let touchStartY = 0;
     let isSwiping = false;
@@ -2322,16 +2355,10 @@
     });
   }
 
-  // ENVÍO DE MENSAJES (CON ID ÚNICO CLIENTE PARA DEDUPLICACIÓN)
+  // ENVÍO DE MENSAJES
   function handleSendMessage() {
     const text = chatTextarea.value.trim();
     if (!text || !activeContactSyncId || !socket) return;
-
-    if (isCurrentlyTyping && activeContactSyncId && socket) {
-      isCurrentlyTyping = false;
-      clearTimeout(typingDebounceTimer);
-      socket.emit('typing-stop', { toSyncId: activeContactSyncId });
-    }
 
     const clientMsgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
     const replyData = currentReplyTo;
@@ -2362,26 +2389,9 @@
   chatTextarea.addEventListener('input', () => {
     chatTextarea.style.height = 'auto';
     chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 140) + 'px';
-
-    if (activeContactSyncId && socket) {
-      if (!isCurrentlyTyping && chatTextarea.value.trim().length > 0) {
-        isCurrentlyTyping = true;
-        socket.emit('typing-start', { toSyncId: activeContactSyncId });
-      }
-
-      clearTimeout(typingDebounceTimer);
-      typingDebounceTimer = setTimeout(() => {
-        if (isCurrentlyTyping && activeContactSyncId && socket) {
-          isCurrentlyTyping = false;
-          socket.emit('typing-stop', { toSyncId: activeContactSyncId });
-        }
-      }, 1500);
-
-      socket.emit('typing', { toSyncId: activeContactSyncId, isTyping: chatTextarea.value.length > 0 });
-    }
   });
 
-  // SELECTOR DE EMOTICONES INTEGRADO
+  // SELECTOR DE EMOTICONES
   toggleEmojiBtn.addEventListener('click', () => {
     emojiPicker.classList.toggle('hidden');
   });
@@ -2401,7 +2411,7 @@
     });
   });
 
-  // GRABADOR DE NOTAS DE VOZ (MediaRecorder API)
+  // GRABADOR DE NOTAS DE VOZ
   voiceRecordBtn.addEventListener('click', async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert('Tu navegador no soporta grabación de audio');
@@ -2423,9 +2433,6 @@
       };
 
       mediaRecorder.start();
-      if (activeContactSyncId && socket) {
-        socket.emit('recording-start', { toSyncId: activeContactSyncId });
-      }
 
       recordSeconds = 0;
       recordingTimer.textContent = '0:00';
@@ -2445,9 +2452,6 @@
   });
 
   cancelRecordingBtn.addEventListener('click', () => {
-    if (activeContactSyncId && socket) {
-      socket.emit('recording-stop', { toSyncId: activeContactSyncId });
-    }
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
     }
@@ -2459,10 +2463,6 @@
 
   sendRecordingBtn.addEventListener('click', () => {
     if (!mediaRecorder || !activeContactSyncId || !socket) return;
-
-    if (activeContactSyncId && socket) {
-      socket.emit('recording-stop', { toSyncId: activeContactSyncId });
-    }
 
     mediaRecorder.onstop = () => {
       const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -2558,7 +2558,7 @@
     });
   }
 
-  // Comportamiento al redimensionar ventana (adaptabilidad dinámica móvil <-> laptop)
+  // RESPONSIVE RESIZE
   window.addEventListener('resize', () => {
     if (window.innerWidth >= 768) {
       sidebarPanel.classList.remove('hidden');
@@ -2574,7 +2574,7 @@
     }
   });
 
-  // Eventos de Botones de Llamada WebRTC
+  // EVENTOS BOTONES WEBRTC
   startCallBtn.addEventListener('click', () => {
     const remoteAudioEl = document.getElementById('remote-audio');
     if (remoteAudioEl) {
@@ -2594,11 +2594,9 @@
   rejectCallBtn.addEventListener('click', rejectIncomingCall);
   hangupCallBtn.addEventListener('click', () => endCall(true));
   toggleCallMuteBtn.addEventListener('click', toggleCallMute);
-
-  // Inicialmente deshabilitar botón de llamada hasta seleccionar un contacto
   startCallBtn.classList.add('opacity-40', 'pointer-events-none');
 
-  // Eventos del Buscador Interno de Conversación
+  // EVENTOS DEL BUSCADOR INTERNO
   if (toggleChatSearchBtn) {
     toggleChatSearchBtn.addEventListener('click', () => {
       if (chatSearchBar.classList.contains('hidden')) {
@@ -2624,10 +2622,9 @@
   if (chatSearchNextBtn) chatSearchNextBtn.addEventListener('click', nextSearchMatch);
   if (chatSearchPrevBtn) chatSearchPrevBtn.addEventListener('click', prevSearchMatch);
 
-  // Evento Cancelar Mensaje Citado (Reply)
   if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', cancelReply);
 
-  // FUNCIONES DE ESPEJO DE NOTIFICACIONES (NOTIFICATION MIRRORING & QUICK REPLY)
+  // ESPEJO DE NOTIFICACIONES (NOTIFICATION MIRRORING & QUICK REPLY)
   function showMirroredNotificationToast(data) {
     if (!data) return;
     const container = document.getElementById('mirrored-notification-container');
@@ -2704,7 +2701,7 @@
     }, 15000);
   }
 
-  // FUNCIONES DEL CENTRO DE MEDIOS COMPARTIDOS (SHARED MEDIA HUB)
+  // CENTRO DE MEDIOS COMPARTIDOS (SHARED MEDIA HUB)
   function openMediaHub() {
     if (!activeContactSyncId) {
       alert('Por favor selecciona un contacto primero');
@@ -2836,7 +2833,7 @@
             <div class="min-w-0">
               <p class="font-bold text-xs text-waTextPrimary truncate">${escapeHtml(fileData.name || 'Documento')}</p>
               <div class="flex items-center gap-2 mt-0.5 text-[11px] text-waTextSecondary">
-                <span>${formatBytes(fileData.size || 0)}</span>
+                <span>${formatSize(fileData.size || 0)}</span>
                 <span>·</span>
                 <span>${dateStr}</span>
               </div>
@@ -2891,7 +2888,7 @@
       const links = [];
 
       messages.forEach((m) => {
-        if (m.text && typeof m.text === 'string') {
+        if (m.text && typeof m.text === 'string' && !m.deletedForEveryone) {
           const matches = m.text.match(linkRegex);
           if (matches) {
             matches.forEach((url) => {
@@ -2963,214 +2960,7 @@
     }
   }
 
-  // FUNCIONES DE MENSAJES PROGRAMADOS Y PLANTILLAS RÁPIDAS
-  const QUICK_TEMPLATES = [
-    { cmd: '/hola', label: 'Saludo cordial', text: '¡Hola! ¿Cómo estás? En breve te respondo.' },
-    { cmd: '/ok', label: 'Confirmación', text: 'Entendido y confirmado. Procedo con ello.' },
-    { cmd: '/reunion', label: 'Llamada de voz', text: '¿Podemos coordinar una llamada de voz en 15 minutos?' },
-    { cmd: '/doc', label: 'Envío de documento', text: 'Ya te comparto el documento solicitado por este medio.' },
-    { cmd: '/gracias', label: 'Agradecimiento', text: '¡Muchas gracias por la confirmación! Quedo a la orden.' },
-    { cmd: '/precio', label: 'Cotización', text: 'Te comparto la cotización formal con el detalle acordado.' },
-    { cmd: '/ubicacion', label: 'Ubicación', text: 'Mi ubicación actual se encuentra confirmada para la sincronización.' },
-    { cmd: '/espera', label: 'Pausa breve', text: 'Dame unos minutos, por favor, ya estoy revisando esto.' }
-  ];
-
-  function setupQuickTemplates() {
-    if (!chatTextarea || !quickRepliesPopover || !quickRepliesList) return;
-
-    chatTextarea.addEventListener('input', () => {
-      const val = chatTextarea.value;
-      if (val.startsWith('/')) {
-        const query = val.slice(1).toLowerCase().trim();
-        const matches = QUICK_TEMPLATES.filter(t => t.cmd.slice(1).toLowerCase().startsWith(query));
-
-        if (matches.length > 0) {
-          quickRepliesList.innerHTML = '';
-          matches.forEach((tpl) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'w-full text-left p-2 rounded-xl hover:bg-waBg transition-colors flex items-center justify-between gap-2.5 cursor-pointer';
-            btn.innerHTML = `
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="font-mono font-bold text-xs text-waTeal bg-[#E8F5E9] px-2 py-0.5 rounded-lg border border-[#C8E6C9] flex-shrink-0">${tpl.cmd}</span>
-                <span class="font-bold text-xs text-waTextPrimary truncate">${tpl.label}</span>
-              </div>
-              <span class="text-[11px] text-waTextSecondary truncate max-w-[160px] text-right">${escapeHtml(tpl.text)}</span>
-            `;
-            btn.addEventListener('click', () => {
-              chatTextarea.value = tpl.text;
-              quickRepliesPopover.classList.add('hidden');
-              chatTextarea.focus();
-            });
-            quickRepliesList.appendChild(btn);
-          });
-          quickRepliesPopover.classList.remove('hidden');
-        } else {
-          quickRepliesPopover.classList.add('hidden');
-        }
-      } else {
-        quickRepliesPopover.classList.add('hidden');
-      }
-    });
-
-    chatTextarea.addEventListener('keydown', (e) => {
-      if (!quickRepliesPopover.classList.contains('hidden')) {
-        if (e.key === 'Escape') {
-          quickRepliesPopover.classList.add('hidden');
-        } else if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
-          const firstBtn = quickRepliesList.querySelector('button');
-          if (firstBtn) {
-            e.preventDefault();
-            firstBtn.click();
-          }
-        }
-      }
-    });
-  }
-
-  function setupScheduledMessages() {
-    if (!scheduleMsgBtn || !scheduleMsgModal) return;
-
-    scheduleMsgBtn.addEventListener('click', openScheduleModal);
-    if (closeScheduleModalBtn) closeScheduleModalBtn.addEventListener('click', closeScheduleModal);
-
-    document.querySelectorAll('.sched-chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const now = new Date();
-        if (chip.dataset.mins) {
-          const d = new Date(now.getTime() + Number(chip.dataset.mins) * 60000);
-          setDatetimeInputValue(d);
-        } else if (chip.dataset.tomorrow) {
-          const d = new Date(now.getTime() + 24 * 3600000);
-          d.setHours(Number(chip.dataset.tomorrow), 0, 0, 0);
-          setDatetimeInputValue(d);
-        }
-      });
-    });
-
-    if (submitScheduleBtn) {
-      submitScheduleBtn.addEventListener('click', submitScheduledMessage);
-    }
-  }
-
-  function setDatetimeInputValue(dateObj) {
-    if (!scheduleDatetimeInput) return;
-    const tzOffset = dateObj.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(dateObj.getTime() - tzOffset)).toISOString().slice(0, 16);
-    scheduleDatetimeInput.value = localISOTime;
-  }
-
-  function openScheduleModal() {
-    if (!activeContactSyncId) {
-      alert('Por favor selecciona un contacto primero');
-      return;
-    }
-    const contact = contactsMap.get(activeContactSyncId);
-    if (scheduleModalTarget) {
-      scheduleModalTarget.textContent = `Destino: ${contact ? contact.formattedName : activeContactSyncId}`;
-    }
-
-    if (scheduleTextInput) {
-      scheduleTextInput.value = chatTextarea ? chatTextarea.value.trim() : '';
-    }
-
-    const defaultTime = new Date(Date.now() + 15 * 60000);
-    setDatetimeInputValue(defaultTime);
-
-    if (scheduleDatetimeInput) {
-      const minTime = new Date(Date.now() + 60000);
-      const tzOffset = minTime.getTimezoneOffset() * 60000;
-      scheduleDatetimeInput.min = (new Date(minTime.getTime() - tzOffset)).toISOString().slice(0, 16);
-    }
-
-    scheduleMsgModal.classList.remove('hidden');
-
-    if (socket) {
-      socket.emit('get-scheduled-messages');
-    }
-  }
-
-  function closeScheduleModal() {
-    scheduleMsgModal.classList.add('hidden');
-  }
-
-  function submitScheduledMessage() {
-    const text = scheduleTextInput ? scheduleTextInput.value.trim() : '';
-    if (!text) {
-      alert('Por favor ingresa el texto del mensaje');
-      return;
-    }
-
-    if (!scheduleDatetimeInput || !scheduleDatetimeInput.value) {
-      alert('Por favor selecciona la fecha y hora de entrega');
-      return;
-    }
-
-    const scheduledDate = new Date(scheduleDatetimeInput.value);
-    const scheduledTimestamp = scheduledDate.getTime();
-
-    if (isNaN(scheduledTimestamp) || scheduledTimestamp <= Date.now()) {
-      alert('La fecha de programación debe ser posterior al momento actual');
-      return;
-    }
-
-    if (!socket || !activeContactSyncId) return;
-
-    socket.emit('schedule-message', {
-      toSyncId: activeContactSyncId,
-      text: text,
-      scheduledFor: scheduledTimestamp
-    });
-
-    if (chatTextarea && chatTextarea.value.trim() === text) {
-      chatTextarea.value = '';
-    }
-
-    closeScheduleModal();
-    triggerPopupNotification('Mensaje Programado', `Se enviará el ${scheduledDate.toLocaleString()}`, '⏰');
-  }
-
-  function renderPendingScheduledList(allScheduled) {
-    if (!pendingScheduledList) return;
-    pendingScheduledList.innerHTML = '';
-
-    const list = (allScheduled || []).filter(s => s.toId === activeContactSyncId && !s.delivered);
-    if (scheduledCountBadge) scheduledCountBadge.textContent = list.length;
-
-    if (list.length === 0) {
-      pendingScheduledList.innerHTML = `<p class="text-[11px] text-waTextSecondary italic py-1">No hay mensajes pendientes para este contacto.</p>`;
-      return;
-    }
-
-    list.forEach((item) => {
-      const row = document.createElement('div');
-      row.className = 'p-2 rounded-xl bg-waBg border border-waBorder flex items-center justify-between gap-2 text-xs';
-      const timeStr = new Date(item.scheduledFor).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-
-      row.innerHTML = `
-        <div class="min-w-0 flex-1">
-          <p class="font-semibold text-waTextPrimary truncate">${escapeHtml(item.text)}</p>
-          <span class="text-[10px] text-waTeal font-mono flex items-center gap-1 mt-0.5">
-            <span>⏰</span>
-            <span>${timeStr}</span>
-          </span>
-        </div>
-        <button type="button" class="cancel-sched-btn h-7 w-7 rounded-lg hover:bg-red-100 text-red-500 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer" title="Cancelar envío">
-          ✕
-        </button>
-      `;
-
-      row.querySelector('.cancel-sched-btn').addEventListener('click', () => {
-        if (socket) {
-          socket.emit('cancel-scheduled-message', { id: item.id });
-        }
-      });
-
-      pendingScheduledList.appendChild(row);
-    });
-  }
-
-  // Inicialización de componentes adicionales
+  // INICIALIZACIÓN DE COMPONENTES DE MEDIOS
   if (openMediaHubBtn) openMediaHubBtn.addEventListener('click', openMediaHub);
   if (closeMediaHubBtn) closeMediaHubBtn.addEventListener('click', closeMediaHub);
   if (tabHubImages) tabHubImages.addEventListener('click', () => switchMediaHubTab('images'));
@@ -3178,10 +2968,7 @@
   if (tabHubAudios) tabHubAudios.addEventListener('click', () => switchMediaHubTab('audios'));
   if (tabHubLinks) tabHubLinks.addEventListener('click', () => switchMediaHubTab('links'));
 
-  setupQuickTemplates();
-  setupScheduledMessages();
-
-  // Escucha de eventos desde el Service Worker
+  // Service Worker listener
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'NOTIFICATION_CLICKED') {
@@ -3193,7 +2980,7 @@
     });
   }
 
-  // INICIO DE LA APLICACIÓN
+  // INICIO
   checkExistingAuth();
 </script>
 
