@@ -1,0 +1,336 @@
+/* ==========================================================================
+   BARRANTES CO. - CANONICAL B2B DESIGN SYSTEM & SPLIT WORKSPACE
+   ========================================================================== */
+
+:root {
+  --bg-main: #070F1E;
+  --bg-card: #0A1A3A;
+  --accent-gold: #C5A059;
+  --accent-tech: #38B6FF;
+  --text-primary: #F0F4F8;
+  --border-subtle: rgba(197, 160, 89, 0.18);
+  --font-title: 'Montserrat', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* Base Global Elements */
+html, body {
+  background-color: var(--bg-main) !important;
+  color: var(--text-primary) !important;
+  min-height: 100vh;
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, .font-title {
+  font-family: var(--font-title);
+}
+
+/* Barrantes Co. Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(197, 160, 89, 0.28);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-gold);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Chat Canvas & Deep Night Blue Aesthetics */
+.chat-canvas {
+  background-color: var(--bg-main) !important;
+  background-image: radial-gradient(rgba(197, 160, 89, 0.08) 1.2px, transparent 1.2px) !important;
+  background-size: 24px 24px !important;
+}
+
+/* Chat Bubbles: Rounded 16px, Fine Golden Borders & Deep Night Blue */
+.chat-bubble-inner {
+  border-radius: 16px !important;
+  font-family: var(--font-body);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  word-break: break-word;
+}
+
+/* Mensajes Propios (Enviados) */
+.chat-bubble-sent {
+  background: linear-gradient(135deg, #0E234A 0%, #0A1A3A 100%) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(197, 160, 89, 0.35) !important;
+  border-top-right-radius: 4px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 1px rgba(197, 160, 89, 0.2) !important;
+}
+
+/* Mensajes Recibidos */
+.chat-bubble-received {
+  background: linear-gradient(135deg, #0A1A3A 0%, #071329 100%) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-top-left-radius: 4px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Status Checks */
+.msg-status-check {
+  font-family: monospace;
+  font-size: 11px;
+}
+.msg-status-check.read {
+  color: var(--accent-tech) !important;
+  text-shadow: 0 0 6px rgba(56, 182, 255, 0.5);
+}
+
+/* Animations */
+.pulse-online {
+  animation: pulse-gold-glow 2.5s ease-in-out infinite;
+}
+@keyframes pulse-gold-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 3px var(--accent-gold));
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 7px var(--accent-gold));
+  }
+}
+
+.pulse-record {
+  animation: pulse-red 1.2s ease-in-out infinite;
+}
+@keyframes pulse-red {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.5; }
+}
+
+.msg-enter {
+  animation: msg-fade-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes msg-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.search-match {
+  background-color: rgba(197, 160, 89, 0.3);
+  color: #FFFFFF;
+  border-radius: 3px;
+  padding: 0 3px;
+  border-bottom: 2px solid var(--accent-gold);
+}
+.search-match-active {
+  background-color: var(--accent-gold);
+  color: #070F1E;
+  border-radius: 3px;
+  padding: 0 4px;
+  font-weight: bold;
+  box-shadow: 0 0 8px rgba(197, 160, 89, 0.6);
+}
+
+.quote-highlight {
+  animation: highlight-anim 1.5s ease-out;
+}
+@keyframes highlight-anim {
+  0% { transform: scale(1.02); box-shadow: 0 0 0 3px var(--accent-gold); }
+  50% { transform: scale(1.01); box-shadow: 0 0 0 2px var(--accent-tech); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
+.reaction-pop {
+  animation: pop-in 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.7) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ==========================================================================
+   ESTRUCTURA DE VISTA DIVIDIDA (WORKSPACE SPLIT LAYOUT)
+   ========================================================================== */
+
+#workspace-split-container {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Desktop Split Screen (> 768px) */
+@media (min-width: 769px) {
+  /* Cuando el panel web está inactivo */
+  #workspace-split-container:not(.split-active) #chat-panel {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  #workspace-split-container:not(.split-active) #web-panel {
+    display: none !important;
+  }
+
+  /* Proporción 50% Chat / 50% Web */
+  #workspace-split-container.split-active.ratio-50-50 #chat-panel {
+    flex: 1 1 50%;
+    max-width: 50%;
+  }
+  #workspace-split-container.split-active.ratio-50-50 #web-panel {
+    display: flex !important;
+    flex: 1 1 50%;
+    max-width: 50%;
+  }
+
+  /* Proporción 60% Chat / 40% Web */
+  #workspace-split-container.split-active.ratio-60-40 #chat-panel {
+    flex: 1 1 60%;
+    max-width: 60%;
+  }
+  #workspace-split-container.split-active.ratio-60-40 #web-panel {
+    display: flex !important;
+    flex: 1 1 40%;
+    max-width: 40%;
+  }
+
+  /* Proporción 40% Chat / 60% Web */
+  #workspace-split-container.split-active.ratio-40-60 #chat-panel {
+    flex: 1 1 40%;
+    max-width: 40%;
+  }
+  #workspace-split-container.split-active.ratio-40-60 #web-panel {
+    display: flex !important;
+    flex: 1 1 60%;
+    max-width: 60%;
+  }
+}
+
+/* Mobile Split Layout (<= 768px): Conmutación de Pestañas [💬 Chat] / [🌐 Web] */
+@media (max-width: 768px) {
+  #workspace-split-container.mobile-tab-chat #chat-panel {
+    display: flex !important;
+    width: 100%;
+    max-width: 100%;
+  }
+  #workspace-split-container.mobile-tab-chat #web-panel {
+    display: none !important;
+  }
+
+  #workspace-split-container.mobile-tab-web #chat-panel {
+    display: none !important;
+  }
+  #workspace-split-container.mobile-tab-web #web-panel {
+    display: flex !important;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ==========================================================================
+   MÓDULO DE NAVEGADOR WEB EMBEBIDO (#web-panel)
+   ========================================================================== */
+
+#web-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 1px rgba(197, 160, 89, 0.2);
+}
+
+.web-control-btn {
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.web-control-btn:hover {
+  background-color: #0E234A;
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+/* Enlaces del Chat y Menú de Acción */
+.chat-link {
+  color: var(--accent-tech) !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(56, 182, 255, 0.4);
+  word-break: break-all;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chat-link:hover {
+  text-decoration-color: var(--accent-tech);
+  filter: brightness(1.2);
+}
+
+.open-in-panel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  background-color: var(--bg-main);
+  color: var(--accent-gold);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.open-in-panel-chip:hover {
+  background-color: var(--accent-gold);
+  color: var(--bg-main);
+  box-shadow: 0 0 8px rgba(197, 160, 89, 0.5);
+}
+
+/* Menú Contextual Flotante de Enlace */
+.link-action-popover {
+  position: fixed;
+  z-index: 9999;
+  background-color: #0A1A3A;
+  border: 1px solid var(--accent-gold);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 10px rgba(197, 160, 89, 0.3);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: pop-in 0.15s ease-out;
+}
+.link-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+.link-action-btn:hover {
+  background-color: rgba(197, 160, 89, 0.18);
+  color: var(--accent-gold);
+}

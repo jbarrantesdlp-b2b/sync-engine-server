@@ -208,11 +208,76 @@ app.get("/api/link-preview", requireAuth, async (req, res) => {
   res.json({ ok: true, preview: preview });
 });
 
+// Endpoint de Navegador Embebido (Proxy Web para Split Workspace)
+app.get("/api/web-proxy", async (req, res) => {
+  const targetUrl = req.query.url;
+  if (!targetUrl) {
+    return res.status(400).send("URL requerida");
+  }
+
+  let parsed;
+  try {
+    let normalized = String(targetUrl).trim();
+    if (!/^https?:\/\//i.test(normalized)) {
+      normalized = "https://" + normalized;
+    }
+    parsed = new URL(normalized);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return res.status(400).send("Protocolo inválido");
+    }
+  } catch (err) {
+    return res.status(400).send("URL no válida");
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    const response = await fetch(parsed.href, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "es-ES,es;q=0.9,en;q=0.8"
+      },
+      redirect: "follow"
+    });
+    clearTimeout(timeout);
+
+    const contentType = response.headers.get("content-type") || "text/html";
+
+    // Remover encabezados de restricción de iframe
+    res.removeHeader("X-Frame-Options");
+    res.removeHeader("Content-Security-Policy");
+    res.removeHeader("Content-Security-Policy-Report-Only");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Type", contentType);
+
+    if (contentType.includes("text/html")) {
+      let html = await response.text();
+      const finalUrl = response.url || parsed.href;
+      const baseTag = `<base href="${finalUrl}">`;
+      if (/<head[^>]*>/i.test(html)) {
+        html = html.replace(/<head[^>]*>/i, (m) => `${m}\n  ${baseTag}`);
+      } else {
+        html = `${baseTag}\n${html}`;
+      }
+      return res.send(html);
+    } else {
+      const arrayBuffer = await response.arrayBuffer();
+      return res.send(Buffer.from(arrayBuffer));
+    }
+  } catch (err) {
+    res.status(502).send("Error al cargar la página a través del proxy: " + err.message);
+  }
+});
+
 app.get("/api/status", function (_req, res) {
   res.json({
     status: "ok",
     service: "sync-engine-server",
-    features: ["auth", "private-messaging", "voice-notes", "pwa", "double-check", "pinned-messages", "rich-links"],
+    features: ["auth", "private-messaging", "voice-notes", "pwa", "double-check", "pinned-messages", "rich-links", "web-proxy"],
     onlineUsersCount: onlineUsers.size
   });
 });
