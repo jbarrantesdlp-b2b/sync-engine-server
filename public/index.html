@@ -71,11 +71,11 @@
 <body class="font-sans text-[#F0F4F8] antialiased selection:bg-[#C5A059]/30 selection:text-[#F0F4F8] bg-[#070F1E]">
 
   <!-- APLICACIÓN PRINCIPAL -->
-  <div id="app-container" class="min-h-screen flex flex-col hidden bg-[#070F1E]">
+  <div id="app-container" class="min-h-screen flex flex-col hidden bg-[#070F1E] w-full max-w-[1600px] mx-auto shadow-2xl">
     
     <!-- ENCABEZADO SUPERIOR -->
     <header class="sticky top-0 z-40 bg-[#0A1A3A] border-b border-[rgba(197,160,89,0.18)] text-[#F0F4F8] shadow-lg">
-      <div class="max-w-[1920px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+      <div class="w-full max-w-[1600px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3 flex-wrap">
         
         <!-- Logo & Título -->
         <div class="flex items-center gap-3">
@@ -92,13 +92,14 @@
         <!-- Identidad Formateada & Estado -->
         <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
           
-          <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#070F1E] border border-[rgba(197,160,89,0.25)] text-xs text-[#F0F4F8] shadow-sm">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#070F1E] border border-[rgba(197,160,89,0.25)] text-xs text-[#F0F4F8] shadow-sm">
+            <img id="header-user-avatar" class="w-6 h-6 rounded-full object-cover avatar-circle hidden" alt="Avatar">
             <span id="user-identity-badge" class="font-bold tracking-wide truncate max-w-[180px] sm:max-w-[300px]">
               <span id="header-user-sync-id" class="text-[#C5A059] font-mono">SYNC-0000</span>
               <span class="text-white/40 mx-1">-</span>
               <span id="header-user-clean-name" class="text-[#F0F4F8]">Usuario</span>
             </span>
-            <button id="open-edit-profile-btn" type="button" title="Editar nombre personalizado" class="text-[#C5A059] hover:text-[#38B6FF] text-xs pl-1 cursor-pointer transition-colors">✎</button>
+            <button id="open-edit-profile-btn" type="button" title="Editar perfil y foto circular (1080x1080)" class="text-[#C5A059] hover:text-[#38B6FF] text-xs pl-1 cursor-pointer transition-colors">✎</button>
           </div>
 
           <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#070F1E] border border-[rgba(197,160,89,0.25)] text-[#C5A059]">
@@ -116,11 +117,11 @@
       </div>
     </header>
 
-    <!-- CUERPO PRINCIPAL -->
-    <main class="flex-1 max-w-[1920px] w-full mx-auto p-0 md:p-3 flex flex-col md:flex-row gap-0 md:gap-3 overflow-hidden h-[calc(100vh-62px)]">
+    <!-- CUERPO PRINCIPAL (DISTRIBUCIÓN EN 3 COLUMNAS) -->
+    <main id="main-layout" class="flex-1 w-full max-w-[1600px] mx-auto p-0 lg:p-3 flex flex-row overflow-hidden h-[calc(100vh-62px)] relative">
       
-      <!-- COLUMNA 1: LISTA DE CONTACTOS (SIDEBAR) -->
-      <aside id="sidebar-panel" class="w-full md:w-[320px] lg:w-[360px] flex-shrink-0 bg-[#0A1A3A] border-r md:border border-[rgba(197,160,89,0.18)] md:rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl transition-all">
+      <!-- COLUMNA 1: LISTA DE CONTACTOS (SIDEBAR - ANCHO FIJO 320px - 360px EN DESKTOP) -->
+      <aside id="sidebar-panel" class="w-full lg:w-[360px] flex-shrink-0 bg-[#0A1A3A] border-r lg:border border-[rgba(197,160,89,0.18)] lg:rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl transition-all z-10">
         
         <div class="p-3.5 border-b border-[rgba(197,160,89,0.18)] bg-[#0A1A3A] flex items-center justify-between gap-2 flex-shrink-0">
           <div class="flex items-center gap-2">
@@ -149,63 +150,73 @@
 
       </aside>
 
-      <!-- CONTENEDOR DE VISTA DIVIDIDA (WORKSPACE SPLIT CONTAINER) -->
-      <div id="workspace-split-container" class="hidden md:flex flex-1 flex-col md:flex-row gap-0 md:gap-3 overflow-hidden h-full min-w-0 transition-all duration-300 ratio-50-50">
+      <!-- COLUMNA 2: VENTANA DE CONVERSACIÓN ACTIVA (FLEX-GROW: 1, FONDO ADAPTADO 768 × 1024px O SUPERIOR) -->
+      <div id="chat-panel-container" class="flex-1 flex flex-col h-full min-w-0 relative">
+        <div id="workspace-split-container" class="flex flex-1 flex-col md:flex-row gap-0 lg:gap-3 overflow-hidden h-full min-w-0 transition-all duration-300 ratio-50-50">
 
-        <!-- COLUMNA 2: ÁREA CENTRAL DE CONVERSACIÓN (CHAT PANEL) -->
-        <section id="chat-panel" class="hidden md:flex flex-1 bg-[#0A1A3A] md:border border-[rgba(197,160,89,0.18)] md:rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl relative min-w-0 transition-all">
-          
-          <!-- Header del Chat Activo -->
-          <div id="chat-header-bar" class="px-4 py-3 border-b border-[rgba(197,160,89,0.18)] bg-[#0A1A3A] flex items-center justify-between gap-3 flex-shrink-0 shadow-md z-10">
-            <div class="flex items-center gap-3 min-w-0">
-              
-              <button id="back-to-contacts-btn" type="button" title="Volver a la lista de chats"
-                class="md:hidden p-1.5 -ml-1 rounded-xl text-[#C5A059] hover:bg-[#070F1E] transition-colors flex items-center justify-center cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+          <!-- ÁREA CENTRAL DE CONVERSACIÓN (CHAT PANEL) -->
+          <section id="chat-panel" class="flex flex-1 bg-[#0A1A3A] lg:border border-[rgba(197,160,89,0.18)] lg:rounded-2xl flex flex-col h-full overflow-hidden shadow-2xl relative min-w-0 transition-all">
+            
+            <!-- Header del Chat Activo -->
+            <div id="chat-header-bar" class="px-4 py-3 border-b border-[rgba(197,160,89,0.18)] bg-[#0A1A3A] flex items-center justify-between gap-3 flex-shrink-0 shadow-md z-10">
+              <div class="flex items-center gap-3 min-w-0">
+                
+                <button id="back-to-contacts-btn" type="button" title="Volver a la lista de chats"
+                  class="lg:hidden p-1.5 -ml-1 rounded-xl text-[#C5A059] hover:bg-[#070F1E] transition-colors flex items-center justify-center cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
-              <div id="active-chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#C5A059] to-[#38B6FF] text-[#070F1E] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-md font-mono">
-                💬
-              </div>
+                <div id="active-chat-info-trigger" class="flex items-center gap-3 min-w-0 cursor-pointer group" title="Ver detalles y medios del contacto">
+                  <div id="active-chat-avatar" class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#C5A059] to-[#38B6FF] text-[#070F1E] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-md font-mono avatar-circle overflow-hidden">
+                    💬
+                  </div>
 
-              <div class="min-w-0">
-                <h2 id="active-chat-name" class="font-bold text-sm sm:text-base text-[#F0F4F8] truncate font-title">Selecciona un contacto</h2>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span id="active-chat-id" class="text-[11px] text-[#94A3B8] font-mono truncate">ID: —</span>
-                  <span id="active-chat-status" class="text-[11px] font-semibold text-[#94A3B8]">· Desconectado</span>
+                  <div class="min-w-0">
+                    <h2 id="active-chat-name" class="font-bold text-sm sm:text-base text-[#F0F4F8] group-hover:text-[#C5A059] transition-colors truncate font-title">Selecciona un contacto</h2>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span id="active-chat-id" class="text-[11px] text-[#94A3B8] font-mono truncate">ID: —</span>
+                      <span id="active-chat-status" class="text-[11px] font-semibold text-[#94A3B8]">· Desconectado</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- Botón Conmutador Navegador Web Embebido -->
+                <button id="toggle-web-panel-btn" type="button" title="Conmutar Navegador Web Embebido" aria-label="Navegador Web"
+                  class="h-9 px-3 rounded-xl bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.3)] hover:border-[#C5A059] flex items-center gap-1.5 text-xs font-bold shadow-sm transition-all cursor-pointer">
+                  <span>🌐</span>
+                  <span class="hidden sm:inline">Navegador</span>
+                </button>
+
+                <!-- Botón Drawer / Información y Medios (Columna 3) -->
+                <button id="toggle-drawer-btn" type="button" title="Información del Contacto y Medios (Columna 3)" aria-label="Información y Centro de Medios"
+                  class="h-9 px-3 rounded-xl bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.3)] hover:border-[#C5A059] flex items-center gap-1.5 text-xs font-bold shadow-sm transition-all cursor-pointer">
+                  <span>ℹ️</span>
+                  <span class="hidden xl:inline">Info &amp; Medios</span>
+                </button>
+
+                <!-- Botón Centro de Medios Compartidos -->
+                <button id="open-media-hub-btn" type="button" title="Archivos y medios compartidos" aria-label="Archivos y medios compartidos"
+                  class="h-9 w-9 rounded-full bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] hover:border-[#C5A059] flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
+                  📁
+                </button>
+
+                <!-- Botón Búsqueda Interna -->
+                <button id="toggle-chat-search-btn" type="button" title="Buscar en la conversación" aria-label="Buscar en la conversación"
+                  class="h-9 w-9 rounded-full bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] hover:border-[#C5A059] flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
+                  🔍
+                </button>
+
+                <!-- Botón Llamada de Voz WebRTC -->
+                <button id="start-call-btn" type="button" title="Iniciar llamada de voz WebRTC" aria-label="Iniciar llamada de voz"
+                  class="h-9 w-9 rounded-full bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] hover:border-[#C5A059] flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
+                  📞
+                </button>
+              </div>
             </div>
-
-            <div class="flex items-center gap-2">
-              <!-- Botón Conmutador Navegador Web Embebido -->
-              <button id="toggle-web-panel-btn" type="button" title="Conmutar Navegador Web Embebido" aria-label="Navegador Web"
-                class="h-9 px-3 rounded-xl bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.3)] hover:border-[#C5A059] flex items-center gap-1.5 text-xs font-bold shadow-sm transition-all cursor-pointer">
-                <span>🌐</span>
-                <span class="hidden sm:inline">Navegador</span>
-              </button>
-
-              <!-- Botón Centro de Medios Compartidos -->
-              <button id="open-media-hub-btn" type="button" title="Archivos y medios compartidos" aria-label="Archivos y medios compartidos"
-                class="h-9 w-9 rounded-full bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] hover:border-[#C5A059] flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
-                📁
-              </button>
-
-              <!-- Botón Búsqueda Interna -->
-              <button id="toggle-chat-search-btn" type="button" title="Buscar en la conversación" aria-label="Buscar en la conversación"
-                class="h-9 w-9 rounded-full bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] hover:border-[#C5A059] flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
-                🔍
-              </button>
-
-              <!-- Botón Llamada de Voz WebRTC -->
-              <button id="start-call-btn" type="button" title="Iniciar llamada de voz WebRTC" aria-label="Iniciar llamada de voz"
-                class="h-9 w-9 rounded-full bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] hover:border-[#C5A059] flex items-center justify-center text-sm font-bold shadow-sm transition-all cursor-pointer">
-                📞
-              </button>
-            </div>
-          </div>
 
           <!-- BARRA SUPERIOR DE MENSAJE FIJADO (PINNED MESSAGE BAR) -->
           <div id="pinned-message-bar" class="hidden px-4 py-2 bg-[#0E234A]/95 border-b border-[rgba(197,160,89,0.3)] flex items-center justify-between gap-3 shadow-md z-20 cursor-pointer hover:bg-[#0E234A] transition-colors">
@@ -473,8 +484,91 @@
         </section>
 
       </div>
+    </div>
 
-    </main>
+    <!-- COLUMNA 3: PANEL DE INFORMACIÓN / CENTRO DE MEDIOS (DRAWER DESLIZABLE DE 340px) -->
+    <aside id="info-drawer-panel" class="drawer-closed flex flex-col h-full bg-[#0A1A3A] border-l border-[rgba(197,160,89,0.18)] lg:rounded-2xl overflow-hidden shadow-2xl z-20">
+      
+      <!-- Cabecera del Drawer -->
+      <div class="p-3.5 border-b border-[rgba(197,160,89,0.18)] bg-[#0A1A3A] flex items-center justify-between gap-2 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[#C5A059] text-base">ℹ️</span>
+          <h3 class="font-bold text-sm text-[#F0F4F8] font-title">Información &amp; Medios</h3>
+        </div>
+        <button id="close-drawer-btn" type="button" title="Cerrar panel de información" class="h-8 w-8 rounded-lg bg-[#070F1E] hover:bg-[#0E234A] text-[#94A3B8] hover:text-[#C5A059] border border-[rgba(197,160,89,0.2)] flex items-center justify-center text-xs font-bold transition-all cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Contenido Desplazable del Drawer -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        
+        <!-- Ficha de Contacto con Recorte Circular 1080x1080 px -->
+        <div class="flex flex-col items-center text-center p-4 rounded-2xl bg-[#070F1E] border border-[rgba(197,160,89,0.2)] shadow-md">
+          <div class="relative mb-3">
+            <div id="drawer-contact-avatar-box" class="w-20 h-20 rounded-full bg-gradient-to-tr from-[#C5A059] to-[#38B6FF] text-[#070F1E] font-bold text-lg flex items-center justify-center font-mono avatar-circle shadow-lg overflow-hidden">
+              <span id="drawer-contact-avatar-fallback">💬</span>
+              <img id="drawer-contact-avatar-img" src="" alt="Avatar" class="w-full h-full object-cover hidden">
+            </div>
+            <span id="drawer-contact-online-dot" class="w-4 h-4 rounded-full bg-[#25D366] absolute bottom-0 right-0 border-2 border-[#0A1A3A]"></span>
+          </div>
+          <h4 id="drawer-contact-name" class="font-bold text-base text-[#F0F4F8] font-title truncate max-w-full">Selecciona un contacto</h4>
+          <p id="drawer-contact-id" class="text-xs text-[#C5A059] font-mono mt-0.5">SYNC-0000</p>
+          <span id="drawer-contact-status" class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[rgba(197,160,89,0.12)] text-[#C5A059] border border-[rgba(197,160,89,0.25)]">● Desconectado</span>
+        </div>
+
+        <!-- Centro de Medios Compartidos Integrado en Columna 3 -->
+        <div class="rounded-2xl bg-[#070F1E] border border-[rgba(197,160,89,0.2)] overflow-hidden shadow-md">
+          <div class="p-3 border-b border-[rgba(197,160,89,0.18)] bg-[#0A1A3A] flex items-center justify-between">
+            <span class="font-bold text-xs text-[#F0F4F8] font-title flex items-center gap-1.5">
+              <span>📁</span> Centro de Medios
+            </span>
+            <span id="drawer-media-count" class="text-[10px] font-mono text-[#C5A059]">0 archivos</span>
+          </div>
+
+          <!-- Pestañas Rápidas del Drawer -->
+          <div class="flex border-b border-[rgba(197,160,89,0.12)] bg-[#070F1E] p-1 gap-1 text-[11px] font-bold">
+            <button id="drawer-tab-img" type="button" class="flex-1 py-1.5 rounded-lg bg-[#0A1A3A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] text-center cursor-pointer transition-colors">Fotos/Video</button>
+            <button id="drawer-tab-doc" type="button" class="flex-1 py-1.5 rounded-lg text-[#94A3B8] hover:text-[#C5A059] text-center cursor-pointer transition-colors">Docs</button>
+            <button id="drawer-tab-link" type="button" class="flex-1 py-1.5 rounded-lg text-[#94A3B8] hover:text-[#C5A059] text-center cursor-pointer transition-colors">Links</button>
+          </div>
+
+          <!-- Lista de Medios -->
+          <div id="drawer-media-content" class="p-3 max-h-56 overflow-y-auto space-y-2">
+            <p class="text-xs text-[#94A3B8] text-center py-4">Sin medios compartidos</p>
+          </div>
+        </div>
+
+        <!-- Especificaciones Técnicas y Canónicas Barrantes Co. -->
+        <div class="rounded-2xl bg-[#070F1E] border border-[rgba(197,160,89,0.2)] p-3.5 space-y-2 text-xs text-[#94A3B8]">
+          <h5 class="font-bold text-[#C5A059] font-title text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+            <span>🛡️</span> Especificaciones de Medios
+          </h5>
+          <div class="flex items-center justify-between border-b border-[rgba(197,160,89,0.1)] pb-1.5">
+            <span>Archivos / Documentos:</span>
+            <span class="text-[#F0F4F8] font-mono font-bold">Hasta 2 GB</span>
+          </div>
+          <div class="flex items-center justify-between border-b border-[rgba(197,160,89,0.1)] pb-1.5">
+            <span>Códec de Video:</span>
+            <span class="text-[#F0F4F8] font-mono font-bold">H.264 / AAC HTML5</span>
+          </div>
+          <div class="flex items-center justify-between border-b border-[rgba(197,160,89,0.1)] pb-1.5">
+            <span>Resolución de Fotos:</span>
+            <span class="text-[#F0F4F8] font-mono font-bold">1600px / HD 4096px</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Foto de Perfil:</span>
+            <span class="text-[#F0F4F8] font-mono font-bold">1080 × 1080 px circular</span>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Fondo oscuro translúcido para Drawer en móvil -->
+    <div id="drawer-backdrop" class="hidden"></div>
+
+  </main>
 
   </div>
 
@@ -524,37 +618,161 @@
     </div>
   </div>
 
-  <!-- MODAL: EDITAR NOMBRE PERSONALIZADO -->
-  <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <!-- MODAL: EDITAR PERFIL Y FOTO DE PERFIL CIRCULAR (1080 × 1080 px) -->
+  <div id="edit-profile-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#0A1A3A] rounded-3xl p-6 w-full max-w-sm flex flex-col gap-4 shadow-2xl border border-[rgba(197,160,89,0.25)] text-[#F0F4F8]">
       <div class="flex items-center justify-between">
-        <h3 class="font-bold text-base text-[#F0F4F8] font-title">Nombre Personalizado</h3>
+        <h3 class="font-bold text-base text-[#F0F4F8] font-title flex items-center gap-2">
+          <span>👤</span> Editar Perfil
+        </h3>
         <button id="close-profile-modal-btn" class="text-[#94A3B8] hover:text-[#F0F4F8] p-1 text-sm cursor-pointer">✕</button>
       </div>
-      <p class="text-xs text-[#94A3B8]">
-        Formato permanente: <strong>[ID] - [Nombre]</strong> (purgando emoticones):
-      </p>
 
-      <input type="text" id="profile-name-input" maxlength="35" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
-        class="w-full px-4 py-2.5 rounded-xl bg-[#070F1E] border border-[rgba(197,160,89,0.25)] focus:border-[#38B6FF] focus:ring-1 focus:ring-[#38B6FF]/30 outline-none text-sm text-[#F0F4F8]">
+      <!-- Foto de Perfil: Recorte Automático Circular 1080x1080 px -->
+      <div class="flex flex-col items-center gap-2.5 py-1 border-b border-[rgba(197,160,89,0.18)]">
+        <div class="avatar-preview-box flex items-center justify-center relative group">
+          <img id="profile-avatar-preview" src="" alt="Avatar de perfil" class="w-full h-full object-cover hidden">
+          <div id="profile-avatar-fallback" class="w-full h-full bg-gradient-to-tr from-[#C5A059] to-[#38B6FF] text-[#070F1E] font-bold text-2xl flex items-center justify-center font-mono">
+            0000
+          </div>
+          <button id="trigger-avatar-btn" type="button" title="Seleccionar foto de perfil" class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity cursor-pointer">
+            📷 Cambiar
+          </button>
+        </div>
+        <div class="text-center">
+          <button id="select-avatar-btn" type="button" class="text-xs text-[#C5A059] hover:text-[#d4b068] font-bold flex items-center gap-1 cursor-pointer transition-colors mx-auto">
+            <span>📷</span> Subir Foto (1080 × 1080 px circular)
+          </button>
+          <span class="text-[10px] text-[#94A3B8] block mt-0.5">Recorte automático circular a alta resolución</span>
+        </div>
+        <input type="file" id="profile-avatar-input" accept="image/*" class="hidden">
+      </div>
+
+      <div>
+        <label for="profile-name-input" class="block text-xs font-semibold text-[#C5A059] mb-1">Nombre Personalizado (sin emojis)</label>
+        <input type="text" id="profile-name-input" maxlength="35" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
+          class="w-full px-4 py-2.5 rounded-xl bg-[#070F1E] border border-[rgba(197,160,89,0.25)] focus:border-[#38B6FF] focus:ring-1 focus:ring-[#38B6FF]/30 outline-none text-sm text-[#F0F4F8]">
+        <p class="text-[10px] text-[#94A3B8] mt-1 font-mono">Formato canónico: [ID] - [Nombre]</p>
+      </div>
 
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-[rgba(197,160,89,0.18)]">
         <button id="cancel-profile-modal-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#94A3B8] hover:text-[#F0F4F8] cursor-pointer">Cancelar</button>
-        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-sm transition-all cursor-pointer">Guardar</button>
+        <button id="save-profile-btn" type="button" class="px-5 py-2 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-sm transition-all cursor-pointer">Guardar Cambios</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: VISOR DE IMÁGENES -->
-  <div id="image-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
-      <button id="close-image-modal-btn" class="absolute -top-10 right-0 text-white hover:text-[#C5A059] px-3 py-1 text-xs font-bold rounded-lg bg-black/60 border border-[rgba(197,160,89,0.3)] cursor-pointer">✕ Cerrar</button>
-      <img id="modal-img" src="" alt="Vista previa de archivo" class="max-w-full max-h-[75vh] rounded-2xl object-contain shadow-2xl border border-[rgba(197,160,89,0.2)]">
-      <div class="mt-4 flex items-center gap-3">
-        <a id="modal-download-btn" href="#" download class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-lg flex items-center gap-2 transition-all">
-          ⬇ Descargar original
-        </a>
+  <!-- VISOR LIGHTBOX MULTIMEDIA CANÓNICO BARRANTES CO. -->
+  <div id="lightbox-modal" class="hidden">
+    <div class="lightbox-content-box">
+      <!-- Barra Superior del Lightbox -->
+      <div class="w-full flex items-center justify-between px-2 text-xs">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="font-bold text-[#F0F4F8] font-title truncate max-w-xs sm:max-w-md" id="lightbox-filename">imagen.jpg</span>
+          <span id="lightbox-specs" class="badge-hd">HD 4096px</span>
+          <span id="lightbox-dimensions" class="text-[10px] font-mono text-[#94A3B8] hidden sm:inline">—</span>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <a id="lightbox-download-btn" href="#" download class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-md transition-all flex items-center gap-1.5">
+            <span>⬇</span> <span>Descargar Original</span>
+          </a>
+          <button id="lightbox-close-btn" type="button" title="Cerrar visor (Esc)" class="h-8 w-8 rounded-lg bg-[#070F1E] hover:bg-red-950 text-gray-300 hover:text-red-400 border border-[rgba(197,160,89,0.2)] flex items-center justify-center font-bold text-xs transition-all cursor-pointer">
+            ✕
+          </button>
+        </div>
       </div>
+
+      <!-- Marco de Imagen con Controles de Zoom -->
+      <div class="lightbox-img-wrapper" id="lightbox-wrapper">
+        <img id="lightbox-img" src="" alt="Visor de imagen" class="lightbox-img">
+      </div>
+
+      <!-- Toolbar Inferior del Lightbox -->
+      <div class="lightbox-toolbar select-none">
+        <button id="lightbox-zoom-out-btn" type="button" title="Reducir (Zoom -)" class="text-[#F0F4F8] hover:text-[#C5A059] p-1.5 text-xs font-bold cursor-pointer transition-colors">➖ Zoom</button>
+        <span id="lightbox-zoom-level" class="text-[11px] font-mono text-[#C5A059] font-bold px-2 select-none">100%</span>
+        <button id="lightbox-zoom-in-btn" type="button" title="Ampliar (Zoom +)" class="text-[#F0F4F8] hover:text-[#C5A059] p-1.5 text-xs font-bold cursor-pointer transition-colors">➕ Zoom</button>
+        <span class="w-[1px] h-4 bg-white/20 mx-1"></span>
+        <button id="lightbox-rotate-btn" type="button" title="Rotar 90°" class="text-[#F0F4F8] hover:text-[#C5A059] p-1.5 text-xs font-bold cursor-pointer transition-colors">🔄 Rotar</button>
+        <button id="lightbox-reset-btn" type="button" title="Restablecer" class="text-[#94A3B8] hover:text-[#F0F4F8] p-1.5 text-xs font-semibold cursor-pointer transition-colors">Restablecer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ENVÍO DE MEDIOS CON CONTROL DE ESPECIFICACIONES (ESTÁNDAR 1600px / HD 4096px / 2 GB) -->
+  <div id="send-media-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0A1A3A] rounded-3xl p-5 sm:p-6 w-full max-w-lg flex flex-col gap-4 shadow-2xl border border-[rgba(197,160,89,0.3)] text-[#F0F4F8]">
+      
+      <div class="flex items-center justify-between border-b border-[rgba(197,160,89,0.18)] pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-[#C5A059] text-base" id="media-modal-icon">📤</span>
+          <h3 class="font-bold text-base text-[#F0F4F8] font-title" id="media-modal-title">Confirmar Envío de Archivo</h3>
+        </div>
+        <button id="close-send-media-btn" type="button" class="text-[#94A3B8] hover:text-[#F0F4F8] p-1 text-sm font-bold cursor-pointer">✕</button>
+      </div>
+
+      <!-- Previsualización Multimedia -->
+      <div id="media-modal-preview-box" class="w-full rounded-2xl bg-[#070F1E] border border-[rgba(197,160,89,0.2)] p-3 flex flex-col items-center justify-center min-h-[160px] max-h-[300px] overflow-hidden relative">
+        <img id="media-modal-img-preview" src="" alt="Vista previa" class="max-h-[260px] max-w-full object-contain rounded-xl hidden">
+        <video id="media-modal-video-preview" controls playsinline class="max-h-[260px] max-w-full rounded-xl hidden bg-black"></video>
+        <div id="media-modal-file-preview" class="flex flex-col items-center gap-2 p-4 text-center hidden">
+          <span class="text-4xl text-[#C5A059]">📄</span>
+          <span id="media-modal-filename" class="font-bold text-sm text-[#F0F4F8] break-all max-w-xs font-title">archivo.ext</span>
+          <span id="media-modal-filesize" class="text-xs text-[#94A3B8] font-mono">0 B</span>
+        </div>
+      </div>
+
+      <!-- Opciones de Calidad de Imagen (Estándar 1600px vs HD 4096px vs Original 2GB) -->
+      <div id="image-quality-options" class="hidden flex-col gap-2">
+        <span class="text-xs font-bold text-[#C5A059] uppercase tracking-wider font-title">Modalidad de Envío de Imagen:</span>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <label class="quality-card p-2.5 rounded-xl border border-[rgba(197,160,89,0.3)] bg-[#070F1E] flex flex-col gap-1 cursor-pointer hover:border-[#C5A059] transition-all">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-[#F0F4F8]">Estándar</span>
+              <input type="radio" name="image-quality-radio" value="standard" checked class="accent-[#C5A059]">
+            </div>
+            <span class="text-[10px] text-[#94A3B8] font-mono">~1600 px (rápido)</span>
+          </label>
+          <label class="quality-card p-2.5 rounded-xl border border-[rgba(197,160,89,0.3)] bg-[#070F1E] flex flex-col gap-1 cursor-pointer hover:border-[#C5A059] transition-all">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-[#C5A059]">⚡ HD</span>
+              <input type="radio" name="image-quality-radio" value="hd" class="accent-[#C5A059]">
+            </div>
+            <span class="text-[10px] text-[#94A3B8] font-mono">Hasta 4096 px</span>
+          </label>
+          <label class="quality-card p-2.5 rounded-xl border border-[rgba(197,160,89,0.3)] bg-[#070F1E] flex flex-col gap-1 cursor-pointer hover:border-[#C5A059] transition-all">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-[#38B6FF]">📦 Original</span>
+              <input type="radio" name="image-quality-radio" value="raw" class="accent-[#38B6FF]">
+            </div>
+            <span class="text-[10px] text-[#94A3B8] font-mono">Sin compresión</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Notificación de Video H.264 / AAC -->
+      <div id="video-spec-note" class="hidden p-2.5 rounded-xl bg-[#070F1E] border border-[rgba(197,160,89,0.2)] text-[11px] text-[#94A3B8]">
+        <span class="font-bold text-[#C5A059]">🎬 Video HTML5:</span> Reproducción directa con códec H.264 y audio AAC. Soporta archivos de hasta 2 GB sin alteración.
+      </div>
+
+      <!-- Barra de Progreso de Subida (para archivos pesados de hasta 2 GB) -->
+      <div id="upload-progress-box" class="hidden flex-col gap-1.5 pt-1">
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="text-[#C5A059] font-bold">Subiendo archivo al servidor...</span>
+          <span id="upload-progress-percent" class="text-[#38B6FF] font-bold">0%</span>
+        </div>
+        <div class="upload-progress-container">
+          <div id="upload-progress-bar-fill" class="upload-progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-[rgba(197,160,89,0.18)]">
+        <button id="cancel-send-media-btn" type="button" class="px-4 py-2 rounded-xl text-xs font-semibold text-[#94A3B8] hover:text-[#F0F4F8] cursor-pointer">Cancelar</button>
+        <button id="confirm-send-media-btn" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-lg transition-all cursor-pointer flex items-center gap-1.5">
+          <span>➤</span> <span>Enviar</span>
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -700,6 +918,7 @@
   const authErrorMsg = document.getElementById('auth-error-msg');
   const authSubmitBtn = document.getElementById('auth-submit-btn');
 
+  const headerUserAvatar = document.getElementById('header-user-avatar');
   const headerUserSyncId = document.getElementById('header-user-sync-id');
   const headerUserCleanName = document.getElementById('header-user-clean-name');
   const openEditProfileBtn = document.getElementById('open-edit-profile-btn');
@@ -707,6 +926,7 @@
 
   const sidebarPanel = document.getElementById('sidebar-panel');
   const chatPanel = document.getElementById('chat-panel');
+  const chatPanelContainer = document.getElementById('chat-panel-container');
   const backToContactsBtn = document.getElementById('back-to-contacts-btn');
 
   const contactsList = document.getElementById('contacts-list');
@@ -719,6 +939,25 @@
   const activeChatName = document.getElementById('active-chat-name');
   const activeChatId = document.getElementById('active-chat-id');
   const activeChatStatus = document.getElementById('active-chat-status');
+  const activeChatInfoTrigger = document.getElementById('active-chat-info-trigger');
+
+  // Columna 3: Drawer de Información & Medios (340px)
+  const infoDrawerPanel = document.getElementById('info-drawer-panel');
+  const toggleDrawerBtn = document.getElementById('toggle-drawer-btn');
+  const closeDrawerBtn = document.getElementById('close-drawer-btn');
+  const drawerBackdrop = document.getElementById('drawer-backdrop');
+  const drawerContactName = document.getElementById('drawer-contact-name');
+  const drawerContactId = document.getElementById('drawer-contact-id');
+  const drawerContactStatus = document.getElementById('drawer-contact-status');
+  const drawerContactAvatarFallback = document.getElementById('drawer-contact-avatar-fallback');
+  const drawerContactAvatarImg = document.getElementById('drawer-contact-avatar-img');
+  const drawerContactOnlineDot = document.getElementById('drawer-contact-online-dot');
+  const drawerMediaCount = document.getElementById('drawer-media-count');
+  const drawerMediaContent = document.getElementById('drawer-media-content');
+  const drawerTabImg = document.getElementById('drawer-tab-img');
+  const drawerTabDoc = document.getElementById('drawer-tab-doc');
+  const drawerTabLink = document.getElementById('drawer-tab-link');
+  let currentDrawerTab = 'img';
 
   const chatMessages = document.getElementById('chat-messages');
   const chatWelcome = document.getElementById('chat-welcome');
@@ -738,16 +977,53 @@
   const cancelRecordingBtn = document.getElementById('cancel-recording-btn');
   const sendRecordingBtn = document.getElementById('send-recording-btn');
 
+  // Perfil y Foto Circular (1080 × 1080 px)
   const editProfileModal = document.getElementById('edit-profile-modal');
   const profileNameInput = document.getElementById('profile-name-input');
   const closeProfileModalBtn = document.getElementById('close-profile-modal-btn');
   const cancelProfileModalBtn = document.getElementById('cancel-profile-modal-btn');
   const saveProfileBtn = document.getElementById('save-profile-btn');
+  const selectAvatarBtn = document.getElementById('select-avatar-btn');
+  const triggerAvatarBtn = document.getElementById('trigger-avatar-btn');
+  const profileAvatarInput = document.getElementById('profile-avatar-input');
+  const profileAvatarPreview = document.getElementById('profile-avatar-preview');
+  const profileAvatarFallback = document.getElementById('profile-avatar-fallback');
+  let currentSelectedAvatarData = null;
 
-  const imageModal = document.getElementById('image-modal');
-  const modalImg = document.getElementById('modal-img');
-  const modalDownloadBtn = document.getElementById('modal-download-btn');
-  const closeImageModalBtn = document.getElementById('close-image-modal-btn');
+  // Visor Lightbox Canónico Barrantes Co.
+  const lightboxModal = document.getElementById('lightbox-modal');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxFilename = document.getElementById('lightbox-filename');
+  const lightboxSpecs = document.getElementById('lightbox-specs');
+  const lightboxDimensions = document.getElementById('lightbox-dimensions');
+  const lightboxDownloadBtn = document.getElementById('lightbox-download-btn');
+  const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
+  const lightboxZoomInBtn = document.getElementById('lightbox-zoom-in-btn');
+  const lightboxZoomOutBtn = document.getElementById('lightbox-zoom-out-btn');
+  const lightboxZoomLevel = document.getElementById('lightbox-zoom-level');
+  const lightboxRotateBtn = document.getElementById('lightbox-rotate-btn');
+  const lightboxResetBtn = document.getElementById('lightbox-reset-btn');
+  let currentLightboxZoom = 1;
+  let currentLightboxRotation = 0;
+
+  // Modal de Envío de Medios (Estándar 1600px / HD 4096px / 2 GB)
+  const sendMediaModal = document.getElementById('send-media-modal');
+  const closeSendMediaBtn = document.getElementById('close-send-media-btn');
+  const cancelSendMediaBtn = document.getElementById('cancel-send-media-btn');
+  const confirmSendMediaBtn = document.getElementById('confirm-send-media-btn');
+  const mediaModalTitle = document.getElementById('media-modal-title');
+  const mediaModalImgPreview = document.getElementById('media-modal-img-preview');
+  const mediaModalVideoPreview = document.getElementById('media-modal-video-preview');
+  const mediaModalFilePreview = document.getElementById('media-modal-file-preview');
+  const mediaModalFilename = document.getElementById('media-modal-filename');
+  const mediaModalFilesize = document.getElementById('media-modal-filesize');
+  const imageQualityOptions = document.getElementById('image-quality-options');
+  const videoSpecNote = document.getElementById('video-spec-note');
+  const uploadProgressBox = document.getElementById('upload-progress-box');
+  const uploadProgressBarFill = document.getElementById('upload-progress-bar-fill');
+  const uploadProgressPercent = document.getElementById('upload-progress-percent');
+  let pendingSendFile = null;
+
   const popupNotifications = document.getElementById('popup-notifications');
 
   // Referencias DOM WebRTC
@@ -1312,15 +1588,21 @@
     headerUserSyncId.textContent = currentUser.syncId;
     headerUserCleanName.textContent = purgeEmojis(currentUser.cleanDisplayName);
 
+    if (currentUser.avatarUrl) {
+      headerUserAvatar.src = currentUser.avatarUrl;
+      headerUserAvatar.classList.remove('hidden');
+    } else {
+      headerUserAvatar.classList.add('hidden');
+    }
+
     initSocket();
     loadContacts();
 
-    if (window.innerWidth < 768) {
-      sidebarPanel.classList.remove('hidden');
-      chatPanel.classList.add('hidden');
+    if (window.innerWidth < 1024) {
+      document.body.classList.add('mobile-view-contacts');
+      document.body.classList.remove('mobile-view-chat');
     } else {
-      sidebarPanel.classList.remove('hidden');
-      chatPanel.classList.remove('hidden');
+      document.body.classList.remove('mobile-view-contacts', 'mobile-view-chat');
     }
   }
 
@@ -1334,8 +1616,67 @@
     showAuth();
   });
 
+  // Procesamiento Automático de Foto de Perfil: Recorte Circular 1:1 (1080 × 1080 px)
+  function processProfileAvatar(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const side = Math.min(img.naturalWidth, img.naturalHeight);
+          const startX = Math.round((img.naturalWidth - side) / 2);
+          const startY = Math.round((img.naturalHeight - side) / 2);
+
+          const canvas = document.createElement('canvas');
+          canvas.width = 1080;
+          canvas.height = 1080;
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          // Recorte automático circular basado en imagen cuadrada de 1080x1080
+          ctx.drawImage(img, startX, startY, side, side, 0, 0, 1080, 1080);
+          const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+          resolve(croppedDataUrl);
+        };
+        img.onerror = () => reject(new Error('Error al decodificar la imagen'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo de imagen'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (selectAvatarBtn) selectAvatarBtn.addEventListener('click', () => profileAvatarInput.click());
+  if (triggerAvatarBtn) triggerAvatarBtn.addEventListener('click', () => profileAvatarInput.click());
+
+  if (profileAvatarInput) {
+    profileAvatarInput.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        const croppedDataUrl = await processProfileAvatar(file);
+        currentSelectedAvatarData = croppedDataUrl;
+        profileAvatarPreview.src = croppedDataUrl;
+        profileAvatarPreview.classList.remove('hidden');
+        profileAvatarFallback.classList.add('hidden');
+      } catch (err) {
+        alert('Error al procesar foto de perfil: ' + err.message);
+      }
+    });
+  }
+
   openEditProfileBtn.addEventListener('click', () => {
     profileNameInput.value = currentUser ? purgeEmojis(currentUser.cleanDisplayName) : '';
+    currentSelectedAvatarData = null;
+    if (currentUser && currentUser.avatarUrl) {
+      profileAvatarPreview.src = currentUser.avatarUrl;
+      profileAvatarPreview.classList.remove('hidden');
+      profileAvatarFallback.classList.add('hidden');
+    } else {
+      profileAvatarPreview.classList.add('hidden');
+      profileAvatarFallback.classList.remove('hidden');
+      profileAvatarFallback.textContent = currentUser ? currentUser.syncId.replace('SYNC-', '') : '0000';
+    }
     editProfileModal.classList.remove('hidden');
   });
 
@@ -1354,30 +1695,36 @@
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + currentToken
         },
-        body: JSON.stringify({ displayName: cleanName })
+        body: JSON.stringify({
+          displayName: cleanName,
+          avatarUrl: currentSelectedAvatarData !== null ? currentSelectedAvatarData : (currentUser ? currentUser.avatarUrl : null)
+        })
       });
       const data = await res.json();
       if (data.ok && data.user) {
         currentUser = data.user;
         headerUserCleanName.textContent = currentUser.cleanDisplayName;
+        if (currentUser.avatarUrl) {
+          headerUserAvatar.src = currentUser.avatarUrl;
+          headerUserAvatar.classList.remove('hidden');
+        }
         editProfileModal.classList.add('hidden');
         triggerPopupNotification('Perfil Actualizado', `${currentUser.syncId} - ${currentUser.cleanDisplayName}`, '👤');
         loadContacts();
       }
     } catch (err) {
-      alert('Error al guardar nombre: ' + err.message);
+      alert('Error al guardar perfil: ' + err.message);
     }
   });
 
   backToContactsBtn.addEventListener('click', () => {
     activeContactSyncId = null;
-    if (window.innerWidth < 768) {
-      sidebarPanel.classList.remove('hidden');
-      workspaceSplitContainer.classList.add('hidden');
-      workspaceSplitContainer.classList.remove('flex');
+    if (window.innerWidth < 1024) {
+      document.body.classList.add('mobile-view-contacts');
+      document.body.classList.remove('mobile-view-chat');
     }
+    closeInfoDrawer();
     chatWelcome.classList.remove('hidden');
-    loadContacts();
   });
 
   async function loadContacts() {
@@ -1431,32 +1778,34 @@
       const item = document.createElement('div');
       const isActive = (c.syncId === activeContactSyncId);
       item.className = `p-3 rounded-xl cursor-pointer flex items-center gap-3 transition-all ${
-        isActive ? 'bg-[#E8F5E9] border-l-4 border-waTeal shadow-sm' : 'hover:bg-waBg'
+        isActive ? 'bg-[#0E234A] border-l-4 border-[#C5A059] shadow-md' : 'hover:bg-[#070F1E]'
       }`;
 
       const avatarGradient = getAvatarColor(c.syncId);
       const onlineDot = c.isOnline 
-        ? '<span class="w-3 h-3 rounded-full bg-waGreen absolute -bottom-0.5 -right-0.5 border-2 border-white"></span>' 
-        : '<span class="w-3 h-3 rounded-full bg-gray-300 absolute -bottom-0.5 -right-0.5 border-2 border-white"></span>';
+        ? '<span class="w-3 h-3 rounded-full bg-[#25D366] absolute -bottom-0.5 -right-0.5 border-2 border-[#0A1A3A] pulse-online"></span>' 
+        : '<span class="w-3 h-3 rounded-full bg-gray-500 absolute -bottom-0.5 -right-0.5 border-2 border-[#0A1A3A]"></span>';
       
       const lastSnippet = c.lastMessage ? c.lastMessage.text : 'Toca para chatear';
       const lastTime = c.lastMessage && c.lastMessage.timestamp 
         ? new Date(c.lastMessage.timestamp).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
         : '';
 
+      const avatarMarkup = c.avatarUrl
+        ? `<img src="${c.avatarUrl}" class="w-11 h-11 rounded-full object-cover avatar-circle flex-shrink-0 shadow-sm" alt="${escapeHtml(c.cleanDisplayName)}">`
+        : `<div class="w-11 h-11 rounded-full bg-gradient-to-tr ${avatarGradient} text-white flex items-center justify-center font-bold text-xs shadow-sm font-mono flex-shrink-0 avatar-circle">${escapeHtml(c.syncId.replace('SYNC-', ''))}</div>`;
+
       item.innerHTML = `
         <div class="relative flex-shrink-0">
-          <div class="w-11 h-11 rounded-full bg-gradient-to-tr ${avatarGradient} text-white flex items-center justify-center font-bold text-xs shadow-sm font-mono">
-            ${escapeHtml(c.syncId.replace('SYNC-', ''))}
-          </div>
+          ${avatarMarkup}
           ${onlineDot}
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-1">
-            <p class="font-bold text-xs text-waTextPrimary truncate">${escapeHtml(c.formattedName)}</p>
-            <span class="text-[10px] text-waTextSecondary font-mono flex-shrink-0">${lastTime}</span>
+            <p class="font-bold text-xs text-[#F0F4F8] font-title truncate">${escapeHtml(c.formattedName)}</p>
+            <span class="text-[10px] text-[#94A3B8] font-mono flex-shrink-0">${lastTime}</span>
           </div>
-          <p class="text-[11px] text-waTextSecondary truncate mt-0.5">${escapeHtml(lastSnippet)}</p>
+          <p class="text-[11px] text-[#94A3B8] truncate mt-0.5">${escapeHtml(lastSnippet)}</p>
         </div>
       `;
 
@@ -1464,7 +1813,7 @@
       contactsList.appendChild(item);
     });
 
-    if (window.innerWidth >= 768 && !activeContactSyncId && validContacts.length > 0) {
+    if (window.innerWidth >= 1024 && !activeContactSyncId && validContacts.length > 0) {
       selectContact(validContacts[0].syncId);
     }
   }
@@ -1520,6 +1869,214 @@
       it.style.display = text.includes(term) ? '' : 'none';
     });
   });
+
+  // CONTROL DEL DRAWER / CENTRO DE MEDIOS (COLUMNA 3 - 340px)
+  function openInfoDrawer() {
+    if (!infoDrawerPanel) return;
+    infoDrawerPanel.classList.remove('drawer-closed');
+    infoDrawerPanel.classList.add('drawer-open');
+    if (window.innerWidth < 1024 && drawerBackdrop) {
+      drawerBackdrop.classList.remove('hidden');
+    }
+  }
+
+  function closeInfoDrawer() {
+    if (!infoDrawerPanel) return;
+    infoDrawerPanel.classList.remove('drawer-open');
+    infoDrawerPanel.classList.add('drawer-closed');
+    if (drawerBackdrop) {
+      drawerBackdrop.classList.add('hidden');
+    }
+  }
+
+  function toggleInfoDrawer() {
+    if (!infoDrawerPanel) return;
+    if (infoDrawerPanel.classList.contains('drawer-open')) {
+      closeInfoDrawer();
+    } else {
+      openInfoDrawer();
+    }
+  }
+
+  function updateDrawerContact(contact) {
+    if (!contact) return;
+    if (drawerContactName) drawerContactName.textContent = contact.formattedName || contact.displayName || contact.syncId;
+    if (drawerContactId) drawerContactId.textContent = 'ID: ' + contact.syncId;
+
+    if (contact.avatarUrl && drawerContactAvatarImg && drawerContactAvatarFallback) {
+      drawerContactAvatarImg.src = contact.avatarUrl;
+      drawerContactAvatarImg.classList.remove('hidden');
+      drawerContactAvatarFallback.classList.add('hidden');
+    } else if (drawerContactAvatarFallback && drawerContactAvatarImg) {
+      drawerContactAvatarImg.classList.add('hidden');
+      drawerContactAvatarFallback.classList.remove('hidden');
+      drawerContactAvatarFallback.textContent = contact.syncId.replace('SYNC-', '');
+    }
+
+    if (drawerContactOnlineDot) {
+      if (contact.isOnline) {
+        drawerContactOnlineDot.className = 'w-4 h-4 rounded-full bg-[#25D366] absolute -bottom-0.5 -right-0.5 border-2 border-[#070F1E] pulse-online';
+        if (drawerContactStatus) drawerContactStatus.textContent = '● En línea';
+      } else {
+        drawerContactOnlineDot.className = 'w-4 h-4 rounded-full bg-gray-500 absolute -bottom-0.5 -right-0.5 border-2 border-[#070F1E]';
+        if (drawerContactStatus) drawerContactStatus.textContent = '○ Desconectado';
+      }
+    }
+
+    renderDrawerMedia(currentDrawerTab || 'img');
+  }
+
+  function switchDrawerTab(tab) {
+    currentDrawerTab = tab;
+    if (drawerTabImg) {
+      drawerTabImg.className = tab === 'img' 
+        ? 'flex-1 py-1.5 rounded-lg bg-[#0A1A3A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] text-center cursor-pointer transition-colors'
+        : 'flex-1 py-1.5 rounded-lg text-[#94A3B8] hover:text-[#C5A059] text-center cursor-pointer transition-colors';
+    }
+    if (drawerTabDoc) {
+      drawerTabDoc.className = tab === 'doc'
+        ? 'flex-1 py-1.5 rounded-lg bg-[#0A1A3A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] text-center cursor-pointer transition-colors'
+        : 'flex-1 py-1.5 rounded-lg text-[#94A3B8] hover:text-[#C5A059] text-center cursor-pointer transition-colors';
+    }
+    if (drawerTabLink) {
+      drawerTabLink.className = tab === 'link'
+        ? 'flex-1 py-1.5 rounded-lg bg-[#0A1A3A] text-[#C5A059] border border-[rgba(197,160,89,0.25)] text-center cursor-pointer transition-colors'
+        : 'flex-1 py-1.5 rounded-lg text-[#94A3B8] hover:text-[#C5A059] text-center cursor-pointer transition-colors';
+    }
+    renderDrawerMedia(tab);
+  }
+
+  function renderDrawerMedia(tab) {
+    if (!drawerMediaContent) return;
+    drawerMediaContent.innerHTML = '';
+
+    const messages = activeConversationMessages || [];
+
+    if (tab === 'img') {
+      const mediaList = messages.filter(m => {
+        if (m.type !== 'file' || !m.fileData) return false;
+        const name = m.fileData.name || '';
+        const mime = m.fileData.type || '';
+        return mime.startsWith('image/') || mime.startsWith('video/') || /\.(png|jpe?g|gif|webp|svg|mp4|webm|mov|m4v)$/i.test(name);
+      });
+
+      if (drawerMediaCount) drawerMediaCount.textContent = `${mediaList.length} archivos`;
+
+      if (mediaList.length === 0) {
+        drawerMediaContent.innerHTML = '<p class="text-xs text-[#94A3B8] text-center py-4">Sin fotos o videos</p>';
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-3 gap-2';
+
+      mediaList.forEach(m => {
+        const f = m.fileData;
+        const isVid = (f.type && f.type.startsWith('video/')) || /\.(mp4|webm|mov|m4v)$/i.test(f.name);
+        const url = f.url || f.data || '';
+        const item = document.createElement('div');
+        item.className = 'relative aspect-square rounded-xl overflow-hidden bg-[#0A1A3A] border border-[rgba(197,160,89,0.2)] cursor-pointer group';
+
+        if (isVid) {
+          item.innerHTML = `
+            <div class="w-full h-full flex flex-col items-center justify-center text-xs text-[#C5A059] group-hover:scale-105 transition-transform">
+              <span class="text-lg">▶</span>
+              <span class="text-[9px] font-mono text-[#F0F4F8] mt-0.5 truncate px-1 max-w-full">${escapeHtml(f.name)}</span>
+            </div>
+            <span class="absolute top-1 left-1 px-1 py-0.5 rounded bg-black/70 text-[8px] font-mono text-[#C5A059]">H.264</span>
+          `;
+          item.addEventListener('click', () => {
+            const msgEl = document.getElementById('msg-' + m.id);
+            if (msgEl) msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        } else {
+          item.innerHTML = `
+            <img src="${url}" alt="${escapeHtml(f.name)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+            <span class="absolute top-1 right-1 px-1 py-0.5 rounded bg-black/70 text-[8px] font-mono text-[#C5A059]">${f.isHd ? 'HD' : 'STD'}</span>
+          `;
+          item.addEventListener('click', () => openLightbox(url, f.name, f.size, f.isHd));
+        }
+
+        grid.appendChild(item);
+      });
+      drawerMediaContent.appendChild(grid);
+    } else if (tab === 'doc') {
+      const docs = messages.filter(m => {
+        if (m.type !== 'file' || !m.fileData) return false;
+        const name = m.fileData.name || '';
+        const mime = m.fileData.type || '';
+        const isMedia = mime.startsWith('image/') || mime.startsWith('video/') || /\.(png|jpe?g|gif|webp|svg|mp4|webm|mov|m4v)$/i.test(name);
+        return !isMedia;
+      });
+
+      if (drawerMediaCount) drawerMediaCount.textContent = `${docs.length} docs`;
+
+      if (docs.length === 0) {
+        drawerMediaContent.innerHTML = '<p class="text-xs text-[#94A3B8] text-center py-4">Sin documentos</p>';
+        return;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'flex flex-col gap-2';
+      docs.forEach(m => {
+        const f = m.fileData;
+        const item = document.createElement('div');
+        item.className = 'p-2 rounded-xl bg-[#0A1A3A] border border-[rgba(197,160,89,0.2)] flex items-center justify-between gap-2';
+        item.innerHTML = `
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-sm text-[#C5A059]">📎</span>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-[#F0F4F8] truncate">${escapeHtml(f.name)}</p>
+              <p class="text-[10px] text-[#94A3B8] font-mono">${formatSize(f.size || 0)}</p>
+            </div>
+          </div>
+          <a href="${f.url || f.data || '#'}" download="${escapeHtml(f.name)}" class="px-2 py-1 rounded bg-[#C5A059]/20 hover:bg-[#C5A059] text-[#C5A059] hover:text-[#070F1E] font-bold text-[10px] transition-colors flex-shrink-0">⬇</a>
+        `;
+        list.appendChild(item);
+      });
+      drawerMediaContent.appendChild(list);
+    } else if (tab === 'link') {
+      const linkRegex = /(https?:\/\/[^\s]+)/g;
+      const links = [];
+      messages.forEach(m => {
+        if (m.text && typeof m.text === 'string' && !m.deletedForEveryone) {
+          const matches = m.text.match(linkRegex);
+          if (matches) {
+            matches.forEach(u => links.push({ url: u, title: m.linkPreview?.title || u }));
+          }
+        }
+      });
+
+      if (drawerMediaCount) drawerMediaCount.textContent = `${links.length} links`;
+
+      if (links.length === 0) {
+        drawerMediaContent.innerHTML = '<p class="text-xs text-[#94A3B8] text-center py-4">Sin enlaces</p>';
+        return;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'flex flex-col gap-1.5';
+      links.forEach(l => {
+        const item = document.createElement('a');
+        item.href = l.url;
+        item.target = '_blank';
+        item.rel = 'noopener noreferrer';
+        item.className = 'p-2 rounded-xl bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.2)] text-xs text-[#38B6FF] truncate block transition-colors';
+        item.innerHTML = `<span class="text-[#C5A059] mr-1">🔗</span> ${escapeHtml(l.url)}`;
+        list.appendChild(item);
+      });
+      drawerMediaContent.appendChild(list);
+    }
+  }
+
+  // Event Listeners del Drawer
+  if (toggleDrawerBtn) toggleDrawerBtn.addEventListener('click', toggleInfoDrawer);
+  if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeInfoDrawer);
+  if (drawerBackdrop) drawerBackdrop.addEventListener('click', closeInfoDrawer);
+  if (activeChatInfoTrigger) activeChatInfoTrigger.addEventListener('click', toggleInfoDrawer);
+  if (drawerTabImg) drawerTabImg.addEventListener('click', () => switchDrawerTab('img'));
+  if (drawerTabDoc) drawerTabDoc.addEventListener('click', () => switchDrawerTab('doc'));
+  if (drawerTabLink) drawerTabLink.addEventListener('click', () => switchDrawerTab('link'));
 
   // ESTADO LIMPIO EN CABECERA DEL CHAT (SÓLO ● En línea / · Desconectado)
   function updateContactHeaderStatus() {
@@ -1784,23 +2341,25 @@
     const contact = contactsMap.get(syncId);
     if (!contact) return;
 
-    if (window.innerWidth < 768) {
-      sidebarPanel.classList.add('hidden');
-      workspaceSplitContainer.classList.remove('hidden');
-      workspaceSplitContainer.classList.add('flex');
-      setMobileTab('chat');
+    if (window.innerWidth < 1024) {
+      document.body.classList.add('mobile-view-chat');
+      document.body.classList.remove('mobile-view-contacts');
     } else {
-      sidebarPanel.classList.remove('hidden');
-      workspaceSplitContainer.classList.remove('hidden');
-      workspaceSplitContainer.classList.add('flex');
-      chatPanel.classList.remove('hidden');
-      chatPanel.classList.add('flex');
+      document.body.classList.remove('mobile-view-contacts', 'mobile-view-chat');
     }
 
-    activeChatAvatar.textContent = contact.syncId.replace('SYNC-', '');
+    if (contact.avatarUrl) {
+      activeChatAvatar.innerHTML = `<img src="${contact.avatarUrl}" class="w-full h-full rounded-full object-cover avatar-circle" alt="Avatar">`;
+    } else {
+      const gradient = getAvatarColor(contact.syncId);
+      activeChatAvatar.className = `w-10 h-10 rounded-full bg-gradient-to-tr ${gradient} text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-md font-mono avatar-circle`;
+      activeChatAvatar.textContent = contact.syncId.replace('SYNC-', '');
+    }
+
     activeChatName.textContent = contact.formattedName;
     activeChatId.textContent = 'ID: ' + contact.syncId;
     updateContactHeaderStatus();
+    updateDrawerContact(contact);
 
     chatWelcome.classList.add('hidden');
     chatMessages.innerHTML = '';
@@ -2549,37 +3108,70 @@
       audioCard.appendChild(trackInfo);
       bubble.appendChild(audioCard);
     }
-    // ARCHIVO O IMAGEN
+    // ARCHIVO, IMAGEN O VIDEO (ESPECIFICACIONES MULTIMEDIA CANÓNICAS BARRANTES CO.)
     else if (msg.type === 'file' && msg.fileData) {
       const f = msg.fileData;
+      const fileUrl = f.url || f.data || '';
       const isImg = (f.type && f.type.startsWith('image/')) || /\.(png|jpe?g|gif|webp|svg)$/i.test(f.name);
+      const isVid = (f.type && f.type.startsWith('video/')) || /\.(mp4|webm|mov|m4v)$/i.test(f.name);
 
-      if (isImg && f.data) {
-        const imgWrap = document.createElement('div');
-        imgWrap.className = 'mb-2 rounded-xl overflow-hidden bg-black/40 max-h-60 flex items-center justify-center cursor-pointer group relative border border-[rgba(197,160,89,0.2)]';
-        imgWrap.innerHTML = `
-          <img src="${f.data}" alt="${escapeHtml(f.name)}" class="w-full h-auto max-h-60 object-contain rounded-xl group-hover:scale-[1.01] transition-transform">
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold backdrop-blur-[2px] transition-opacity">
-            🔍 Ver imagen
+      // 1. VIDEO CON COMPATIBILIDAD H.264 Y AUDIO AAC EN HTML5
+      if (isVid) {
+        const vidContainer = document.createElement('div');
+        vidContainer.className = 'video-card-container mb-2';
+        vidContainer.innerHTML = `
+          <video controls playsinline preload="metadata" class="video-player-element" src="${fileUrl}">
+            Tu navegador no soporta reproducción de video HTML5 H.264/AAC.
+          </video>
+          <div class="video-meta-bar">
+            <span class="video-codec-badge">H.264 / AAC HTML5</span>
+            <span class="text-[10px] font-mono text-[#94A3B8] truncate max-w-[160px]">${escapeHtml(f.name)}</span>
+            <span class="text-[10px] font-mono text-[#C5A059] ml-auto">${formatSize(f.size || 0)}</span>
           </div>
         `;
-        imgWrap.addEventListener('click', () => openImageModal(f.data, f.name));
-        bubble.appendChild(imgWrap);
+        bubble.appendChild(vidContainer);
+      }
+      // 2. IMÁGENES CON VISOR LIGHTBOX Y SOPORTE HD (HASTA 4096px) / STD (~1600px)
+      else if (isImg && fileUrl) {
+        const imgCard = document.createElement('div');
+        imgCard.className = 'chat-img-card mb-2';
+        const badgeHtml = f.isHd 
+          ? '<span class="badge-hd">HD 4096px</span>' 
+          : '<span class="badge-std">1600px</span>';
+
+        imgCard.innerHTML = `
+          <div class="relative overflow-hidden max-h-72 bg-black/40 flex items-center justify-center">
+            <img src="${fileUrl}" alt="${escapeHtml(f.name)}" class="w-full h-auto max-h-72 object-contain group-hover:scale-[1.01] transition-transform">
+            ${badgeHtml}
+            <div class="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold backdrop-blur-[2px] transition-opacity">
+              🔍 Abrir en Lightbox
+            </div>
+          </div>
+        `;
+        imgCard.addEventListener('click', () => openLightbox(fileUrl, f.name, f.size, f.isHd));
+        bubble.appendChild(imgCard);
       }
 
+      // 3. TARJETA DE DOCUMENTO / ARCHIVO PESADO (HASTA 2 GB SIN COMPRESIÓN)
       const fileCard = document.createElement('div');
-      fileCard.className = `flex items-center justify-between gap-3 p-2.5 rounded-xl border border-[rgba(197,160,89,0.25)] bg-[#070F1E]/70`;
+      fileCard.className = 'doc-card-container';
+      const isHeavy = (f.size && f.size > 25 * 1024 * 1024);
+      const heavyBadge = isHeavy ? '<span class="badge-2gb">2 GB RAW</span>' : '';
+
       fileCard.innerHTML = `
         <div class="flex items-center gap-2.5 min-w-0">
-          <span class="p-2 rounded-lg bg-[#C5A059]/15 text-[#C5A059]">📎</span>
+          <span class="p-2 rounded-lg bg-[#C5A059]/15 text-[#C5A059] text-base flex-shrink-0">📄</span>
           <div class="min-w-0">
-            <p class="font-bold text-xs text-[#F0F4F8] truncate">${escapeHtml(f.name)}</p>
-            <p class="text-[10px] text-[#94A3B8] font-mono">${formatSize(f.size)}</p>
+            <div class="flex items-center gap-1.5">
+              <p class="font-bold text-xs text-[#F0F4F8] truncate">${escapeHtml(f.name)}</p>
+              ${heavyBadge}
+            </div>
+            <p class="text-[10px] text-[#94A3B8] font-mono">${formatSize(f.size || 0)}</p>
           </div>
         </div>
-        <a href="${f.data || '#'}" download="${escapeHtml(f.name)}"
-          class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-sm cursor-pointer transition-all flex-shrink-0">
-          ⬇ Descargar
+        <a href="${fileUrl || '#'}" download="${escapeHtml(f.name)}"
+          class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] font-bold text-xs shadow-sm cursor-pointer transition-all flex-shrink-0 flex items-center gap-1">
+          <span>⬇</span> <span>Descargar</span>
         </a>
       `;
       bubble.appendChild(fileCard);
@@ -2994,46 +3586,316 @@
     mediaRecorder.stop();
   });
 
-  // ADJUNTAR ARCHIVOS
+  // SUBIDA Y ENVÍO DE MEDIOS CON CONTROL DE ESPECIFICACIONES (ESTÁNDAR 1600px / HD 4096px / 2 GB)
   attachBtn.addEventListener('click', () => fileInput.click());
 
   fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file || !activeContactSyncId || !socket) return;
+    const file = e.target.files && e.target.files[0];
+    if (!file || !activeContactSyncId) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const clientMsgId = 'fil_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-      const replyData = currentReplyTo;
-      cancelReply();
+    pendingSendFile = file;
 
-      socket.emit('send-private-message', {
-        clientMsgId: clientMsgId,
-        toSyncId: activeContactSyncId,
-        type: 'file',
-        fileData: {
-          name: file.name,
-          size: file.size,
-          type: file.type || 'application/octet-stream',
-          data: reader.result
-        },
-        replyTo: replyData
-      });
-      triggerPopupNotification('Archivo Enviado', file.name, '📎');
-      fileInput.value = '';
-    };
-    reader.readAsDataURL(file);
+    // Resetear vistas previas del modal
+    if (mediaModalImgPreview) { mediaModalImgPreview.src = ''; mediaModalImgPreview.classList.add('hidden'); }
+    if (mediaModalVideoPreview) { mediaModalVideoPreview.src = ''; mediaModalVideoPreview.classList.add('hidden'); }
+    if (mediaModalFilePreview) { mediaModalFilePreview.classList.add('hidden'); }
+    if (imageQualityOptions) { imageQualityOptions.classList.add('hidden'); imageQualityOptions.classList.remove('flex'); }
+    if (videoSpecNote) { videoSpecNote.classList.add('hidden'); }
+    if (uploadProgressBox) { uploadProgressBox.classList.add('hidden'); uploadProgressBox.classList.remove('flex'); }
+
+    if (mediaModalFilename) mediaModalFilename.textContent = file.name;
+    if (mediaModalFilesize) mediaModalFilesize.textContent = formatSize(file.size);
+
+    const isImg = file.type.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(file.name);
+    const isVid = file.type.startsWith('video/') || /\.(mp4|webm|mov|m4v)$/i.test(file.name);
+
+    if (isImg) {
+      if (mediaModalTitle) mediaModalTitle.textContent = 'Enviar Imagen (Especificaciones Canónicas)';
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (mediaModalImgPreview) {
+          mediaModalImgPreview.src = ev.target.result;
+          mediaModalImgPreview.classList.remove('hidden');
+        }
+      };
+      reader.readAsDataURL(file);
+      if (imageQualityOptions) {
+        imageQualityOptions.classList.remove('hidden');
+        imageQualityOptions.classList.add('flex');
+      }
+    } else if (isVid) {
+      if (mediaModalTitle) mediaModalTitle.textContent = 'Enviar Video (Códec H.264 / AAC)';
+      const blobUrl = URL.createObjectURL(file);
+      if (mediaModalVideoPreview) {
+        mediaModalVideoPreview.src = blobUrl;
+        mediaModalVideoPreview.classList.remove('hidden');
+      }
+      if (videoSpecNote) videoSpecNote.classList.remove('hidden');
+    } else {
+      if (mediaModalTitle) mediaModalTitle.textContent = 'Enviar Documento (Hasta 2 GB)';
+      if (mediaModalFilePreview) mediaModalFilePreview.classList.remove('hidden');
+    }
+
+    sendMediaModal.classList.remove('hidden');
   });
 
-  // MODAL VISOR DE IMAGEN
-  function openImageModal(src, name) {
-    modalImg.src = src;
-    modalDownloadBtn.href = src;
-    modalDownloadBtn.download = name || 'imagen';
-    imageModal.classList.remove('hidden');
+  if (closeSendMediaBtn) closeSendMediaBtn.addEventListener('click', () => {
+    sendMediaModal.classList.add('hidden');
+    fileInput.value = '';
+    pendingSendFile = null;
+  });
+  if (cancelSendMediaBtn) cancelSendMediaBtn.addEventListener('click', () => {
+    sendMediaModal.classList.add('hidden');
+    fileInput.value = '';
+    pendingSendFile = null;
+  });
+
+  // Reescalado de imágenes con Canvas (Estándar 1600px o HD 4096px)
+  function processChatImage(file, maxDimension, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.naturalWidth;
+          let height = img.naturalHeight;
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const processedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(processedFile);
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = () => reject(new Error('Error al cargar la imagen'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Error al leer el archivo'));
+      reader.readAsDataURL(file);
+    });
   }
 
-  closeImageModalBtn.addEventListener('click', () => imageModal.classList.add('hidden'));
+  // Subida HTTP multipart con barra de progreso (soporta hasta 2 GB)
+  function uploadFileWithProgress(fileBlob, originalName) {
+    return new Promise((resolve, reject) => {
+      if (uploadProgressBox) {
+        uploadProgressBox.classList.remove('hidden');
+        uploadProgressBox.classList.add('flex');
+      }
+      if (uploadProgressBarFill) uploadProgressBarFill.style.width = '0%';
+      if (uploadProgressPercent) uploadProgressPercent.textContent = '0%';
+
+      const formData = new FormData();
+      formData.append('file', fileBlob, originalName);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload', true);
+      xhr.setRequestHeader('Authorization', 'Bearer ' + currentToken);
+
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          const pct = Math.round((ev.loaded / ev.total) * 100);
+          if (uploadProgressBarFill) uploadProgressBarFill.style.width = pct + '%';
+          if (uploadProgressPercent) uploadProgressPercent.textContent = pct + '%';
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.ok) {
+              resolve(data);
+            } else {
+              reject(new Error(data.error || 'Fallo al procesar archivo en el servidor'));
+            }
+          } catch (e) {
+            reject(new Error('Respuesta inválida del servidor'));
+          }
+        } else {
+          reject(new Error('Error HTTP ' + xhr.status + ': ' + xhr.statusText));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Error de conexión durante la subida'));
+      xhr.send(formData);
+    });
+  }
+
+  if (confirmSendMediaBtn) {
+    confirmSendMediaBtn.addEventListener('click', async () => {
+      if (!pendingSendFile || !activeContactSyncId || !socket) return;
+      confirmSendMediaBtn.disabled = true;
+
+      try {
+        const file = pendingSendFile;
+        const isImg = file.type.startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(file.name);
+        let fileToUpload = file;
+        let isHd = false;
+
+        if (isImg) {
+          const selectedQuality = document.querySelector('input[name="image-quality-radio"]:checked')?.value || 'standard';
+          if (selectedQuality === 'standard') {
+            fileToUpload = await processChatImage(file, 1600, 0.85);
+            isHd = false;
+          } else if (selectedQuality === 'hd') {
+            fileToUpload = await processChatImage(file, 4096, 0.95);
+            isHd = true;
+          } else {
+            // raw: sin compresión
+            fileToUpload = file;
+            isHd = true;
+          }
+        }
+
+        const uploadResult = await uploadFileWithProgress(fileToUpload, file.name);
+
+        const clientMsgId = 'fil_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        const replyData = currentReplyTo;
+        cancelReply();
+
+        socket.emit('send-private-message', {
+          clientMsgId: clientMsgId,
+          toSyncId: activeContactSyncId,
+          type: 'file',
+          fileData: {
+            name: uploadResult.name || file.name,
+            size: uploadResult.size || fileToUpload.size,
+            type: uploadResult.mimetype || fileToUpload.type || 'application/octet-stream',
+            url: uploadResult.fileUrl,
+            data: uploadResult.fileUrl,
+            isHd: isHd
+          },
+          replyTo: replyData
+        });
+
+        triggerPopupNotification('Archivo Enviado', file.name, '📤');
+
+        sendMediaModal.classList.add('hidden');
+        fileInput.value = '';
+        pendingSendFile = null;
+      } catch (err) {
+        alert('Error al subir el archivo: ' + err.message);
+      } finally {
+        confirmSendMediaBtn.disabled = false;
+        if (uploadProgressBox) {
+          uploadProgressBox.classList.add('hidden');
+          uploadProgressBox.classList.remove('flex');
+        }
+      }
+    });
+  }
+
+  // VISOR LIGHTBOX MULTIMEDIA CANÓNICO BARRANTES CO.
+  function applyLightboxTransform() {
+    if (!lightboxImg) return;
+    lightboxImg.style.transform = `scale(${currentLightboxZoom}) rotate(${currentLightboxRotation}deg)`;
+    if (lightboxZoomLevel) {
+      lightboxZoomLevel.textContent = Math.round(currentLightboxZoom * 100) + '%';
+    }
+  }
+
+  function openLightbox(src, name, size, isHd) {
+    if (!lightboxModal || !lightboxImg) return;
+    lightboxImg.src = src;
+    if (lightboxFilename) lightboxFilename.textContent = name || 'Imagen';
+    if (lightboxSpecs) {
+      lightboxSpecs.textContent = isHd ? 'HD 4096px' : '1600px';
+      lightboxSpecs.className = isHd ? 'badge-hd' : 'badge-std';
+    }
+    if (lightboxDimensions) {
+      lightboxDimensions.textContent = size ? formatSize(size) : '';
+    }
+    if (lightboxDownloadBtn) {
+      lightboxDownloadBtn.href = src;
+      lightboxDownloadBtn.download = name || 'imagen.jpg';
+    }
+    currentLightboxZoom = 1;
+    currentLightboxRotation = 0;
+    applyLightboxTransform();
+    lightboxModal.classList.remove('hidden');
+  }
+
+  function closeLightbox() {
+    if (!lightboxModal) return;
+    lightboxModal.classList.add('hidden');
+    if (lightboxImg) lightboxImg.src = '';
+  }
+
+  if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
+  if (lightboxZoomInBtn) lightboxZoomInBtn.addEventListener('click', () => {
+    currentLightboxZoom = Math.min(currentLightboxZoom + 0.25, 4);
+    applyLightboxTransform();
+  });
+  if (lightboxZoomOutBtn) lightboxZoomOutBtn.addEventListener('click', () => {
+    currentLightboxZoom = Math.max(currentLightboxZoom - 0.25, 0.5);
+    applyLightboxTransform();
+  });
+  if (lightboxRotateBtn) lightboxRotateBtn.addEventListener('click', () => {
+    currentLightboxRotation = (currentLightboxRotation + 90) % 360;
+    applyLightboxTransform();
+  });
+  if (lightboxResetBtn) lightboxResetBtn.addEventListener('click', () => {
+    currentLightboxZoom = 1;
+    currentLightboxRotation = 0;
+    applyLightboxTransform();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+        closeLightbox();
+      }
+      if (editProfileModal && !editProfileModal.classList.contains('hidden')) {
+        editProfileModal.classList.add('hidden');
+      }
+      if (sendMediaModal && !sendMediaModal.classList.contains('hidden')) {
+        sendMediaModal.classList.add('hidden');
+      }
+    }
+  });
+
+  // Zoom con rueda del ratón en visor Lightbox
+  if (lightboxModal) {
+    lightboxModal.addEventListener('wheel', (e) => {
+      if (lightboxModal.classList.contains('hidden')) return;
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        currentLightboxZoom = Math.min(currentLightboxZoom + 0.15, 4);
+      } else {
+        currentLightboxZoom = Math.max(currentLightboxZoom - 0.15, 0.5);
+      }
+      applyLightboxTransform();
+    }, { passive: false });
+  }
+
+  // Compatibilidad legacy si algún componente llama openImageModal
+  function openImageModal(src, name) {
+    openLightbox(src, name, 0, false);
+  }
 
   function formatSize(bytes) {
     if (!bytes) return '0 B';
@@ -3061,18 +3923,18 @@
     });
   }
 
-  // RESPONSIVE RESIZE
+  // RESPONSIVE RESIZE (BREAKPOINTS CANÓNICOS BARRANTES CO.)
   window.addEventListener('resize', () => {
-    if (window.innerWidth >= 768) {
-      sidebarPanel.classList.remove('hidden');
-      chatPanel.classList.remove('hidden');
+    if (window.innerWidth >= 1024) {
+      document.body.classList.remove('mobile-view-contacts', 'mobile-view-chat');
+      if (drawerBackdrop) drawerBackdrop.classList.add('hidden');
     } else {
       if (activeContactSyncId) {
-        sidebarPanel.classList.add('hidden');
-        chatPanel.classList.remove('hidden');
+        document.body.classList.add('mobile-view-chat');
+        document.body.classList.remove('mobile-view-contacts');
       } else {
-        sidebarPanel.classList.remove('hidden');
-        chatPanel.classList.add('hidden');
+        document.body.classList.add('mobile-view-contacts');
+        document.body.classList.remove('mobile-view-chat');
       }
     }
   });
@@ -3287,14 +4149,7 @@
         `;
 
         item.addEventListener('click', () => {
-          if (modalImg && imageModal) {
-            modalImg.src = imgUrl;
-            if (modalDownloadBtn) {
-              modalDownloadBtn.href = imgUrl;
-              modalDownloadBtn.download = imgMsg.fileData.name || 'foto.png';
-            }
-            imageModal.classList.remove('hidden');
-          }
+          openLightbox(imgUrl, imgMsg.fileData.name, imgMsg.fileData.size, imgMsg.fileData.isHd);
         });
         grid.appendChild(item);
       });

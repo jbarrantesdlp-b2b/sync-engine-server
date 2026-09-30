@@ -1,8 +1,10 @@
+const fs = require("fs");
 const http = require("http");
 const os = require("os");
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 const { Server } = require("socket.io");
 const db = require("./db");
 
@@ -29,8 +31,36 @@ function getLocalIPv4Addresses() {
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: "50mb" }));
+
+// Configuración de body-parser para soporte de transferencias pesadas de hasta 2 GB
+app.use(express.json({ limit: "2gb" }));
+app.use(express.urlencoded({ limit: "2gb", extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+
+// Directorio y almacenamiento Multer para documentos y archivos pesados (hasta 2 GB sin compresión)
+const UPLOADS_DIR = path.join(__dirname, "public", "uploads");
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: function (_req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_\-\.]/g, "_");
+    cb(null, `${base}-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 2 * 1024 * 1024 * 1024 // 2 GB
+  }
+});
 
 // Middleware de Autenticación
 function requireAuth(req, res, next) {
@@ -163,11 +193,44 @@ app.get("/api/auth/me", requireAuth, (req, res) => {
 // Rutas de Usuario y Perfil
 app.post("/api/user/profile", requireAuth, (req, res) => {
   try {
-    const { displayName } = req.body || {};
-    const updated = db.updateUserProfile(req.user.syncId, displayName);
+    const { displayName, avatarUrl } = req.body || {};
+    const updated = db.updateUserProfile(req.user.syncId, displayName, avatarUrl);
     res.json({ ok: true, user: updated });
   } catch (err) {
     res.status(400).json({ error: err.message || "Error al actualizar perfil" });
+  }
+});
+
+// Endpoint de Subida de Documentos y Archivos Pesados (hasta 2 GB sin compresión)
+app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No se proporcionó ningún archivo" });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    const mime = (req.file.mimetype || "").toLowerCase();
+    const orig = req.file.originalname || "";
+
+    const isVideo = mime.startsWith("video/") || /\.(mp4|m4v|mov|webm)$/i.test(orig);
+    const isAudio = mime.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|webm)$/i.test(orig);
+    const isImage = mime.startsWith("image/") || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(orig);
+
+    res.json({
+      ok: true,
+      file: {
+        url: fileUrl,
+        name: req.file.originalname,
+        size: req.file.size,
+        type: req.file.mimetype,
+        filename: req.file.filename,
+        isVideo: isVideo,
+        isAudio: isAudio,
+        isImage: isImage
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error al procesar subida de archivo: " + err.message });
   }
 });
 
@@ -294,7 +357,21 @@ app.get('/api/status', function (_req, res) {
   res.json({
     status: 'ok',
     service: 'sync-engine-server',
-    features: ['auth', 'private-messaging', 'voice-notes', 'pwa', 'double-check', 'pinned-messages', 'rich-links', 'proxy-web'],
+    features: [
+      'auth',
+      'private-messaging',
+      'voice-notes',
+      'pwa',
+      'double-check',
+      'pinned-messages',
+      'rich-links',
+      'proxy-web',
+      'multimedia-2gb',
+      'h264-video',
+      'fluid-layout',
+      'lightbox'
+    ],
+    uploadLimitBytes: 2147483648,
     allowedDomains: ALLOWED_DOMAINS,
     onlineUsersCount: onlineUsers.size
   });

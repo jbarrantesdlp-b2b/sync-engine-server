@@ -1,28 +1,40 @@
 /* ==========================================================================
-   BARRANTES CO. - CANONICAL B2B DESIGN SYSTEM & SPLIT WORKSPACE
+   BARRANTES CO. - CANONICAL B2B DESIGN SYSTEM & MULTI-COLUMN WORKSPACE
+   Colores Canónicos: Dorado #C5A059 y Azul Noche #0A1A3A
+   Jerarquía Tipográfica: Montserrat (Cabeceras) e Inter (Mensajes y Chats)
    ========================================================================== */
 
 :root {
   --bg-main: #070F1E;
   --bg-card: #0A1A3A;
+  --bg-card-hover: #0E234A;
   --accent-gold: #C5A059;
+  --accent-gold-hover: #d4b068;
+  --accent-gold-dark: #99793D;
   --accent-tech: #38B6FF;
   --text-primary: #F0F4F8;
+  --text-secondary: #94A3B8;
   --border-subtle: rgba(197, 160, 89, 0.18);
+  --border-medium: rgba(197, 160, 89, 0.35);
+  --border-active: #C5A059;
   --font-title: 'Montserrat', sans-serif;
   --font-body: 'Inter', sans-serif;
 }
 
-/* Base Global Elements */
+/* Base Global Elements & Jerarquía de Fuentes */
 html, body {
   background-color: var(--bg-main) !important;
   color: var(--text-primary) !important;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
   font-family: var(--font-body);
+  overflow-x: hidden;
 }
 
-h1, h2, h3, h4, .font-title {
-  font-family: var(--font-title);
+h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
+  font-family: var(--font-title) !important;
+  letter-spacing: -0.01em;
 }
 
 /* Barrantes Co. Scrollbars */
@@ -41,14 +53,444 @@ h1, h2, h3, h4, .font-title {
   background: transparent;
 }
 
-/* Chat Canvas & Deep Night Blue Aesthetics */
+/* ==========================================================================
+   1. LAYOUT FLUIDO RESPONSIVO Y DISTRIBUCIÓN EN COLUMNAS (#app-container)
+   - Contenedor principal: 100% de ancho con max-width: 1600px centrado
+   - Breakpoint Desktop (>= 1024px): 
+       * Columna 1 (Chats): Ancho fijo 320px - 360px
+       * Columna 2 (Chat Activo): flex-grow: 1 (fondo adaptado 768 × 1024px o superior)
+       * Columna 3 (Panel de Información / Centro de Medios): Drawer deslizable de 340px
+   - Breakpoint Móvil (< 1024px):
+       * Vista de columna única con toggle fluido
+   ========================================================================== */
+
+#app-container {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.65), 0 0 1px var(--border-subtle);
+  position: relative;
+}
+
+#main-layout {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  overflow: hidden;
+  height: calc(100vh - 62px);
+}
+
+/* ==========================================================================
+   BREAKPOINT DESKTOP (>= 1024px)
+   ========================================================================== */
+@media (min-width: 1024px) {
+  /* Columna 1: Barra Lateral / Chats (320px - 360px) */
+  #sidebar-panel {
+    width: 360px !important;
+    min-width: 320px !important;
+    max-width: 360px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    background-color: var(--bg-card);
+    border-right: 1px solid var(--border-subtle);
+    position: relative !important;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 10;
+  }
+
+  /* Columna 2: Ventana de Conversación Activa (flex-grow: 1) */
+  #chat-panel-container {
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
+    flex-basis: 0% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    position: relative !important;
+    background-color: var(--bg-main);
+    transition: flex-grow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  #chat-panel {
+    flex-grow: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(rgba(197, 160, 89, 0.09) 1.2px, transparent 1.2px),
+      linear-gradient(180deg, rgba(10, 26, 58, 0.35) 0%, rgba(7, 15, 30, 0.95) 100%);
+    background-size: 24px 24px, 100% 100%;
+    min-height: 768px; /* Fondo adaptado a 768 × 1024px o resoluciones superiores */
+    position: relative !important;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  /* Columna 3: Panel de Información / Centro de Medios (Deslizable / Drawer de 340px) */
+  #info-drawer-panel {
+    width: 340px !important;
+    min-width: 340px !important;
+    max-width: 340px !important;
+    flex-shrink: 0 !important;
+    height: 100% !important;
+    background-color: var(--bg-card);
+    border-left: 1px solid var(--border-subtle);
+    display: flex !important;
+    flex-direction: column !important;
+    box-shadow: -6px 0 25px rgba(0, 0, 0, 0.45);
+    z-index: 20;
+    transition: margin-right 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  }
+
+  #info-drawer-panel.drawer-closed {
+    margin-right: -340px !important;
+    transform: translateX(100%) !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  #info-drawer-panel.drawer-open {
+    margin-right: 0 !important;
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  #back-to-contacts-btn {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   BREAKPOINT MÓVIL (< 1024px)
+   - Vista de columna única con transición fluida (toggle)
+   ========================================================================== */
+@media (max-width: 1023px) {
+  #main-layout {
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  #sidebar-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    border-right: none !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 10;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.28s;
+  }
+
+  #chat-panel-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 15;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, visibility 0.28s;
+  }
+
+  #chat-panel {
+    width: 100% !important;
+    height: 100% !important;
+    background-color: var(--bg-main);
+    background-image: 
+      radial-gradient(rgba(197, 160, 89, 0.08) 1.2px, transparent 1.2px),
+      linear-gradient(180deg, rgba(10, 26, 58, 0.35) 0%, rgba(7, 15, 30, 0.95) 100%);
+    background-size: 24px 24px, 100% 100%;
+  }
+
+  /* Conmutación (Toggle) Fluida */
+  body.mobile-view-contacts #sidebar-panel {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+  body.mobile-view-contacts #chat-panel-container {
+    transform: translateX(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+
+  body.mobile-view-chat #sidebar-panel {
+    transform: translateX(-100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+  body.mobile-view-chat #chat-panel-container {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+  }
+
+  #back-to-contacts-btn {
+    display: flex !important;
+  }
+
+  /* Drawer flotante deslizable en móvil */
+  #info-drawer-panel {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 340px !important;
+    max-width: 90vw !important;
+    z-index: 60 !important;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.85) !important;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+  }
+
+  #info-drawer-panel.drawer-closed {
+    transform: translateX(100%) !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  #info-drawer-panel.drawer-open {
+    transform: translateX(0) !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  #drawer-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 55;
+    transition: opacity 0.25s ease;
+  }
+  #drawer-backdrop.hidden {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   2. ESPECIFICACIONES Y PROCESAMIENTO DE MEDIOS
+   - Fotos de Perfil: Recorte automático circular (border-radius: 50%) basado en 1080 × 1080 px
+   - Imágenes del Chat: Renderizado con visor lightbox, opciones estándar (~1600px) y HD (4096px)
+   - Compatibilidad de Video: H.264 + AAC en etiquetas HTML5
+   - Documentos Pesados: tarjetas con límites de 2 GB
+   ========================================================================== */
+
+/* Fotos de Perfil Canónicas (Recorte Circular 50% con Halo Dorado) */
+.avatar-circle {
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+  border: 1.5px solid var(--accent-gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 0 8px rgba(197, 160, 89, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.avatar-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 12px rgba(197, 160, 89, 0.45);
+}
+
+.avatar-preview-box {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-gold);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(197, 160, 89, 0.35);
+  background: var(--bg-card);
+  position: relative;
+}
+
+/* Visor Lightbox Canónico Barrantes Co. */
+#lightbox-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 15, 30, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 16px;
+}
+
+.lightbox-content-box {
+  max-width: 94vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  gap: 12px;
+}
+
+.lightbox-img-wrapper {
+  max-width: 90vw;
+  max-height: 76vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 76vh;
+  object-fit: contain;
+  border-radius: 16px;
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(197, 160, 89, 0.2);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lightbox-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 26, 58, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 6px 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Tarjetas de Imagen en el Chat con Badges HD y Estándar */
+.chat-img-card {
+  border-radius: 14px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-subtle);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chat-img-card:hover {
+  border-color: var(--accent-gold);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(197, 160, 89, 0.3);
+}
+
+.badge-hd {
+  background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-dark) 100%);
+  color: var(--bg-main);
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Reproductor de Video Canónico H.264 & AAC HTML5 */
+.video-card-container {
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #070F1E;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(197, 160, 89, 0.25);
+  max-width: 480px;
+  width: 100%;
+  margin: 6px 0;
+  transition: border-color 0.2s ease;
+}
+.video-card-container:hover {
+  border-color: var(--border-medium);
+}
+
+.video-card-container video {
+  width: 100%;
+  max-height: 320px;
+  background-color: #000;
+  display: block;
+  border-radius: 14px 14px 0 0;
+}
+
+.video-meta-bar {
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Tarjeta de Documento / Archivo Pesado (hasta 2 GB) */
+.doc-card-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background-color: rgba(7, 15, 30, 0.7);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
+  min-width: 240px;
+}
+.doc-card-container:hover {
+  background-color: rgba(14, 35, 74, 0.7);
+  border-color: var(--border-medium);
+}
+
+/* Barra de progreso para subida de archivos de hasta 2 GB */
+.upload-progress-container {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.upload-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-gold) 0%, var(--accent-tech) 100%);
+  width: 0%;
+  transition: width 0.15s linear;
+}
+
+/* ==========================================================================
+   3. BURBUJAS Y COMPONENTES DEL CHAT
+   ========================================================================== */
+
 .chat-canvas {
   background-color: var(--bg-main) !important;
   background-image: radial-gradient(rgba(197, 160, 89, 0.08) 1.2px, transparent 1.2px) !important;
   background-size: 24px 24px !important;
 }
 
-/* Chat Bubbles: Rounded 16px, Fine Golden Borders & Deep Night Blue */
 .chat-bubble-inner {
   border-radius: 16px !important;
   font-family: var(--font-body);
@@ -56,7 +498,6 @@ h1, h2, h3, h4, .font-title {
   word-break: break-word;
 }
 
-/* Mensajes Propios (Enviados) */
 .chat-bubble-sent {
   background: linear-gradient(135deg, #0E234A 0%, #0A1A3A 100%) !important;
   color: var(--text-primary) !important;
@@ -65,7 +506,6 @@ h1, h2, h3, h4, .font-title {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 1px rgba(197, 160, 89, 0.2) !important;
 }
 
-/* Mensajes Recibidos */
 .chat-bubble-received {
   background: linear-gradient(135deg, #0A1A3A 0%, #071329 100%) !important;
   color: var(--text-primary) !important;
@@ -74,7 +514,6 @@ h1, h2, h3, h4, .font-title {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 
-/* Status Checks */
 .msg-status-check {
   font-family: monospace;
   font-size: 11px;
@@ -84,7 +523,7 @@ h1, h2, h3, h4, .font-title {
   text-shadow: 0 0 6px rgba(56, 182, 255, 0.5);
 }
 
-/* Animations */
+/* Animaciones */
 .pulse-online {
   animation: pulse-gold-glow 2.5s ease-in-out infinite;
 }
@@ -115,6 +554,11 @@ h1, h2, h3, h4, .font-title {
 @keyframes msg-fade-up {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .search-match {
@@ -151,7 +595,7 @@ h1, h2, h3, h4, .font-title {
 }
 
 /* ==========================================================================
-   ESTRUCTURA DE VISTA DIVIDIDA (WORKSPACE SPLIT LAYOUT)
+   4. PANEL DE NAVEGADOR WEB EMBEBIDO (#web-panel) Y ENLACES
    ========================================================================== */
 
 #workspace-split-container {
@@ -163,9 +607,7 @@ h1, h2, h3, h4, .font-title {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Desktop Split Screen (> 768px) */
-@media (min-width: 769px) {
-  /* Cuando el panel web está inactivo */
+@media (min-width: 1024px) {
   #workspace-split-container:not(.split-active) #chat-panel {
     flex: 1 1 100%;
     max-width: 100%;
@@ -174,7 +616,6 @@ h1, h2, h3, h4, .font-title {
     display: none !important;
   }
 
-  /* Proporción 50% Chat / 50% Web */
   #workspace-split-container.split-active.ratio-50-50 #chat-panel {
     flex: 1 1 50%;
     max-width: 50%;
@@ -185,7 +626,6 @@ h1, h2, h3, h4, .font-title {
     max-width: 50%;
   }
 
-  /* Proporción 60% Chat / 40% Web */
   #workspace-split-container.split-active.ratio-60-40 #chat-panel {
     flex: 1 1 60%;
     max-width: 60%;
@@ -196,7 +636,6 @@ h1, h2, h3, h4, .font-title {
     max-width: 40%;
   }
 
-  /* Proporción 40% Chat / 60% Web */
   #workspace-split-container.split-active.ratio-40-60 #chat-panel {
     flex: 1 1 40%;
     max-width: 40%;
@@ -207,31 +646,6 @@ h1, h2, h3, h4, .font-title {
     max-width: 60%;
   }
 }
-
-/* Mobile Split Layout (<= 768px): Conmutación de Pestañas [💬 Chat] / [🌐 Web] */
-@media (max-width: 768px) {
-  #workspace-split-container.mobile-tab-chat #chat-panel {
-    display: flex !important;
-    width: 100%;
-    max-width: 100%;
-  }
-  #workspace-split-container.mobile-tab-chat #web-panel {
-    display: none !important;
-  }
-
-  #workspace-split-container.mobile-tab-web #chat-panel {
-    display: none !important;
-  }
-  #workspace-split-container.mobile-tab-web #web-panel {
-    display: flex !important;
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
-/* ==========================================================================
-   MÓDULO DE NAVEGADOR WEB EMBEBIDO (#web-panel)
-   ========================================================================== */
 
 #web-panel {
   background-color: var(--bg-card);
@@ -264,7 +678,6 @@ h1, h2, h3, h4, .font-title {
   color: var(--accent-gold);
 }
 
-/* Enlaces del Chat y Menú de Acción */
 .chat-link {
   color: var(--accent-tech) !important;
   text-decoration: underline;
@@ -293,7 +706,6 @@ h1, h2, h3, h4, .font-title {
   cursor: pointer;
   vertical-align: middle;
   transition: all 0.15s ease;
-  -webkit-user-select: none;
   user-select: none;
 }
 .open-in-panel-chip:hover {
@@ -302,7 +714,6 @@ h1, h2, h3, h4, .font-title {
   box-shadow: 0 0 8px rgba(197, 160, 89, 0.5);
 }
 
-/* Menú Contextual Flotante de Enlace */
 .link-action-popover {
   position: fixed;
   z-index: 9999;

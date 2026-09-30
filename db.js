@@ -82,7 +82,8 @@ function toPublicUser(user) {
     syncId: user.syncId,
     username: user.username,
     cleanDisplayName: user.cleanDisplayName,
-    formattedName: user.formattedName || formatFullName(user.syncId, user.cleanDisplayName)
+    formattedName: user.formattedName || formatFullName(user.syncId, user.cleanDisplayName),
+    avatarUrl: user.avatarUrl || null
   };
 }
 
@@ -182,14 +183,19 @@ function getUserBySyncId(syncId) {
   return user ? toPublicUser(user) : null;
 }
 
-function updateUserProfile(syncId, rawName) {
+function updateUserProfile(syncId, rawName, avatarUrl) {
   const db = readDb();
   const user = db.users.find((u) => u.syncId === syncId);
   if (!user) throw new Error("Usuario no encontrado");
 
-  const clean = removeEmojis(rawName);
-  user.cleanDisplayName = clean;
-  user.formattedName = formatFullName(user.syncId, clean);
+  if (rawName !== undefined && rawName !== null) {
+    const clean = removeEmojis(rawName);
+    user.cleanDisplayName = clean;
+    user.formattedName = formatFullName(user.syncId, clean);
+  }
+  if (avatarUrl !== undefined) {
+    user.avatarUrl = avatarUrl;
+  }
   writeDb(db);
 
   return toPublicUser(user);
