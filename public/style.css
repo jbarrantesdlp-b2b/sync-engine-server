@@ -288,6 +288,7 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: 55;
     transition: opacity 0.25s ease;
@@ -339,8 +340,8 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   align-items: center;
   justify-content: center;
   background: rgba(7, 15, 30, 0.94);
-  backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 16px;
 }
@@ -706,6 +707,7 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   cursor: pointer;
   vertical-align: middle;
   transition: all 0.15s ease;
+  -webkit-user-select: none;
   user-select: none;
 }
 .open-in-panel-chip:hover {

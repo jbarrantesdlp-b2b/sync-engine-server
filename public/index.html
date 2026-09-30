@@ -645,7 +645,7 @@
           </button>
           <span class="text-[10px] text-[#94A3B8] block mt-0.5">Recorte automático circular a alta resolución</span>
         </div>
-        <input type="file" id="profile-avatar-input" accept="image/*" class="hidden">
+        <input type="file" id="profile-avatar-input" accept="image/*" title="Seleccionar foto de perfil" aria-label="Seleccionar foto de perfil" class="hidden">
       </div>
 
       <div>
@@ -714,7 +714,7 @@
       <!-- Previsualización Multimedia -->
       <div id="media-modal-preview-box" class="w-full rounded-2xl bg-[#070F1E] border border-[rgba(197,160,89,0.2)] p-3 flex flex-col items-center justify-center min-h-[160px] max-h-[300px] overflow-hidden relative">
         <img id="media-modal-img-preview" src="" alt="Vista previa" class="max-h-[260px] max-w-full object-contain rounded-xl hidden">
-        <video id="media-modal-video-preview" controls playsinline class="max-h-[260px] max-w-full rounded-xl hidden bg-black"></video>
+        <video id="media-modal-video-preview" controls class="max-h-[260px] max-w-full rounded-xl hidden bg-black"></video>
         <div id="media-modal-file-preview" class="flex flex-col items-center gap-2 p-4 text-center hidden">
           <span class="text-4xl text-[#C5A059]">📄</span>
           <span id="media-modal-filename" class="font-bold text-sm text-[#F0F4F8] break-all max-w-xs font-title">archivo.ext</span>
@@ -729,21 +729,21 @@
           <label class="quality-card p-2.5 rounded-xl border border-[rgba(197,160,89,0.3)] bg-[#070F1E] flex flex-col gap-1 cursor-pointer hover:border-[#C5A059] transition-all">
             <div class="flex items-center justify-between">
               <span class="font-bold text-xs text-[#F0F4F8]">Estándar</span>
-              <input type="radio" name="image-quality-radio" value="standard" checked class="accent-[#C5A059]">
+              <input type="radio" name="image-quality-radio" value="standard" checked title="Calidad estándar (~1600 px)" class="accent-[#C5A059]">
             </div>
             <span class="text-[10px] text-[#94A3B8] font-mono">~1600 px (rápido)</span>
           </label>
           <label class="quality-card p-2.5 rounded-xl border border-[rgba(197,160,89,0.3)] bg-[#070F1E] flex flex-col gap-1 cursor-pointer hover:border-[#C5A059] transition-all">
             <div class="flex items-center justify-between">
               <span class="font-bold text-xs text-[#C5A059]">⚡ HD</span>
-              <input type="radio" name="image-quality-radio" value="hd" class="accent-[#C5A059]">
+              <input type="radio" name="image-quality-radio" value="hd" title="Calidad HD (hasta 4096 px)" class="accent-[#C5A059]">
             </div>
             <span class="text-[10px] text-[#94A3B8] font-mono">Hasta 4096 px</span>
           </label>
           <label class="quality-card p-2.5 rounded-xl border border-[rgba(197,160,89,0.3)] bg-[#070F1E] flex flex-col gap-1 cursor-pointer hover:border-[#C5A059] transition-all">
             <div class="flex items-center justify-between">
               <span class="font-bold text-xs text-[#38B6FF]">📦 Original</span>
-              <input type="radio" name="image-quality-radio" value="raw" class="accent-[#38B6FF]">
+              <input type="radio" name="image-quality-radio" value="raw" title="Calidad original sin compresión" class="accent-[#38B6FF]">
             </div>
             <span class="text-[10px] text-[#94A3B8] font-mono">Sin compresión</span>
           </label>
@@ -3628,6 +3628,7 @@
       const blobUrl = URL.createObjectURL(file);
       if (mediaModalVideoPreview) {
         mediaModalVideoPreview.src = blobUrl;
+        mediaModalVideoPreview.playsInline = true;
         mediaModalVideoPreview.classList.remove('hidden');
       }
       if (videoSpecNote) videoSpecNote.classList.remove('hidden');
