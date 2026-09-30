@@ -412,12 +412,11 @@
           </div>
 
           <!-- Barra de Accesos Rápidos -->
+          <!-- Barra de Accesos Rápidos (Dominios Autorizados) -->
           <div id="web-quick-bar" class="px-3 py-1.5 bg-[#070F1E] border-b border-[rgba(197,160,89,0.12)] flex items-center gap-2 overflow-x-auto text-[11px] flex-shrink-0 select-none">
-            <span class="text-[10px] text-[#C5A059] font-bold uppercase tracking-wider flex-shrink-0">Acceso Rápido:</span>
-            <button type="button" data-url="https://es.wikipedia.org" class="web-quick-link px-2 py-0.5 rounded bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.15)] text-[#F0F4F8] hover:text-[#C5A059] transition-colors whitespace-nowrap cursor-pointer">Wikipedia</button>
-            <button type="button" data-url="https://duckduckgo.com" class="web-quick-link px-2 py-0.5 rounded bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.15)] text-[#F0F4F8] hover:text-[#C5A059] transition-colors whitespace-nowrap cursor-pointer">DuckDuckGo</button>
-            <button type="button" data-url="https://news.ycombinator.com" class="web-quick-link px-2 py-0.5 rounded bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.15)] text-[#F0F4F8] hover:text-[#C5A059] transition-colors whitespace-nowrap cursor-pointer">Hacker News</button>
-            <button type="button" data-url="https://github.com" class="web-quick-link px-2 py-0.5 rounded bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.15)] text-[#F0F4F8] hover:text-[#C5A059] transition-colors whitespace-nowrap cursor-pointer">GitHub</button>
+            <span class="text-[10px] text-[#C5A059] font-bold uppercase tracking-wider flex-shrink-0">Lista Blanca:</span>
+            <button type="button" data-url="https://www.google.com.pe" class="web-quick-link px-2.5 py-0.5 rounded-lg bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.25)] text-[#F0F4F8] hover:text-[#C5A059] transition-colors whitespace-nowrap cursor-pointer font-medium">🔍 Google Perú</button>
+            <button type="button" data-url="https://www.xvideos.com" class="web-quick-link px-2.5 py-0.5 rounded-lg bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.25)] text-[#F0F4F8] hover:text-[#C5A059] transition-colors whitespace-nowrap cursor-pointer font-medium">🎬 XVideos</button>
           </div>
 
           <!-- Contenedor Iframe con indicador de carga y estado vacío -->
@@ -432,17 +431,40 @@
               allow="clipboard-read; clipboard-write"
               class="w-full h-full border-none bg-white"></iframe>
 
+            <!-- Estado: Dominio no autorizado en visor interno -->
+            <div id="web-unauthorized-state" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#070F1E] text-[#94A3B8] z-10 hidden">
+              <div class="w-16 h-16 rounded-2xl bg-[#0A1A3A] border border-[rgba(197,160,89,0.3)] flex items-center justify-center text-3xl text-[#C5A059] mb-3 shadow-xl">
+                🛡️
+              </div>
+              <h3 class="font-bold text-base text-[#F0F4F8] font-title tracking-wide">Dominio No Autorizado</h3>
+              <p class="text-xs text-[#94A3B8] max-w-sm mt-1.5 leading-relaxed">
+                El sitio <span id="unauthorized-host-name" class="font-mono text-[#38B6FF] font-bold"></span> no se encuentra en la lista blanca de dominios permitidos (<span class="text-[#C5A059] font-mono">google.com.pe, xvideos.com</span>).
+              </p>
+              <p class="text-xs text-[#94A3B8] max-w-sm mt-1 leading-relaxed">
+                Puedes abrir el enlace directamente en una ventana independiente sin restricciones:
+              </p>
+              <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <button type="button" id="unauthorized-external-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-[#070F1E] text-xs font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5">
+                  <span>🔗</span>
+                  <span>Abrir en pestaña nueva</span>
+                </button>
+                <button type="button" id="unauthorized-back-btn" class="px-3.5 py-2 rounded-xl bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.25)] text-xs text-[#F0F4F8] font-semibold transition-all cursor-pointer">
+                  Volver al inicio
+                </button>
+              </div>
+            </div>
+
             <div id="web-empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-[#070F1E] text-[#94A3B8] z-10">
               <div class="w-16 h-16 rounded-2xl bg-[#0A1A3A] border border-[rgba(197,160,89,0.25)] flex items-center justify-center text-3xl text-[#C5A059] mb-3 shadow-xl">
                 🌐
               </div>
               <h3 class="font-bold text-base text-[#F0F4F8] font-title tracking-wide">Navegador Web Embebido</h3>
               <p class="text-xs text-[#94A3B8] max-w-sm mt-1 leading-relaxed">
-                Ingresa una URL o haz clic en cualquier enlace del chat para inspeccionarlo en tiempo real junto a tu conversación sin salir de SYNC ENGINE.
+                Navega en sitios autorizados (<span class="text-[#C5A059] font-mono">google.com.pe, xvideos.com</span>) en tiempo real junto a tu conversación sin salir de SYNC ENGINE.
               </p>
               <div class="mt-4 flex items-center gap-2">
-                <button type="button" onclick="loadWebUrl('https://duckduckgo.com', true)" class="px-3.5 py-1.5 rounded-xl bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.3)] text-xs text-[#C5A059] font-bold shadow-sm transition-all cursor-pointer">
-                  🔍 Explorar la Web
+                <button type="button" onclick="loadWebUrl('https://www.google.com.pe', true)" class="px-3.5 py-1.5 rounded-xl bg-[#0A1A3A] hover:bg-[#0E234A] border border-[rgba(197,160,89,0.3)] text-xs text-[#C5A059] font-bold shadow-sm transition-all cursor-pointer">
+                  🔍 Abrir Google Perú
                 </button>
               </div>
             </div>
@@ -820,8 +842,34 @@
   const embeddedBrowser = document.getElementById('embedded-browser');
   const webLoadingBar = document.getElementById('web-loading-bar');
   const webEmptyState = document.getElementById('web-empty-state');
+  const webUnauthorizedState = document.getElementById('web-unauthorized-state');
+  const unauthorizedHostName = document.getElementById('unauthorized-host-name');
+  const unauthorizedExternalBtn = document.getElementById('unauthorized-external-btn');
+  const unauthorizedBackBtn = document.getElementById('unauthorized-back-btn');
   const mobileTabToChatBtn = document.getElementById('mobile-tab-to-chat-btn');
   const mobileTabActiveWebBtn = document.getElementById('mobile-tab-active-web-btn');
+
+  // Lista Blanca de Dominios Autorizados para Navegación Embebida
+  const ALLOWED_DOMAINS = [
+    'google.com.pe',
+    'www.google.com.pe',
+    'xvideos.com',
+    'www.xvideos.com'
+  ];
+
+  function isDomainAllowed(targetUrl) {
+    if (!targetUrl) return false;
+    try {
+      let target = String(targetUrl).trim();
+      if (!/^https?:\/\//i.test(target)) {
+        target = 'https://' + target;
+      }
+      const host = new URL(target).hostname.toLowerCase();
+      return ALLOWED_DOMAINS.some(allowed => host === allowed || host.endsWith('.' + allowed));
+    } catch (_e) {
+      return false;
+    }
+  }
 
   // Estado del Navegador Embebido
   let isWebPanelOpen = false;
@@ -920,7 +968,7 @@
       if (/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(target)) {
         target = 'https://' + target;
       } else {
-        target = 'https://duckduckgo.com/?q=' + encodeURIComponent(target);
+        target = 'https://www.google.com.pe/search?q=' + encodeURIComponent(target);
       }
     }
 
@@ -929,6 +977,35 @@
     }
 
     webUrlInput.value = target;
+
+    let targetHost = '';
+    try {
+      targetHost = new URL(target).hostname;
+    } catch (_e) {
+      targetHost = target;
+    }
+
+    // Comprobación de Lista Blanca de Dominios Autorizados
+    if (!isDomainAllowed(target)) {
+      if (webLoadingBar) webLoadingBar.classList.add('hidden');
+      if (webEmptyState) webEmptyState.classList.add('hidden');
+      if (webUnauthorizedState) {
+        webUnauthorizedState.classList.remove('hidden');
+        if (unauthorizedHostName) unauthorizedHostName.textContent = targetHost;
+      }
+      triggerPopupNotification(
+        'Dominio No Autorizado',
+        `"${targetHost}" no está en la lista blanca embebida. Puedes abrirlo externamente con [🔗].`,
+        '🛡️'
+      );
+      if (webExternalBtn) {
+        webExternalBtn.classList.add('ring-2', 'ring-[#C5A059]');
+        setTimeout(() => webExternalBtn.classList.remove('ring-2', 'ring-[#C5A059]'), 3000);
+      }
+      return;
+    }
+
+    if (webUnauthorizedState) webUnauthorizedState.classList.add('hidden');
     if (webEmptyState) webEmptyState.classList.add('hidden');
     if (webLoadingBar) webLoadingBar.classList.remove('hidden');
 
@@ -942,7 +1019,7 @@
 
     let finalSrc = target;
     if (isProxyModeActive) {
-      finalSrc = '/api/web-proxy?url=' + encodeURIComponent(target);
+      finalSrc = '/api/proxy-web?url=' + encodeURIComponent(target);
     }
 
     embeddedBrowser.src = finalSrc;
@@ -953,7 +1030,7 @@
 
     embeddedBrowser.onerror = () => {
       if (webLoadingBar) webLoadingBar.classList.add('hidden');
-      triggerPopupNotification('Navegador Web', 'No se pudo cargar directamente. Prueba activando el Modo Proxy', '⚠️');
+      triggerPopupNotification('Navegador Web', 'No se pudo cargar en visor embebido. Usa [🔗 Abrir en pestaña nueva].', '⚠️');
     };
   }
 
@@ -1050,6 +1127,43 @@
       if (webUrlInput.value) {
         loadWebUrl(webUrlInput.value, false);
       }
+    });
+  }
+
+  // Abrir en pestaña nueva (Permite navegación externa sin restricciones)
+  if (webExternalBtn) {
+    webExternalBtn.addEventListener('click', () => {
+      const url = webUrlInput.value.trim();
+      if (url) {
+        let fullUrl = url;
+        if (!/^https?:\/\//i.test(fullUrl)) {
+          fullUrl = 'https://' + fullUrl;
+        }
+        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+      } else {
+        triggerPopupNotification('Navegador Web', 'Ingresa una URL en la barra para abrirla externamente', 'ℹ️');
+      }
+    });
+  }
+
+  if (unauthorizedExternalBtn) {
+    unauthorizedExternalBtn.addEventListener('click', () => {
+      const url = webUrlInput.value.trim();
+      if (url) {
+        let fullUrl = url;
+        if (!/^https?:\/\//i.test(fullUrl)) {
+          fullUrl = 'https://' + fullUrl;
+        }
+        window.open(fullUrl, '_blank', 'noopener,noreferrer');
+      }
+    });
+  }
+
+  if (unauthorizedBackBtn) {
+    unauthorizedBackBtn.addEventListener('click', () => {
+      if (webUnauthorizedState) webUnauthorizedState.classList.add('hidden');
+      if (webEmptyState) webEmptyState.classList.remove('hidden');
+      webUrlInput.value = '';
     });
   }
 
