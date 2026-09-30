@@ -293,6 +293,7 @@ h1, h2, h3, h4, .font-title {
   cursor: pointer;
   vertical-align: middle;
   transition: all 0.15s ease;
+  -webkit-user-select: none;
   user-select: none;
 }
 .open-in-panel-chip:hover {
