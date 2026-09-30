@@ -363,10 +363,10 @@
         </section>
 
         <!-- COLUMNA 3: MÓDULO DE NAVEGADOR WEB EMBEBIDO (#web-panel) -->
-        <section id="web-panel" class="hidden flex-col h-full bg-[#0A1A3A] md:border border-[rgba(197,160,89,0.18)] md:rounded-2xl overflow-hidden shadow-2xl relative min-w-0 transition-all">
+        <section id="web-panel" class="hidden flex-col h-full bg-[#0A1A3A] lg:border border-[rgba(197,160,89,0.18)] lg:rounded-2xl overflow-hidden shadow-2xl relative min-w-0 transition-all">
           
-          <!-- Barra de Pestañas Móvil (<= 768px) -->
-          <div class="md:hidden flex border-b border-[rgba(197,160,89,0.18)] bg-[#070F1E] p-1.5 gap-1.5 flex-shrink-0">
+          <!-- Barra de Pestañas Móvil (< 1024px) -->
+          <div class="lg:hidden flex border-b border-[rgba(197,160,89,0.18)] bg-[#070F1E] p-1.5 gap-1.5 flex-shrink-0">
             <button id="mobile-tab-to-chat-btn" type="button" class="flex-1 py-2 rounded-lg text-xs font-bold text-[#94A3B8] hover:text-[#F0F4F8] bg-[#0A1A3A] transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
               <span>💬</span> Chat
             </button>
@@ -407,7 +407,7 @@
                 🔗
               </button>
               <button id="web-split-ratio-btn" type="button" title="Alternar proporción dividida (50/50 o 60/40)"
-                class="hidden md:flex h-8 px-2 rounded-lg bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.2)] hover:border-[#C5A059] items-center justify-center text-[10px] font-mono font-bold transition-all cursor-pointer">
+                class="hidden lg:flex h-8 px-2 rounded-lg bg-[#070F1E] hover:bg-[#0E234A] text-[#C5A059] border border-[rgba(197,160,89,0.2)] hover:border-[#C5A059] items-center justify-center text-[10px] font-mono font-bold transition-all cursor-pointer">
                 ◫ 50/50
               </button>
               <button id="web-proxy-toggle-btn" type="button" title="Modo Proxy (Supera bloqueos X-Frame-Options)"
@@ -1163,7 +1163,7 @@
       isWebPanelOpen = !isWebPanelOpen;
     }
 
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth < 1024) {
       if (isWebPanelOpen) {
         setMobileTab('web');
       } else {
@@ -1248,7 +1248,7 @@
       }
     }
 
-    if (!isWebPanelOpen || (window.innerWidth <= 768 && mobileActiveTab !== 'web')) {
+    if (!isWebPanelOpen || (window.innerWidth < 1024 && mobileActiveTab !== 'web')) {
       toggleWebPanel(true);
     }
 
@@ -3929,6 +3929,16 @@
     if (window.innerWidth >= 1024) {
       document.body.classList.remove('mobile-view-contacts', 'mobile-view-chat');
       if (drawerBackdrop) drawerBackdrop.classList.add('hidden');
+      if (isWebPanelOpen) {
+        workspaceSplitContainer.classList.add('split-active');
+        applySplitRatioUI();
+        chatPanel.classList.remove('hidden');
+        webPanel.classList.remove('hidden');
+      } else {
+        workspaceSplitContainer.classList.remove('split-active');
+        chatPanel.classList.remove('hidden');
+        webPanel.classList.add('hidden');
+      }
     } else {
       if (activeContactSyncId) {
         document.body.classList.add('mobile-view-chat');
@@ -3936,6 +3946,11 @@
       } else {
         document.body.classList.add('mobile-view-contacts');
         document.body.classList.remove('mobile-view-chat');
+      }
+      if (isWebPanelOpen && mobileActiveTab === 'web') {
+        setMobileTab('web');
+      } else {
+        setMobileTab('chat');
       }
     }
   });
