@@ -332,11 +332,13 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
 }
 
 /* Visor Lightbox Canónico Barrantes Co. */
-#lightbox-modal {
+#lightbox-modal,
+#image-modal,
+.lightbox-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: flex;
+  display: none !important;
   align-items: center;
   justify-content: center;
   background: rgba(7, 15, 30, 0.94);
@@ -344,6 +346,18 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   backdrop-filter: blur(14px);
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 16px;
+}
+
+#lightbox-modal.hidden,
+#image-modal.hidden,
+.lightbox-overlay.hidden {
+  display: none !important;
+}
+
+#lightbox-modal:not(.hidden),
+#image-modal:not(.hidden),
+.lightbox-overlay:not(.hidden) {
+  display: flex !important;
 }
 
 .lightbox-content-box {

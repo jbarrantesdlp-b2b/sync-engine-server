@@ -663,7 +663,7 @@
   </div>
 
   <!-- VISOR LIGHTBOX MULTIMEDIA CANÓNICO BARRANTES CO. -->
-  <div id="lightbox-modal" class="hidden">
+  <div id="lightbox-modal" class="hidden" style="display: none !important;">
     <div class="lightbox-content-box">
       <!-- Barra Superior del Lightbox -->
       <div class="w-full flex items-center justify-between px-2 text-xs">
@@ -3838,15 +3838,33 @@
     currentLightboxRotation = 0;
     applyLightboxTransform();
     lightboxModal.classList.remove('hidden');
+    lightboxModal.style.setProperty('display', 'flex', 'important');
   }
 
   function closeLightbox() {
     if (!lightboxModal) return;
     lightboxModal.classList.add('hidden');
-    if (lightboxImg) lightboxImg.src = '';
+    lightboxModal.style.setProperty('display', 'none', 'important');
+    if (lightboxImg) {
+      lightboxImg.removeAttribute('src');
+      lightboxImg.src = '';
+    }
   }
 
   if (lightboxCloseBtn) lightboxCloseBtn.addEventListener('click', closeLightbox);
+
+  // Cerrar al hacer clic en el fondo oscuro (backdrop)
+  if (lightboxModal) {
+    lightboxModal.addEventListener('click', (e) => {
+      if (
+        e.target === lightboxModal ||
+        e.target.id === 'lightbox-wrapper' ||
+        e.target.classList.contains('lightbox-content-box')
+      ) {
+        closeLightbox();
+      }
+    });
+  }
   if (lightboxZoomInBtn) lightboxZoomInBtn.addEventListener('click', () => {
     currentLightboxZoom = Math.min(currentLightboxZoom + 0.25, 4);
     applyLightboxTransform();
