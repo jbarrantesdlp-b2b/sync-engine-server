@@ -5,17 +5,18 @@
    ========================================================================== */
 
 :root {
-  --bg-main: #070F1E;
-  --bg-card: #0A1A3A;
-  --bg-card-hover: #0E234A;
+  --bg-main: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FAFC;
+  --bg-chat: #F8FAFC;
   --accent-gold: #C5A059;
   --accent-gold-hover: #d4b068;
   --accent-gold-dark: #99793D;
-  --accent-tech: #38B6FF;
-  --text-primary: #F0F4F8;
-  --text-secondary: #94A3B8;
-  --border-subtle: rgba(197, 160, 89, 0.18);
-  --border-medium: rgba(197, 160, 89, 0.35);
+  --accent-tech: #0284C7;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --border-subtle: rgba(197, 160, 89, 0.25);
+  --border-medium: rgba(197, 160, 89, 0.45);
   --border-active: #C5A059;
   --font-title: 'Montserrat', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -73,8 +74,20 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-main);
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.65), 0 0 1px var(--border-subtle);
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.08), 0 0 1px var(--border-subtle);
   position: relative;
+}
+
+#app-container.hidden {
+  display: none !important;
+}
+
+#auth-screen.hidden {
+  display: none !important;
+}
+
+#auth-screen:not(.hidden) {
+  display: flex !important;
 }
 
 #main-layout {
@@ -131,8 +144,8 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
     height: 100% !important;
     background-color: var(--bg-main);
     background-image: 
-      radial-gradient(rgba(197, 160, 89, 0.09) 1.2px, transparent 1.2px),
-      linear-gradient(180deg, rgba(10, 26, 58, 0.35) 0%, rgba(7, 15, 30, 0.95) 100%);
+      radial-gradient(rgba(197, 160, 89, 0.12) 1.2px, transparent 1.2px),
+      linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
     background-size: 24px 24px, 100% 100%;
     min-height: 768px; /* Fondo adaptado a 768 × 1024px o resoluciones superiores */
     position: relative !important;
@@ -220,8 +233,8 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
     height: 100% !important;
     background-color: var(--bg-main);
     background-image: 
-      radial-gradient(rgba(197, 160, 89, 0.08) 1.2px, transparent 1.2px),
-      linear-gradient(180deg, rgba(10, 26, 58, 0.35) 0%, rgba(7, 15, 30, 0.95) 100%);
+      radial-gradient(rgba(197, 160, 89, 0.12) 1.2px, transparent 1.2px),
+      linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
     background-size: 24px 24px, 100% 100%;
   }
 
@@ -431,9 +444,9 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
 .video-card-container {
   border-radius: 16px;
   overflow: hidden;
-  background-color: #070F1E;
+  background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 1px rgba(197, 160, 89, 0.25);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   max-width: 480px;
   width: 100%;
   margin: 6px 0;
@@ -470,13 +483,13 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid var(--border-subtle);
-  background-color: rgba(7, 15, 30, 0.7);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  background-color: #F8FAFC;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
   min-width: 240px;
 }
 .doc-card-container:hover {
-  background-color: rgba(14, 35, 74, 0.7);
+  background-color: #F1F5F9;
   border-color: var(--border-medium);
 }
 
@@ -514,19 +527,19 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
 }
 
 .chat-bubble-sent {
-  background: linear-gradient(135deg, #0E234A 0%, #0A1A3A 100%) !important;
+  background: #FFFBEB !important;
   color: var(--text-primary) !important;
-  border: 1px solid rgba(197, 160, 89, 0.35) !important;
+  border: 1px solid rgba(197, 160, 89, 0.4) !important;
   border-top-right-radius: 4px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), 0 0 1px rgba(197, 160, 89, 0.2) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 0 1px rgba(197, 160, 89, 0.2) !important;
 }
 
 .chat-bubble-received {
-  background: linear-gradient(135deg, #0A1A3A 0%, #071329 100%) !important;
+  background: #FFFFFF !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-subtle) !important;
   border-top-left-radius: 4px !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
 }
 
 .msg-status-check {
@@ -688,9 +701,9 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   transition: all 0.15s ease;
 }
 .web-control-btn:hover {
-  background-color: #0E234A;
+  background-color: #F1F5F9;
   border-color: var(--accent-gold);
-  color: var(--accent-gold);
+  color: var(--accent-gold-dark);
 }
 
 .chat-link {
@@ -726,17 +739,17 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
 }
 .open-in-panel-chip:hover {
   background-color: var(--accent-gold);
-  color: var(--bg-main);
+  color: #FFFFFF;
   box-shadow: 0 0 8px rgba(197, 160, 89, 0.5);
 }
 
 .link-action-popover {
   position: fixed;
   z-index: 9999;
-  background-color: #0A1A3A;
+  background-color: #FFFFFF;
   border: 1px solid var(--accent-gold);
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 10px rgba(197, 160, 89, 0.3);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15), 0 0 10px rgba(197, 160, 89, 0.2);
   padding: 6px;
   display: flex;
   flex-direction: column;
@@ -759,6 +772,6 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   text-align: left;
 }
 .link-action-btn:hover {
-  background-color: rgba(197, 160, 89, 0.18);
-  color: var(--accent-gold);
+  background-color: rgba(197, 160, 89, 0.12);
+  color: var(--accent-gold-dark);
 }
