@@ -80,6 +80,16 @@
       "token": "a138ffba4ec9577ed695804e1a4a22b1aaa78049f9de898b9051d0b57e07a21a",
       "syncId": "SYNC-9554",
       "createdAt": 1791408559484
+    },
+    {
+      "token": "30988d4bc9af419773ecb62c0fe871fbeb0f51359d08985d01b60a493f902f69",
+      "syncId": "SYNC-3203",
+      "createdAt": 1791409737333
+    },
+    {
+      "token": "652b5e449ca0e8a7206d3683c8109f60b1884414f959e94662b6f96178ac635a",
+      "syncId": "SYNC-3203",
+      "createdAt": 1791409739234
     }
   ],
   "contacts": {
@@ -129,7 +139,9 @@
       "timestamp": 1791408615321,
       "status": "sent",
       "read": false,
-      "deletedForEveryone": false
+      "deletedForEveryone": false,
+      "fromName": "SYNC-3203 - Laptop Jose B.",
+      "toSyncId": "SYNC-9554"
     }
   ],
   "pinnedMessages": {},
