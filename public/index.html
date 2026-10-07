@@ -195,12 +195,12 @@
       <aside id="sidebar-panel" class="w-full lg:w-[280px] flex-shrink-0 bg-white border-r lg:border border-[rgba(197,160,89,0.22)] lg:rounded-2xl flex flex-col h-full min-h-0 overflow-hidden shadow-sm transition-all z-10">
         
         <!-- Switcher Segmentado de Espacio de Trabajo: DMs vs Canales -->
-        <div class="p-2 border-b border-[rgba(197,160,89,0.18)] bg-[#F8FAFC] flex items-center gap-1 flex-shrink-0">
-          <button id="tab-sidebar-dms" type="button" class="workspace-segmented-tab is-active flex items-center justify-center gap-1.5">
+        <div class="p-2 border-b border-[rgba(197,160,89,0.18)] bg-[#F8FAFC] flex items-center gap-1 flex-shrink-0" role="tablist" aria-label="Espacios de trabajo">
+          <button id="tab-sidebar-dms" type="button" role="tab" aria-selected="true" class="workspace-segmented-tab is-active flex items-center justify-center gap-1.5">
             <span>💬</span> <span>Directos</span>
             <span id="contacts-count-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-[#F1F5F9] text-[#C5A059] font-mono">0</span>
           </button>
-          <button id="tab-sidebar-channels" type="button" class="workspace-segmented-tab flex items-center justify-center gap-1.5">
+          <button id="tab-sidebar-channels" type="button" role="tab" aria-selected="false" class="workspace-segmented-tab flex items-center justify-center gap-1.5">
             <span>#</span> <span>Canales</span>
             <span id="channels-count-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-[#F1F5F9] text-[#0A1A3A] font-mono">2</span>
           </button>
@@ -249,7 +249,7 @@
         </div>
 
         <div id="edit-profile-modal" class="profile-settings-popover hidden" role="dialog" aria-modal="false" aria-labelledby="profile-settings-title">
-          <div class="bg-white rounded-2xl p-4 flex flex-col gap-3 shadow-xl border border-[rgba(197,160,89,0.3)] text-[#0A1A3A]">
+          <div class="modal-surface bg-white rounded-2xl p-4 flex flex-col gap-3 shadow-xl border border-[rgba(197,160,89,0.3)] text-[#0A1A3A]">
             <div class="flex items-center justify-between">
               <h3 id="profile-settings-title" class="font-bold text-sm text-[#0A1A3A] font-title flex items-center gap-2">
                 <span>👤</span> Configuración de perfil
@@ -601,7 +601,7 @@
 
   <!-- PANTALLA DE AUTENTICACIÓN -->
   <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4 bg-[#F8FAFC]">
-    <div class="bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-xl border border-[rgba(197,160,89,0.25)]">
+    <div class="auth-card bg-white rounded-3xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 shadow-xl border border-[rgba(197,160,89,0.25)]">
       
       <div class="flex items-center flex-col text-center gap-2">
         <img src="/assets/logo.png" alt="SYNC ENGINE" class="h-12 w-auto object-contain drop-shadow-md">
