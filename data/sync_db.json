@@ -23,6 +23,16 @@
       "planExpiresAt": 1793880490177,
       "billingCycle": "monthly",
       "updatedAt": 1791288490177
+    },
+    {
+      "id": "bbc8e126-f46c-452f-a517-cfa12b1c870f",
+      "syncId": "SYNC-3203",
+      "username": "jose barrantes",
+      "cleanDisplayName": "Laptop Jose B.",
+      "formattedName": "SYNC-3203 - Laptop Jose B.",
+      "salt": "2aaa85aa0356b1f87e3c89466fa11c99",
+      "passwordHash": "5b300d6cd29ead87a64769d0711dbbed2bea3e29b4287b7102e44dc9a0e2094143d568b841e8fcbd7851591b871ea5a0519fccf7a72b833c7b86b11b090102c5",
+      "createdAt": 1791407069522
     }
   ],
   "sessions": [
@@ -30,11 +40,17 @@
       "token": "f778044d605ef8a212e6c59c068a0228608e6b872e12cedf46ad0d0a9541e49a",
       "syncId": "SYNC-3315",
       "createdAt": 1791287632592
+    },
+    {
+      "token": "9ce9084eb951f977af361069536d6e132fa015dd877ee3d00e5729b7e302e11c",
+      "syncId": "SYNC-3203",
+      "createdAt": 1791407069530
     }
   ],
   "contacts": {
     "SYNC-0000": [],
-    "SYNC-3315": []
+    "SYNC-3315": [],
+    "SYNC-3203": []
   },
   "messages": [],
   "pinnedMessages": {},

@@ -178,9 +178,9 @@
             </span>
           </div>
 
-          <button id="logout-btn" type="button" title="Cerrar sesión"
-            class="px-3 py-1.5 rounded-xl bg-[#F8FAFC] hover:bg-red-50 text-[#0A1A3A] hover:text-red-600 border border-[rgba(197,160,89,0.25)] hover:border-red-300 text-xs font-semibold transition-all cursor-pointer">
-            Salir
+          <button id="logout-btn" type="button" title="Cerrar sesión" aria-label="Cerrar sesión"
+            class="header-logout-btn h-9 w-9 rounded-xl bg-[#F8FAFC] hover:bg-red-50 text-[#0A1A3A] hover:text-red-600 border border-[rgba(197,160,89,0.25)] hover:border-red-300 text-base font-semibold transition-all cursor-pointer flex items-center justify-center">
+            <span aria-hidden="true">↪</span>
           </button>
 
         </div>
@@ -239,18 +239,13 @@
         </div>
 
         <!-- Tarjeta Promocional SYNC PRO (Monetización) -->
-        <div id="sidebar-pro-card" class="m-2.5 p-3 rounded-2xl bg-gradient-to-br from-[#FFFDF7] to-[#FBF6E9] border border-[rgba(197,160,89,0.35)] shadow-xs flex flex-col gap-2 flex-shrink-0">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#99793D] flex items-center gap-1.5 font-title">
-              <img src="/src/assets/images/pro_tier_badge_1791287637745.jpg" alt="Pro" class="w-4 h-4 rounded-full object-cover">
-              <span>SYNC Pro Suite</span>
-            </span>
-            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#C5A059] text-white">2GB &amp; Bóveda</span>
-          </div>
-          <p class="text-[11px] text-[#64748B] leading-tight">Transferencias de 2 GB, Bóveda Cifrada y Transcripciones de chat.</p>
-          <button id="sidebar-upgrade-btn" type="button" class="w-full py-1.5 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-white font-bold text-xs shadow-xs transition-all cursor-pointer">
-            Mejorar Plan desde $9/mes
-          </button>
+        <div id="sidebar-pro-card" class="m-2.5 p-2.5 rounded-xl bg-[#FFFDF7] border border-[rgba(197,160,89,0.3)] shadow-xs flex items-center gap-2 flex-shrink-0">
+          <span class="text-xs font-bold text-[#99793D] flex items-center gap-1.5 font-title min-w-0">
+            <span aria-hidden="true">✦</span><span class="truncate">SYNC Pro Suite</span>
+          </span>
+          <span class="text-[10px] text-[#64748B] truncate flex-1">2GB y Bóveda</span>
+          <button id="sidebar-upgrade-btn" type="button" class="shrink-0 text-[11px] text-[#805E1D] font-bold underline underline-offset-2 cursor-pointer">Mejorar</button>
+          <button id="dismiss-pro-btn" type="button" title="Ocultar promoción" aria-label="Ocultar promoción" class="shrink-0 h-6 w-6 rounded-md text-[#64748B] hover:bg-[#F8FAFC] text-sm cursor-pointer">×</button>
         </div>
 
         <div id="edit-profile-modal" class="profile-settings-popover hidden" role="dialog" aria-modal="false" aria-labelledby="profile-settings-title">
@@ -291,12 +286,6 @@
           <button id="open-edit-profile-btn" type="button" title="Configuración del perfil" aria-label="Abrir configuración del perfil" aria-haspopup="dialog" class="h-7 w-7 rounded-lg text-[#64748B] hover:text-[#C5A059] hover:bg-[#F8FAFC] flex items-center justify-center text-sm transition-colors cursor-pointer">⚙</button>
         </div>
 
-        <div class="flex flex-shrink-0 items-center justify-center border-t border-[rgba(197,160,89,0.18)] p-2">
-          <div class="logo-electric-stream" aria-label="SYNC ENGINE BY BARRANTES CO.">
-            <img src="/assets/SYNC_ENGINE_Logo_Transparente_1024x1024.png" alt="SYNC ENGINE BY BARRANTES CO." class="h-[70px] max-h-[70px] w-auto object-contain mix-blend-multiply">
-            <span class="logo-electric-mask" aria-hidden="true"><span class="logo-electric-light"></span></span>
-          </div>
-        </div>
 
       </aside>
 
@@ -4723,6 +4712,10 @@
   const openCreateChannelBtn = document.getElementById('open-create-channel-btn');
   const sidebarProCard = document.getElementById('sidebar-pro-card');
   const sidebarUpgradeBtn = document.getElementById('sidebar-upgrade-btn');
+  const dismissProBtn = document.getElementById('dismiss-pro-btn');
+  if (dismissProBtn && sidebarProCard) {
+    dismissProBtn.addEventListener('click', () => sidebarProCard.remove());
+  }
 
   const pricingModal = document.getElementById('pricing-modal');
   const closePricingModalBtn = document.getElementById('close-pricing-modal-btn');

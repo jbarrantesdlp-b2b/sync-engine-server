@@ -1615,6 +1615,108 @@ header.sticky {
 }
 
 @media (max-width: 640px) {
+  header.sticky > div {
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    padding: 6px 10px !important;
+  }
+
+  header.sticky > div > div:first-child {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  header.sticky > div > div:first-child img {
+    width: 22px;
+    height: 22px;
+  }
+
+  header.sticky > div > div:first-child span.font-title {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  header.sticky > div > div:last-child {
+    min-width: 0;
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+
+  #header-plan-badge-btn {
+    padding: 5px 7px;
+    border-radius: 9px;
+  }
+
+  #header-plan-badge-btn #header-plan-icon,
+  #header-plan-badge-btn #header-plan-name {
+    display: none;
+  }
+
+  #header-plan-badge-btn span:last-child {
+    font-size: 9px;
+  }
+
+  #open-vault-btn,
+  #user-identity-badge #header-user-sync-id,
+  #user-identity-badge .text-gray-400,
+  .header-logout-btn span + * {
+    display: none;
+  }
+
+  #user-identity-badge {
+    max-width: 86px !important;
+    font-size: 11px;
+    line-height: 1.15;
+  }
+
+  header.sticky > div > div:last-child > div {
+    padding: 4px 6px;
+    border-radius: 9px;
+  }
+
+  .header-logout-btn {
+    flex-shrink: 0;
+  }
+
+  #sidebar-panel > div:first-child {
+    padding: 4px 8px;
+  }
+
+  .workspace-segmented-tab {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  #sidebar-dms-view > div:first-child {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  #contact-search-input,
+  #add-contact-btn {
+    height: 40px;
+  }
+
+  #add-contact-btn {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  #sidebar-pro-card {
+    margin: 8px;
+    padding: 8px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+
+  #sidebar-panel > div.flex-shrink-0.items-center.justify-between {
+    padding: 6px 10px;
+  }
+
+  #sidebar-panel > div.flex-shrink-0.items-center.justify-center {
+    display: none;
+  }
+
   #chat-messages > .msg-item + .msg-item {
     margin-top: 10px;
   }
