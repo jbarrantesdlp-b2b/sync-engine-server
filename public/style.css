@@ -59,6 +59,41 @@ h1, h2, h3, h4, h5, h6, .font-title, .brand-title {
   background: transparent;
 }
 
+/* Premium chat theme */
+.theme-toggle { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 34px; padding: 0.35rem 0.65rem; border: 1px solid var(--border-subtle); border-radius: 999px; background: var(--bg-card); color: var(--text-secondary); font-size: 11px; font-weight: 700; cursor: pointer; transition: background-color .3s, color .3s, border-color .3s; }
+.theme-toggle:hover { border-color: #00BFFF; color: #0052D4; }
+.theme-toggle-icon { font-size: 16px; line-height: 1; }
+.theme-toggle-label { white-space: nowrap; }
+.pro-shimmer-card { position: relative; overflow: hidden; }
+.pro-shimmer-card::after { content: ''; position: absolute; inset: -80% -25%; background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.68) 50%, transparent 58%); transform: translateX(-55%) rotate(8deg); animation: proShimmer 4.5s ease-in-out infinite; pointer-events: none; }
+@keyframes proShimmer { 0%, 35% { transform: translateX(-55%) rotate(8deg); } 75%, 100% { transform: translateX(55%) rotate(8deg); } }
+.status-dot { animation: onlinePulse 2s ease-in-out infinite; }
+@keyframes onlinePulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+[data-motion-list] > * { animation: chatCascade .5s cubic-bezier(.22,1,.36,1) both; }
+[data-motion-list] > *:nth-child(1) { animation-delay: .04s; }
+[data-motion-list] > *:nth-child(2) { animation-delay: .16s; }
+[data-motion-list] > *:nth-child(3) { animation-delay: .28s; }
+[data-motion-list] > *:nth-child(4) { animation-delay: .4s; }
+@keyframes chatCascade { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+.message-bubble { animation: bubbleInflate .55s cubic-bezier(.22,1.2,.36,1) both; }
+@keyframes bubbleInflate { from { opacity: 0; transform: translateY(25px) scale(.75); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.profile-settings-popover, .modal-surface { backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+.profile-settings-popover:not(.hidden) .modal-surface { animation: sheetIn .55s cubic-bezier(.22,1.2,.36,1) both; }
+@keyframes sheetIn { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .pro-shimmer-card::after, .status-dot, [data-motion-list] > *, .message-bubble, .profile-settings-popover:not(.hidden) .modal-surface { animation: none; } }
+
+html.dark-mode, body.dark-mode { --bg-main: #0B0F19; --bg-card: #111827; --bg-card-hover: #1F2937; --bg-chat: #0B0F19; --bg-bubble-other: rgba(255,255,255,.05); --text-primary: #FFFFFF; --text-secondary: #CBD5E1; --border-subtle: rgba(255,255,255,.12); color-scheme: dark; }
+body.dark-mode, body.dark-mode #app-container, body.dark-mode #main-layout, body.dark-mode #chat-panel, body.dark-mode #sidebar-panel { background-color: #0B0F19 !important; color: #FFFFFF !important; }
+body.dark-mode header.sticky, body.dark-mode #chat-header-bar, body.dark-mode #input-container, body.dark-mode #chat-search-bar { background: #0B0F19 !important; border-color: rgba(255,255,255,.12) !important; }
+body.dark-mode #chat-messages { background: #0B0F19; }
+body.dark-mode #chat-messages .message-bubble, body.dark-mode .message-bubble:not(.sent) { background: rgba(255,255,255,.05) !important; backdrop-filter: blur(24px); color: #E2E8F0 !important; }
+body.dark-mode .theme-toggle, body.dark-mode .theme-toggle:hover { background: #111827; color: #F8FAFC; border-color: rgba(255,255,255,.18); }
+body.dark-mode .theme-toggle-icon { color: #FBBF24; }
+body.dark-mode .pro-shimmer-card::after { background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.2) 50%, transparent 58%); }
+body.dark-mode #sidebar-pro-card, body.dark-mode #contacts-list, body.dark-mode #sidebar-channels-view { background-color: #111827 !important; }
+body.dark-mode input, body.dark-mode textarea { background: #111827 !important; color: #F8FAFC !important; border-color: rgba(255,255,255,.16) !important; }
+body.dark-mode .text-\[\#0A1A3A\], body.dark-mode .text-\[\#64748B\] { color: #CBD5E1 !important; }
+
 /* ==========================================================================
    1. LAYOUT FLUIDO RESPONSIVO Y DISTRIBUCIÓN EN COLUMNAS (#app-container)
    - Contenedor principal: 100% de ancho con max-width: 1600px centrado
@@ -101,6 +136,7 @@ header.sticky {
 
 #auth-screen.hidden {
   display: none !important;
+  pointer-events: none !important;
 }
 
 #auth-screen:not(.hidden) {

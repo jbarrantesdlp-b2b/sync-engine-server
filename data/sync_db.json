@@ -33,6 +33,16 @@
       "salt": "2aaa85aa0356b1f87e3c89466fa11c99",
       "passwordHash": "5b300d6cd29ead87a64769d0711dbbed2bea3e29b4287b7102e44dc9a0e2094143d568b841e8fcbd7851591b871ea5a0519fccf7a72b833c7b86b11b090102c5",
       "createdAt": 1791407069522
+    },
+    {
+      "id": "befa0f06-3a09-423d-ae76-d40ff88d35c6",
+      "syncId": "SYNC-9554",
+      "username": "jose barrantes 2",
+      "cleanDisplayName": "JOSE BARRANTES",
+      "formattedName": "SYNC-9554 - JOSE BARRANTES",
+      "salt": "059406a3776d2536176589e149e33126",
+      "passwordHash": "4cf17af59032f53bd5745645b3e3f6898d308d7cbc0b3734b805d81fdbb5b4459a9cc9d061dda29344fb3a36e50458a790ae6b83ae29fcefebc2f8b755397d4c",
+      "createdAt": 1791408489350
     }
   ],
   "sessions": [
@@ -55,14 +65,73 @@
       "token": "bb8fa359da96b685fd42323a93044ea622c4d2a86ba5f8e80d551b59dd829896",
       "syncId": "SYNC-3203",
       "createdAt": 1791407505222
+    },
+    {
+      "token": "b37ef1263ddf92f75f59cf47e08553cdf7e11f5144837d32c7cd5f09f6a7fbec",
+      "syncId": "SYNC-3203",
+      "createdAt": 1791408440656
+    },
+    {
+      "token": "4681d8f0e2062cad75218eb0198b9fd37c3e76325c188cbcd21f9a39634b46f6",
+      "syncId": "SYNC-9554",
+      "createdAt": 1791408489358
+    },
+    {
+      "token": "a138ffba4ec9577ed695804e1a4a22b1aaa78049f9de898b9051d0b57e07a21a",
+      "syncId": "SYNC-9554",
+      "createdAt": 1791408559484
     }
   ],
   "contacts": {
     "SYNC-0000": [],
     "SYNC-3315": [],
-    "SYNC-3203": []
+    "SYNC-3203": [
+      "SYNC-9554"
+    ],
+    "SYNC-9554": [
+      "SYNC-3203"
+    ]
   },
-  "messages": [],
+  "messages": [
+    {
+      "id": "msg_1791408509755_v0dht",
+      "fromId": "SYNC-3203",
+      "toId": "SYNC-9554",
+      "type": "text",
+      "text": "Hola!",
+      "audioData": null,
+      "fileData": null,
+      "fileIds": [],
+      "callData": null,
+      "replyTo": null,
+      "linkPreview": null,
+      "reactions": {},
+      "timestamp": 1791408510536,
+      "status": "read",
+      "read": true,
+      "deletedForEveryone": false,
+      "fromName": "SYNC-3203 - Laptop Jose B.",
+      "toSyncId": "SYNC-9554"
+    },
+    {
+      "id": "msg_1791408614541_j2mzs",
+      "fromId": "SYNC-3203",
+      "toId": "SYNC-9554",
+      "type": "text",
+      "text": "Hola",
+      "audioData": null,
+      "fileData": null,
+      "fileIds": [],
+      "callData": null,
+      "replyTo": null,
+      "linkPreview": null,
+      "reactions": {},
+      "timestamp": 1791408615321,
+      "status": "sent",
+      "read": false,
+      "deletedForEveryone": false
+    }
+  ],
   "pinnedMessages": {},
   "files": [],
   "subscriptions": {},
