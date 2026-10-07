@@ -2066,6 +2066,152 @@ button:hover {
   }
 }
 
+/* Refined minimal surfaces and motion */
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#sidebar-panel,
+#chat-panel,
+#auth-screen {
+  background: rgba(248, 250, 252, 0.68);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#sidebar-panel,
+#chat-panel,
+.auth-card,
+.profile-settings-popover .modal-surface,
+#pricing-modal > div,
+#send-media-modal > div {
+  border-color: rgba(226, 232, 240, 0.55) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04) !important;
+}
+
+#sidebar-panel > div,
+#chat-panel > div,
+.auth-card,
+.profile-settings-popover .modal-surface {
+  border-radius: 24px;
+}
+
+#sidebar-dms-view > div:first-child,
+#sidebar-channels-view > div:first-child {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.48);
+  border-color: rgba(226, 232, 240, 0.5);
+}
+
+#sidebar-dms-list > *,
+#sidebar-channels-list > *,
+#chat-messages > .msg-item {
+  animation: list-reveal 420ms var(--motion-smooth) both;
+}
+
+#sidebar-dms-list > *:nth-child(1), #sidebar-channels-list > *:nth-child(1), #chat-messages > .msg-item:nth-child(1) { animation-delay: 50ms; }
+#sidebar-dms-list > *:nth-child(2), #sidebar-channels-list > *:nth-child(2), #chat-messages > .msg-item:nth-child(2) { animation-delay: 100ms; }
+#sidebar-dms-list > *:nth-child(3), #sidebar-channels-list > *:nth-child(3), #chat-messages > .msg-item:nth-child(3) { animation-delay: 150ms; }
+#sidebar-dms-list > *:nth-child(4), #sidebar-channels-list > *:nth-child(4), #chat-messages > .msg-item:nth-child(4) { animation-delay: 200ms; }
+
+#sidebar-pro-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(197, 160, 89, 0.24) !important;
+  background: rgba(255, 253, 247, 0.66) !important;
+  box-shadow: 0 8px 30px rgba(154, 116, 38, 0.06) !important;
+}
+
+#sidebar-pro-card::after {
+  content: '';
+  position: absolute;
+  inset: -60% -30%;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.56) 50%, transparent 58%);
+  transform: translateX(-70%);
+  animation: glass-shimmer 5s ease-in-out infinite;
+}
+
+#sidebar-pro-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+#sidebar-panel .online,
+#sidebar-panel [data-online="true"] {
+  animation: online-pulse 2.2s ease-in-out infinite;
+}
+
+.auth-card {
+  padding: 32px !important;
+  gap: 24px !important;
+}
+
+.auth-tab,
+.auth-submit,
+#sidebar-upgrade-btn,
+#add-contact-btn {
+  transition: all 300ms ease-out;
+}
+
+.auth-tab:hover,
+.auth-submit:hover,
+#sidebar-upgrade-btn:hover,
+#add-contact-btn:hover {
+  transform: scale(1.01);
+}
+
+.profile-settings-popover:not(.hidden),
+#pricing-modal:not(.hidden),
+#send-media-modal:not(.hidden) {
+  animation: sheet-enter 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes list-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sheet-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes glass-shimmer {
+  0%, 65% { transform: translateX(-70%); }
+  85%, 100% { transform: translateX(70%); }
+}
+
+@keyframes online-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 24px 20px !important;
+    border-radius: 24px !important;
+  }
+
+  .profile-settings-popover,
+  #pricing-modal,
+  #send-media-modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .profile-settings-popover .modal-surface,
+  #pricing-modal > div,
+  #send-media-modal > div {
+    width: 100%;
+    max-height: 90dvh;
+    overflow-y: auto;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 24px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
