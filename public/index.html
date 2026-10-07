@@ -620,42 +620,35 @@
         <p class="text-xs text-[#64748B]">Plataforma Privada de Mensajería &amp; Workspace</p>
       </div>
 
-      <div class="grid grid-cols-2 p-1 rounded-2xl bg-[#F1F5F9] border border-[rgba(197,160,89,0.2)]">
-        <button id="tab-login" type="button" class="py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#C5A059] to-[#99793D] text-white shadow-xs transition-all cursor-pointer">Iniciar Sesión</button>
-        <button id="tab-register" type="button" class="py-2.5 rounded-xl font-bold text-xs text-[#64748B] hover:text-[#C5A059] transition-all cursor-pointer">Crear Cuenta</button>
+      <div class="auth-tabs" role="tablist" aria-label="Acceso a SYNC ENGINE">
+        <button id="tab-login" role="tab" aria-selected="true" aria-controls="auth-form" type="button" class="auth-tab auth-tab-active">Iniciar Sesión</button>
+        <button id="tab-register" role="tab" aria-selected="false" aria-controls="auth-form" type="button" class="auth-tab">Crear Cuenta</button>
       </div>
 
-      <form id="auth-form" class="flex flex-col gap-4">
-        <div>
-          <label for="auth-username" class="block text-xs font-semibold text-[#0A1A3A] mb-1">Nombre de Usuario</label>
-          <input type="text" id="auth-username" required title="Nombre de usuario" placeholder="ej. jbarrantes"
-            class="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[rgba(197,160,89,0.25)] focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]/30 outline-none text-sm text-[#0A1A3A] placeholder-gray-400">
+      <form id="auth-form" class="auth-form" novalidate>
+        <div class="auth-field">
+          <label for="auth-username">Nombre de Usuario</label>
+          <input type="text" id="auth-username" required title="Nombre de usuario" placeholder="ej. jbarrantes" autocomplete="username">
         </div>
 
-        <div>
-          <label for="auth-password" class="block text-xs font-semibold text-[#0A1A3A] mb-1">Contraseña</label>
-          <input type="password" id="auth-password" required title="Contraseña" placeholder="••••••••"
-            class="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[rgba(197,160,89,0.25)] focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]/30 outline-none text-sm text-[#0A1A3A] placeholder-gray-400">
+        <div class="auth-field">
+          <label for="auth-password">Contraseña</label>
+          <div class="password-field">
+            <input type="password" id="auth-password" required title="Contraseña" placeholder="••••••••" autocomplete="current-password" aria-describedby="auth-password-error" aria-invalid="true">
+            <button type="button" id="toggle-password" class="password-toggle" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button>
+          </div>
+          <p id="auth-password-error" class="field-error hidden" role="alert">La contraseña es obligatoria.</p>
         </div>
 
-        <div id="display-name-group" class="hidden">
-          <label for="auth-display-name" class="block text-xs font-semibold text-[#0A1A3A] mb-1">Nombre Personalizado (sin emojis)</label>
-          <input type="text" id="auth-display-name" title="Nombre personalizado" placeholder="ej. Laptop de Jose"
-            class="w-full px-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[rgba(197,160,89,0.25)] focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059]/30 outline-none text-sm text-[#0A1A3A] placeholder-gray-400">
-          <p class="text-[10px] text-[#64748B] mt-1 font-mono">Se generará automáticamente tu ID único (ej. SYNC-9482).</p>
+        <div id="display-name-group" class="hidden auth-field">
+          <label for="auth-display-name">Nombre Personalizado (sin emojis)</label>
+          <input type="text" id="auth-display-name" title="Nombre personalizado" placeholder="ej. Laptop de Jose" autocomplete="name">
+          <p class="field-hint">Se generará automáticamente tu ID único (ej. SYNC-9482).</p>
         </div>
 
-        <p id="auth-error-msg" class="text-xs text-red-500 hidden font-medium"></p>
+        <p id="auth-error-msg" class="auth-error hidden" role="alert"></p>
 
-        <button type="submit" id="auth-submit-btn"
-          class="w-full py-3 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#99793D] hover:from-[#d4b068] hover:to-[#aa8846] text-white font-bold text-sm shadow-md transition-all cursor-pointer">
-          Ingresar al Chat
-        </button>
-
-        <div class="text-center text-xs text-[#64748B] pt-2 border-t border-[rgba(197,160,89,0.15)]">
-          <span id="auth-switch-text">¿No tienes una cuenta?</span>
-          <button type="button" id="auth-switch-btn" class="font-bold text-[#C5A059] hover:text-[#99793D] hover:underline cursor-pointer ml-1">Crear Cuenta</button>
-        </div>
+        <button type="submit" id="auth-submit-btn" class="auth-submit">Ingresar al Chat</button>
       </form>
 
     </div>
@@ -1222,6 +1215,8 @@
   const authSwitchText = document.getElementById('auth-switch-text');
   const authUsername = document.getElementById('auth-username');
   const authPassword = document.getElementById('auth-password');
+  const togglePassword = document.getElementById('toggle-password');
+  const authPasswordError = document.getElementById('auth-password-error');
   const authDisplayName = document.getElementById('auth-display-name');
   const displayNameGroup = document.getElementById('display-name-group');
   const authErrorMsg = document.getElementById('auth-error-msg');
@@ -1512,16 +1507,20 @@
   // Pestañas y Modo de Autenticación
   function setAuthMode(register) {
     isRegisterMode = register;
-    if (isRegisterMode) {
-      tabRegister.className = 'py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#C5A059] to-[#99793D] text-white shadow-xs transition-all cursor-pointer';
-      tabLogin.className = 'py-2.5 rounded-xl font-bold text-xs text-[#64748B] hover:text-[#C5A059] transition-all cursor-pointer';
+  if (isRegisterMode) {
+  tabRegister.className = 'auth-tab auth-tab-active';
+  tabLogin.className = 'auth-tab';
+  tabRegister.setAttribute('aria-selected', 'true');
+  tabLogin.setAttribute('aria-selected', 'false');
       displayNameGroup.classList.remove('hidden');
       authSubmitBtn.textContent = 'Crear Cuenta y Obtener ID';
       if (authSwitchText) authSwitchText.textContent = '¿Ya tienes una cuenta?';
       if (authSwitchBtn) authSwitchBtn.textContent = 'Iniciar Sesión';
     } else {
-      tabLogin.className = 'py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#C5A059] to-[#99793D] text-white shadow-xs transition-all cursor-pointer';
-      tabRegister.className = 'py-2.5 rounded-xl font-bold text-xs text-[#64748B] hover:text-[#C5A059] transition-all cursor-pointer';
+  tabLogin.className = 'auth-tab auth-tab-active';
+  tabRegister.className = 'auth-tab';
+  tabLogin.setAttribute('aria-selected', 'true');
+  tabRegister.setAttribute('aria-selected', 'false');
       displayNameGroup.classList.add('hidden');
       authSubmitBtn.textContent = 'Ingresar al Chat';
       if (authSwitchText) authSwitchText.textContent = '¿No tienes una cuenta?';
@@ -1533,9 +1532,19 @@
   tabLogin.addEventListener('click', () => setAuthMode(false));
   tabRegister.addEventListener('click', () => setAuthMode(true));
   if (authSwitchBtn) {
-    authSwitchBtn.addEventListener('click', () => setAuthMode(!isRegisterMode));
+  authSwitchBtn.addEventListener('click', () => setAuthMode(!isRegisterMode));
   }
 
+  if (togglePassword) {
+  togglePassword.addEventListener('click', () => {
+  const shouldShow = authPassword.type === 'password';
+  authPassword.type = shouldShow ? 'text' : 'password';
+  togglePassword.textContent = shouldShow ? 'Ocultar' : 'Mostrar';
+  togglePassword.setAttribute('aria-label', shouldShow ? 'Ocultar contraseña' : 'Mostrar contraseña');
+  togglePassword.setAttribute('aria-pressed', String(shouldShow));
+  });
+  }
+  
   authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authErrorMsg.classList.add('hidden');
@@ -5001,7 +5010,7 @@
       const toggleBtn = card.querySelector('.btn-toggle-secret');
       toggleBtn.addEventListener('click', () => {
         isRevealed = !isRevealed;
-        secretSpan.textContent = isRevealed ? item.secretContent : '••••••••••••';
+        secretSpan.textContent = isRevealed ? item.secretContent : '••••••••••��•';
         toggleBtn.textContent = isRevealed ? 'Ocultar' : 'Mostrar';
       });
 
