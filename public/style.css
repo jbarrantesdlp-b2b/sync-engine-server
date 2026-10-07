@@ -1,85 +1,154 @@
-
-
 /* ==========================================================================
-   SYNC ENGINE — EXECUTIVE ULTRA-MINIMAL REDESIGN
+   SYNC ENGINE — EXECUTIVE ULTRA-MINIMAL & FLUID REDESIGN
    ========================================================================= */
 :root {
-  --bg-main: #f8f9fa;
+  --bg-main: #ffffff;
   --bg-card: #ffffff;
-  --bg-chat: #f8f9fa;
-  --text-primary: #111827;
+  --text-primary: #0f172a;
   --text-secondary: #64748b;
-  --border-subtle: #e2e8f0;
+  --border-subtle: #f1f5f9;
   --accent-electric: #00bfff;
-  --glass-light: rgba(255, 255, 255, 0.72);
+  --accent-cobalt: #0052d4;
+  --radius-premium: 14px;
 }
 
-html, body { background: #f8f9fa !important; color: #111827 !important; }
-#app-container { background: #f8f9fa !important; box-shadow: none !important; }
+/* Base Restorations — Pure Clean Backgrounds */
+html, body { 
+  background: var(--bg-main) !important; 
+  color: var(--text-primary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#app-container { 
+  background: var(--bg-main) !important; 
+  box-shadow: none !important; 
+}
+
+/* Header Integration — Line-based & Microscopic */
 #app-container > header.sticky {
-  background: rgba(248, 249, 250, 0.82) !important;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
   box-shadow: none !important;
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
-#app-container > header.sticky > div { min-height: 56px; padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
-#app-container > header .flex.items-center.gap-3 > .flex.items-center.gap-2 > img { display: none !important; }
-#app-container > header .flex.items-center.gap-3 > .flex.items-center.gap-2 > span { font-size: 13px; letter-spacing: .14em; }
-#app-container > header .flex.items-center.gap-3 > .hidden.md\\:inline,
-#app-container > header .hidden.lg\\:flex { display: none !important; }
-#app-container > header .flex.items-center.gap-2.sm\\:gap-2\\.5 { gap: 6px !important; flex-wrap: nowrap; }
-#app-container > header .flex.items-center.gap-2.sm\\:gap-2\\.5 > button,
-#app-container > header .flex.items-center.gap-2.sm\\:gap-2\\.5 > div { border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 6px !important; border-radius: 10px !important; }
-#app-container > header #header-plan-badge-btn span:not(#header-plan-icon),
-#app-container > header #open-vault-btn span:not(:first-child),
-#app-container > header #user-identity-badge { display: none !important; }
-#app-container > header #header-plan-icon, #app-container > header #open-vault-btn span:first-child { font-size: 15px; filter: grayscale(1); }
-#app-container > header .header-logout-btn { width: 30px !important; height: 30px !important; color: #64748b !important; }
-.theme-toggle { min-height: 30px; padding: 5px 8px; border: 1px solid #e2e8f0; background: rgba(255,255,255,.65); color: #475569; }
-.theme-toggle-label { display: none; }
-.theme-toggle-icon { transition: transform .5s cubic-bezier(.34,1.56,.64,1), opacity .25s ease; }
-.theme-toggle:hover .theme-toggle-icon { transform: rotate(35deg) scale(1.1); }
 
-#main-layout { background: #f8f9fa !important; padding: 12px !important; gap: 12px; }
-#sidebar-panel, #chat-panel, #info-panel {
-  border: 1px solid rgba(226, 232, 240, .7) !important;
-  border-radius: 20px !important;
-  background: rgba(255,255,255,.68) !important;
-  box-shadow: 0 18px 60px rgba(15,23,42,.045) !important;
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+/* Elimination of heavy gray boxes / labels */
+#app-container > header #header-plan-badge-btn,
+#app-container > header #open-vault-btn,
+#app-container > header #user-identity-badge {
+  background: transparent !important;
+  border: none !important;
+  font-size: 12px !important;
+  color: var(--text-secondary) !important;
+  padding: 4px 8px !important;
 }
-#sidebar-panel .bg-\\[\\#F8FAFC\\], #sidebar-panel .bg-white,
-#chat-panel .bg-white, #chat-panel .bg-\\[\\#F8FAFC\\] { background: transparent !important; }
-#sidebar-panel [class*="border-"], #chat-panel [class*="border-"] { border-color: rgba(226,232,240,.65) !important; }
-#contact-search-input, #chat-search-input { background: rgba(255,255,255,.8) !important; border: 1px solid #e2e8f0 !important; border-radius: 12px !important; }
-#contact-search-input:focus, #chat-search-input:focus, textarea:focus, input:focus { border-color: var(--accent-electric) !important; box-shadow: 0 0 0 4px rgba(0,191,255,.13), 0 0 22px rgba(0,191,255,.12) !important; }
-[data-motion-list] > * { animation-duration: .65s; animation-delay: calc(var(--motion-index, 0) * .15s); }
-[data-motion-list] > *:nth-child(1) { --motion-index: 1; } [data-motion-list] > *:nth-child(2) { --motion-index: 2; } [data-motion-list] > *:nth-child(3) { --motion-index: 3; } [data-motion-list] > *:nth-child(4) { --motion-index: 4; } [data-motion-list] > *:nth-child(5) { --motion-index: 5; }
-@keyframes chatCascade { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Canonical brand signature: lower-left desktop mark. */
-#app-container::after { content: ''; position: absolute; left: 18px; bottom: 18px; width: 30px; height: 30px; z-index: 50; background: url('/assets/SYNC_ENGINE_Mark_S_Infinito_Transparente.png') center / contain no-repeat; opacity: .72; pointer-events: none; filter: saturate(.85); }
+/* Premium Inputs with Electric Focus */
+#contact-search-input, #chat-search-input, input, textarea { 
+  background: #ffffff !important; 
+  color: var(--text-primary) !important;
+  border: 1px solid #e2e8f0 !important; 
+  border-radius: var(--radius-premium) !important;
+  height: 42px !important;
+  padding: 0 14px !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
 
-html.dark-mode, body.dark-mode { --bg-main: #05070b; --bg-card: rgba(255,255,255,.03); --bg-chat: #05070b; --text-primary: #f8fafc; --text-secondary: #71717a; --border-subtle: rgba(255,255,255,.08); color-scheme: dark; }
-body.dark-mode, body.dark-mode #app-container, body.dark-mode #main-layout { background: #05070b !important; color: #f8fafc !important; }
-body.dark-mode #app-container > header.sticky { background: rgba(5,7,11,.78) !important; border-bottom-color: rgba(255,255,255,.07) !important; }
-body.dark-mode #sidebar-panel, body.dark-mode #chat-panel, body.dark-mode #info-panel { background: rgba(255,255,255,.03) !important; border-color: rgba(255,255,255,.07) !important; box-shadow: none !important; }
-body.dark-mode #sidebar-panel .bg-\\[\\#F8FAFC\\], body.dark-mode #sidebar-panel .bg-white, body.dark-mode #chat-panel .bg-white, body.dark-mode #chat-panel .bg-\\[\\#F8FAFC\\] { background: transparent !important; }
-body.dark-mode #contact-search-input, body.dark-mode #chat-search-input, body.dark-mode input, body.dark-mode textarea { background: rgba(255,255,255,.03) !important; color: #f8fafc !important; border-color: rgba(255,255,255,.1) !important; }
-body.dark-mode #contact-search-input::placeholder, body.dark-mode input::placeholder, body.dark-mode textarea::placeholder { color: #71717a !important; }
-body.dark-mode #app-container::after { opacity: .88; filter: brightness(1.25) saturate(.8); }
-@media (max-width: 1023px) { #main-layout { padding: 0 !important; } #sidebar-panel, #chat-panel { border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; } #app-container::after { left: 12px; bottom: 12px; } }
-@media (prefers-reduced-motion: reduce) { .theme-toggle-icon { transition: none; } }
+#contact-search-input:focus, #chat-search-input:focus, input:focus, textarea:focus { 
+  border-color: var(--accent-electric) !important; 
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.15) !important; 
+}
 
-/* Bottom-sheet motion for profile and plan surfaces. */
-.profile-settings-popover:not(.hidden) .modal-surface, .modal-surface:not(.hidden) { animation: sheetIn .5s cubic-bezier(.22,1.2,.36,1) both; }
-@keyframes sheetIn { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { [data-motion-list] > *, .profile-settings-popover:not(.hidden) .modal-surface, .modal-surface:not(.hidden) { animation: none !important; } }
+/* Electric Brand Signature Messaging Bubbles */
+.message-bubble-sent {
+  background: linear-gradient(135deg, var(--accent-cobalt), var(--accent-electric)) !important;
+  color: #ffffff !important;
+  border-radius: 18px 18px 4px 18px !important;
+}
 
-/* Restore compact header controls on narrow screens. */
-@media (max-width: 640px) { #app-container > header > div { gap: 4px !important; } #app-container > header .flex.items-center.gap-3 { gap: 6px !important; } #app-container > header .flex.items-center.gap-2.sm\\:gap-2\\.5 > div { display: none !important; } }
-/* Existing markup uses #info-panel only on wider layouts; hide signature when auth is shown. */
-#auth-screen:not(.hidden) ~ #app-container::after { display: none; }
-        
+.message-bubble-received {
+  background: #f1f5f9 !important;
+  color: var(--text-primary) !important;
+  border-radius: 18px 18px 18px 4px !important;
+}
+
+/* Luxurious Notorious Animations (Framer Motion emulation via CSS) */
+[data-motion-list] > * { 
+  animation: chatCascade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--motion-index, 0) * 0.08s); 
+}
+
+@keyframes chatCascade { 
+  from { opacity: 0; transform: translateY(35px) scale(0.96); } 
+  to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+
+/* Bottom-sheet elastic transitions for Modals */
+.modal-surface { 
+  background: #ffffff !important;
+  border-radius: 24px 24px 0 0 !important;
+  animation: sheetIn 0.45s cubic-bezier(0.32, 0.94, 0.6, 1) both; 
+}
+
+@keyframes sheetIn { 
+  from { transform: translateY(100%); } 
+  to { transform: translateY(0); } 
+}
+
+/* Canonical Mark Signature Placement (Lower-Left Desktop) */
+#app-container::after { 
+  content: ''; 
+  position: absolute; 
+  left: 24px; 
+  bottom: 24px; 
+  width: 32px; 
+  height: 32px; 
+  z-index: 50; 
+  background: url('/assets/SYNC_ENGINE_Mark_S_Infinito_Transparente.png') center / contain no-repeat; 
+  opacity: 0.8; 
+  pointer-events: none; 
+}
+
+/* ==========================================================================
+   PURE BLACK TITANIUM DARK MODE INTERFACE
+   ========================================================================= */
+html.dark-mode, body.dark-mode { 
+  --bg-main: #05070b; 
+  --text-primary: #f8fafc; 
+  --text-secondary: #71717a; 
+  --border-subtle: rgba(255, 255, 255, 0.06); 
+  color-scheme: dark; 
+}
+
+body.dark-mode #app-container, body.dark-mode #main-layout { 
+  background: #05070b !important; 
+}
+
+body.dark-mode #app-container > header.sticky { 
+  background: rgba(5, 7, 11, 0.8) !important; 
+  border-bottom-color: var(--border-subtle) !important; 
+}
+
+body.dark-mode #sidebar-panel, body.dark-mode #chat-panel, body.dark-mode #info-panel { 
+  background: rgba(255, 255, 255, 0.02) !important; 
+  border-color: var(--border-subtle) !important; 
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  box-shadow: none !important;
+}
+
+body.dark-mode #contact-search-input, body.dark-mode #chat-search-input, body.dark-mode input, body.dark-mode textarea { 
+  background: rgba(255, 255, 255, 0.03) !important; 
+  border-color: rgba(255, 255, 255, 0.08) !important; 
+}
+
+body.dark-mode .message-bubble-received {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+}
+
+body.dark-mode .modal-surface {
+  background: #0b0f19 !important;
+}
