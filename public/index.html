@@ -193,6 +193,25 @@
     </header>
 
     <!-- CUERPO PRINCIPAL (DISTRIBUCIÓN EN 3 COLUMNAS) -->
+    <!-- NAVEGACIÓN PRINCIPAL: escritorio, separada de la lista de conversaciones -->
+    <nav id="primary-navigation" class="primary-navigation" aria-label="Navegación principal">
+      <div class="primary-nav-brand">
+        <img src="/assets/SYNC_ENGINE_Mark_S_Infinito_Transparente.png" alt="" />
+        <span>SYNC ENGINE</span>
+      </div>
+      <div class="primary-nav-items">
+        <button type="button" class="primary-nav-item is-active" data-primary-view="chats" aria-current="page"><span>▣</span><span>Chats</span></button>
+        <button type="button" class="primary-nav-item" data-primary-view="calls"><span>♧</span><span>Llamadas</span></button>
+        <button type="button" class="primary-nav-item" data-primary-view="contacts"><span>♙</span><span>Contactos</span></button>
+        <button type="button" class="primary-nav-item" data-primary-view="channels"><span>▤</span><span>Canales</span></button>
+      </div>
+      <div class="primary-nav-footer">
+        <button type="button" class="primary-nav-item" data-primary-view="files"><span>▱</span><span>Archivos</span></button>
+        <button type="button" class="primary-nav-item" data-primary-view="settings"><span>⚙</span><span>Configuración</span></button>
+        <div class="primary-nav-user"><span class="primary-nav-user-avatar">J</span><span><strong id="primary-nav-user-name">Mi perfil</strong><small>En línea</small></span></div>
+      </div>
+    </nav>
+
     <main id="main-layout" class="flex-1 min-h-0 w-full max-w-[1600px] mx-auto p-0 lg:p-3 flex flex-row overflow-hidden relative bg-white">
       
       <!-- COLUMNA 1: LISTA DE CONTACTOS Y CANALES (SIDEBAR) -->
@@ -593,6 +612,15 @@
     <div id="drawer-backdrop" class="hidden"></div>
 
   </main>
+
+    <!-- Navegación inferior para móviles, según diseño aprobado -->
+    <nav id="mobile-primary-navigation" class="mobile-primary-navigation" aria-label="Navegación móvil">
+      <button type="button" class="mobile-nav-item is-active" data-primary-view="chats" aria-current="page"><span>▣</span><small>Chats</small></button>
+      <button type="button" class="mobile-nav-item" data-primary-view="calls"><span>♧</span><small>Llamadas</small></button>
+      <button type="button" class="mobile-nav-item" data-primary-view="contacts"><span>♙</span><small>Contactos</small></button>
+      <button type="button" class="mobile-nav-item" data-primary-view="channels"><span>▤</span><small>Espacios</small></button>
+      <button type="button" class="mobile-nav-item" data-primary-view="settings"><span>⚙</span><small>Perfil</small></button>
+    </nav>
 
   </div>
 
@@ -5385,5 +5413,79 @@
   checkExistingAuth();
 </script>
 
+
+<script>
+/* Primary navigation layer: routes supported views without replacing chat/auth logic. */
+(() => {
+  const app = document.getElementById('app-container');
+  if (!app) return;
+  const navItems = Array.from(app.querySelectorAll('[data-primary-view]'));
+  const sidebarDms = document.getElementById('sidebar-dms-view');
+  const sidebarChannels = document.getElementById('sidebar-channels-view');
+  const tabDms = document.getElementById('tab-sidebar-dms');
+  const tabChannels = document.getElementById('tab-sidebar-channels');
+  const sidebar = document.getElementById('sidebar-panel');
+  const chat = document.getElementById('chat-panel-container');
+  const supportedViews = new Set(['chats', 'channels']);
+  function activate(view) {
+    navItems.forEach(button => {
+      const active = button.dataset.primaryView === view;
+      button.classList.toggle('is-active', active);
+      if (active) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
+    if (view === 'channels') {
+      if (tabChannels) tabChannels.click();
+    } else if (view === 'chats' || view === 'contacts') {
+      if (tabDms) tabDms.click();
+    }
+    app.dataset.primaryView = view;
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      if (sidebar) sidebar.classList.toggle('mobile-view-hidden', view !== 'chats' && view !== 'channels' && view !== 'contacts');
+      if (chat) chat.classList.toggle('mobile-view-hidden', view !== 'chats' && view !== 'channels');
+      if (view === 'contacts') {
+        if (sidebar) sidebar.classList.remove('mobile-view-hidden');
+        if (sidebarDms) sidebarDms.classList.remove('hidden');
+        if (sidebarChannels) sidebarChannels.classList.add('hidden');
+      }
+    }
+    if (!supportedViews.has(view)) {
+      const messages = {
+        calls: 'El historial de llamadas se habilitará en esta vista.',
+        files: 'El centro de archivos se abrirá desde una conversación.',
+        settings: 'Abre el engranaje del perfil para configurar tu cuenta.'
+      };
+      if (view === 'calls' || view === 'files' || view === 'settings') {
+        const chatWelcome = document.getElementById('chat-welcome');
+        const title = document.getElementById('active-chat-name');
+        if (title && !document.querySelector('#chat-messages .message-row')) {
+          // Avoid replacing content or changing any underlying chat state.
+          app.dataset.navigationNotice = messages[view] || '';
+        }
+      }
+    }
+  }
+  navItems.forEach(button => button.addEventListener('click', () => activate(button.dataset.primaryView)));
+  const back = document.getElementById('back-to-contacts-btn');
+  if (back) back.addEventListener('click', () => {
+    if (sidebar) sidebar.classList.remove('mobile-view-hidden');
+    if (chat) chat.classList.add('mobile-view-hidden');
+  });
+  const contacts = document.getElementById('contacts-list');
+  if (contacts) contacts.addEventListener('click', event => {
+    if (window.matchMedia('(max-width: 767px)').matches && event.target.closest('button, [role="button"], [data-contact-id]')) {
+      if (sidebar) sidebar.classList.add('mobile-view-hidden');
+      if (chat) chat.classList.remove('mobile-view-hidden');
+    }
+  });
+  const name = document.getElementById('header-user-clean-name');
+  const navName = document.getElementById('primary-nav-user-name');
+  if (name && navName) {
+    const syncName = () => { navName.textContent = name.textContent.trim() || 'Mi perfil'; };
+    syncName();
+    new MutationObserver(syncName).observe(name, {childList:true,subtree:true,characterData:true});
+  }
+})();
+</script>
 </body>
 </html>
