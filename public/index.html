@@ -614,6 +614,7 @@
   </main>
 
     <!-- Navegación inferior para móviles, según diseño aprobado -->
+    <div id="navigation-status-message" role="status" aria-live="polite" hidden></div>
     <nav id="mobile-primary-navigation" class="mobile-primary-navigation" aria-label="Navegación móvil">
       <button type="button" class="mobile-nav-item is-active" data-primary-view="chats" aria-current="page"><span>▣</span><small>Chats</small></button>
       <button type="button" class="mobile-nav-item" data-primary-view="calls"><span>♧</span><small>Llamadas</small></button>
@@ -5428,42 +5429,63 @@
   const chat = document.getElementById('chat-panel-container');
   const supportedViews = new Set(['chats', 'channels']);
   function activate(view) {
+    const mobile = window.matchMedia('(max-width: 767px)').matches;
     navItems.forEach(button => {
       const active = button.dataset.primaryView === view;
       button.classList.toggle('is-active', active);
       if (active) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
     });
-    if (view === 'channels') {
-      if (tabChannels) tabChannels.click();
-    } else if (view === 'chats' || view === 'contacts') {
-      if (tabDms) tabDms.click();
-    }
     app.dataset.primaryView = view;
-    if (window.matchMedia('(max-width: 767px)').matches) {
-      if (sidebar) sidebar.classList.toggle('mobile-view-hidden', view !== 'chats' && view !== 'channels' && view !== 'contacts');
-      if (chat) chat.classList.toggle('mobile-view-hidden', view !== 'chats' && view !== 'channels');
-      if (view === 'contacts') {
+
+    // Chats and Channels are the two real top-level workspaces available in this build.
+    if (view === 'channels') {
+      if (tabChannels && !tabChannels.classList.contains('is-active')) tabChannels.click();
+      if (sidebarDms) sidebarDms.classList.add('hidden');
+      if (sidebarChannels) sidebarChannels.classList.remove('hidden');
+      if (sidebar) sidebar.classList.remove('mobile-view-hidden');
+      if (chat) chat.classList.add('mobile-view-hidden');
+      return;
+    }
+    if (view === 'chats') {
+      if (tabDms && !tabDms.classList.contains('is-active')) tabDms.click();
+      if (sidebarDms) sidebarDms.classList.remove('hidden');
+      if (sidebarChannels) sidebarChannels.classList.add('hidden');
+      if (mobile) {
         if (sidebar) sidebar.classList.remove('mobile-view-hidden');
-        if (sidebarDms) sidebarDms.classList.remove('hidden');
-        if (sidebarChannels) sidebarChannels.classList.add('hidden');
+        if (chat) chat.classList.add('mobile-view-hidden');
+      } else {
+        if (sidebar) sidebar.classList.remove('mobile-view-hidden');
+        if (chat) chat.classList.remove('mobile-view-hidden');
       }
+      return;
     }
-    if (!supportedViews.has(view)) {
-      const messages = {
-        calls: 'El historial de llamadas se habilitará en esta vista.',
-        files: 'El centro de archivos se abrirá desde una conversación.',
-        settings: 'Abre el engranaje del perfil para configurar tu cuenta.'
-      };
-      if (view === 'calls' || view === 'files' || view === 'settings') {
-        const chatWelcome = document.getElementById('chat-welcome');
-        const title = document.getElementById('active-chat-name');
-        if (title && !document.querySelector('#chat-messages .message-row')) {
-          // Avoid replacing content or changing any underlying chat state.
-          app.dataset.navigationNotice = messages[view] || '';
-        }
-      }
+    if (view === 'contacts') {
+      // Contact management is currently the real direct-contact list and ID search.
+      if (tabDms && !tabDms.classList.contains('is-active')) tabDms.click();
+      if (sidebarDms) sidebarDms.classList.remove('hidden');
+      if (sidebarChannels) sidebarChannels.classList.add('hidden');
+      if (sidebar) sidebar.classList.remove('mobile-view-hidden');
+      if (chat) chat.classList.toggle('mobile-view-hidden', mobile);
+      const search = document.getElementById('contact-search-input');
+      if (search) search.placeholder = 'Buscar contactos por nombre o ID...';
+      return;
     }
+    // Do not present unimplemented screens as if they were functional.
+    const labels = {calls:'Llamadas', files:'Archivos', settings:'Configuración'};
+    const message = document.getElementById('navigation-status-message');
+    if (message) {
+      message.hidden = false;
+      message.textContent = labels[view] + ' todavía no está integrada en esta versión.';
+    }
+    // Keep the last working view selected rather than falsely switching navigation.
+    navItems.forEach(button => {
+      const active = button.dataset.primaryView === 'chats';
+      button.classList.toggle('is-active', active);
+      if (active) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
+    app.dataset.primaryView = 'chats';
   }
   navItems.forEach(button => button.addEventListener('click', () => activate(button.dataset.primaryView)));
   const back = document.getElementById('back-to-contacts-btn');
