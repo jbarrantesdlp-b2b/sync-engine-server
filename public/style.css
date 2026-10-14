@@ -347,3 +347,135 @@ body.dark-mode [role="dialog"] {
   #auth-screen .auth-card { padding: 26px 22px !important; gap: 24px !important; border-radius: 20px !important; }
   #auth-screen .auth-card h2 { font-size: 24px !important; }
 }
+
+
+/* Approved SYNC ENGINE messaging direction: desktop workspace + mobile chat-first.
+   Keep existing DOM hooks and application logic; this layer is visual only. */
+:root {
+  --se-brand-navy: #071a32;
+  --se-brand-blue: #0866f5;
+  --se-brand-cyan: #57d9ff;
+  --se-text: #102443;
+  --se-muted: #6d7f9a;
+  --se-border: #e2eaf4;
+  --se-panel: #ffffff;
+  --se-soft: #f4f7fb;
+}
+body { background: #eef3f9 !important; color: var(--se-text); }
+#app-container { max-width: none !important; background: #edf2f8 !important; }
+#app-container > header.sticky {
+  background: var(--se-brand-navy) !important;
+  color: #f6faff !important;
+  border-bottom: 1px solid rgba(111,174,255,.2) !important;
+  box-shadow: 0 4px 18px rgba(3,16,34,.12) !important;
+}
+#app-container > header.sticky .text-\[\#0A1A3A\],
+#app-container > header.sticky .text-\[\#64748B\],
+#app-container > header.sticky .text-gray-400 { color: #e4edf9 !important; }
+#app-container > header.sticky button,
+#app-container > header.sticky [class*="rounded-xl"] { border-color: rgba(191,214,244,.24) !important; }
+#main-layout { gap: 10px !important; padding: 10px !important; background: #edf2f8 !important; }
+#sidebar-panel {
+  width: 320px !important; flex: 0 0 320px !important;
+  border: 1px solid var(--se-border) !important; border-radius: 16px !important;
+  background: #fff !important; box-shadow: 0 3px 14px rgba(16,36,67,.045) !important;
+}
+#sidebar-panel > div:first-child {
+  background: #f7f9fc !important; border-bottom: 1px solid var(--se-border) !important;
+}
+#sidebar-panel input, #sidebar-panel input:focus {
+  border-color: #d8e3f1 !important; border-radius: 10px !important;
+  background: #f7f9fc !important; box-shadow: none !important;
+}
+#sidebar-panel button { transition: background .16s ease, color .16s ease, border-color .16s ease; }
+#sidebar-panel .workspace-segmented-tab.is-active {
+  background: var(--se-brand-blue) !important; color: white !important;
+  border-color: var(--se-brand-blue) !important;
+}
+#sidebar-pro-card { background: #f5f8fd !important; border-color: #dce7f5 !important; }
+#chat-panel-container { min-width: 0; gap: 0 !important; }
+#workspace-split-container { gap: 0 !important; }
+#chat-panel-container section,
+#chat-panel-container > section,
+#chat-panel-container [class*="chat-pane"] {
+  border: 1px solid var(--se-border) !important; border-radius: 16px !important;
+  background: #fff !important; box-shadow: 0 3px 14px rgba(16,36,67,.045) !important;
+  overflow: hidden;
+}
+#chat-messages {
+  background-color: #f8fafd !important;
+  background-image: radial-gradient(rgba(8,102,245,.045) .7px, transparent .7px) !important;
+  background-size: 18px 18px !important;
+}
+#chat-welcome .empty-state-icon {
+  border-color: #dce7f5 !important; background: white !important; color: var(--se-brand-blue) !important;
+  box-shadow: 0 6px 18px rgba(16,36,67,.06) !important;
+}
+.message-bubble-sent, .message-bubble.sent, [data-message-owner="self"] .message-bubble {
+  background: linear-gradient(135deg,#0878ff,#075de6) !important;
+  color: #fff !important; border-color: transparent !important;
+  border-radius: 18px 18px 5px 18px !important;
+  box-shadow: 0 3px 10px rgba(8,102,245,.13) !important;
+}
+.message-bubble-received, .message-bubble.received {
+  background: #fff !important; color: #142847 !important;
+  border: 1px solid #e5ebf3 !important; border-radius: 18px 18px 18px 5px !important;
+  box-shadow: 0 2px 6px rgba(16,36,67,.035) !important;
+}
+#info-drawer-panel {
+  width: 300px !important; flex: 0 0 300px !important;
+  border: 1px solid var(--se-border) !important; border-radius: 16px !important;
+  background: white !important; box-shadow: 0 3px 14px rgba(16,36,67,.045) !important;
+}
+#info-drawer-panel .panel-head { border-color: var(--se-border) !important; background: #fff !important; }
+#info-drawer-panel input, #info-drawer-panel button { border-color: #e1e9f3; }
+#chat-panel-container textarea,
+#chat-panel-container input[type="text"] {
+  border-color: #dce5f0 !important; border-radius: 14px !important;
+}
+#chat-panel-container button[class*="bg-gradient-to-r"] {
+  background: linear-gradient(135deg,#0b78ff,#075de6) !important;
+}
+#theme-toggle { border-radius: 9px !important; border-color: rgba(180,210,250,.28) !important; color: #eaf4ff !important; background: rgba(255,255,255,.06) !important; }
+#theme-toggle .theme-toggle-label { color: inherit !important; }
+
+/* Mobile: conversation-first canvas, no squeezed three-column desktop layout. */
+@media (max-width: 767px) {
+  html, body { height: 100%; min-height: 100%; overflow: hidden; background: #fff !important; }
+  #app-container { height: 100dvh !important; min-height: 0 !important; }
+  #app-container > header.sticky { padding-top: env(safe-area-inset-top); flex-shrink: 0; }
+  #app-container > header.sticky > div {
+    padding: 8px 12px !important; flex-wrap: nowrap !important; min-height: 54px;
+  }
+  #app-container > header.sticky .hidden.md\:inline,
+  #app-container > header.sticky .hidden.lg\:flex,
+  #header-plan-badge-btn,
+  #open-vault-btn,
+  #theme-toggle .theme-toggle-label { display: none !important; }
+  #main-layout { padding: 0 !important; gap: 0 !important; position: relative; }
+  #sidebar-panel {
+    width: 100% !important; flex: 1 1 100% !important; border: 0 !important;
+    border-radius: 0 !important; box-shadow: none !important;
+  }
+  #chat-panel-container {
+    position: absolute !important; inset: 0 !important; z-index: 15;
+    width: 100% !important; height: 100% !important; background: #fff !important;
+  }
+  #workspace-split-container { flex-direction: column !important; }
+  #info-drawer-panel {
+    position: absolute !important; z-index: 30; top: 0; right: 0; bottom: 0;
+    width: min(90vw, 360px) !important; max-width: 90vw !important;
+    border-radius: 0 !important; box-shadow: -12px 0 36px rgba(7,26,50,.18) !important;
+  }
+  #chat-messages { padding: 12px !important; }
+  #sidebar-pro-card { margin: 8px !important; }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  #sidebar-panel { width: 270px !important; flex-basis: 270px !important; }
+  #info-drawer-panel { width: 260px !important; flex-basis: 260px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app-container *, #app-container *::before, #app-container *::after {
+    animation-duration: .01ms !important; transition-duration: .01ms !important;
+  }
+}
