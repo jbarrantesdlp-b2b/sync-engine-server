@@ -426,13 +426,24 @@ async function startBrowser(t) {
     '/usr/bin/chromium', '/usr/bin/google-chrome'].find((file) => file && fs.existsSync(file));
   if (!executable) { t.skip('Set CHROME_PATH to run real-browser assertions'); return false; }
   const sandboxArgs = (process.env.CI || process.env.CHROMIUM_SANDBOX_DISABLED) ? ['--no-sandbox'] : [];
-  browserProcess = spawn(executable, [...sandboxArgs, '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--disable-background-networking', '--remote-debugging-port=0', '--user-data-dir=' + path.join(tempDir, 'browser'),
+  // GitHub-hosted Linux runners have constrained shared memory and no desktop bus.
+  // Use an isolated profile and disable features that can stall headless startup there.
+  const browserProfile = fs.mkdtempSync(path.join(tempDir, 'browser-profile-'));
+  browserProcess = spawn(executable, [...sandboxArgs, '--headless=new', '--disable-gpu', '--disable-dev-shm-usage',
+    '--no-zygote', '--no-first-run', '--no-default-browser-check', '--disable-background-networking',
+    '--remote-debugging-port=0', '--user-data-dir=' + browserProfile,
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   const browserUrl = await new Promise((resolve, reject) => {
     let stderr = '';
-    const timer = setTimeout(() => reject(new Error('Chromium startup timeout: ' + stderr)), 20000);
-    browserProcess.once('error', (error) => { clearTimeout(timer); reject(error); });
+    const timer = setTimeout(() => {
+      if (browserProcess && browserProcess.exitCode === null) browserProcess.kill('SIGKILL');
+      reject(new Error('Chromium startup timeout after 35s: ' + stderr));
+    }, 35000);
+    browserProcess.once('error', (error) => {
+      clearTimeout(timer);
+      if (browserProcess && browserProcess.exitCode === null) browserProcess.kill('SIGKILL');
+      reject(error);
+    });
     browserProcess.stderr.on('data', (chunk) => {
       stderr += chunk;
       const match = stderr.match(/DevTools listening on (ws:\/\/[^\s]+)/);

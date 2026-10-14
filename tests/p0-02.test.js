@@ -313,24 +313,24 @@ test('TEST 10: real WAV and generated WebM video load/play through authorized st
   assert.equal(audioResult.duration, 1);
   assert.ok(audioResult.state >= 1);
   const video = await alicePage.evaluate(`(async () => {
-    const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
-    const stream = canvas.captureStream(0);
-    const track = stream.getVideoTracks()[0];
-    const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
-    const chunks = [];
-    recorder.ondataavailable = event => { if (event.data.size) chunks.push(event.data); };
-    const stopped = new Promise(resolve => { recorder.onstop = resolve; });
-    recorder.start();
-    const context = canvas.getContext('2d');
-    for (let frame = 0; frame < 3; frame++) {
-      context.fillStyle = frame % 2 ? '#fff' : '#000';
-      context.fillRect(0, 0, 32, 32);
-      track.requestFrame();
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // Deterministic, pre-encoded VP8/WebM fixture (32x32, 1 second).
+    // Avoids MediaRecorder/real-time encoding differences across CI Chromium builds.
+    const webmBytes = Buffer.from('GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQJChYECGFOAZwEAAAAAAAIDEU2bdLpNu4tTq4QVSalmU6yBoU27i1OrhBZUrmtTrIHWTbuMU6uEElTDZ1OsggEjTbuMU6uEHFO7a1OsggHt7AEAAAAAAABZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmsCrXsYMPQkBNgIxMYXZmNjEuNy4xMDNXQYxMYXZmNjEuNy4xMDNEiYhAj0AAAAAAABZUrmvIrgEAAAAAAAA/14EBc8WIXUYetILvUC6cgQAitZyDdW5kiIEAhoVWX1ZQOIOBASPjg4QdzWUA4JCwgSC6gSCagQJVsIRVuYEBElTDZ/tzc59jwIBnyJlFo4dFTkNPREVSRIeMTGF2ZjYxLjcuMTAzc3PWY8CLY8WIXUYetILvUC5nyKFFo4dFTkNPREVSRIeUTGF2YzYxLjE5LjEwMSBsaWJ2cHhnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAxLjAwMDAwMDAwMAAfQ7Z1xeeBAKOkgQAAgDACAJ0BKiAAIAAARwiFhYiZhIgCAgAHkPPJwP7/q1CAo5qBAfQA0QEAARAQABgAHlf0DAAPmAD+/6tQgBxTu2uRu4+zgQC3iveBAfGCAaPwgQM=', 'base64');
+    const webmBlob = new Blob([webmBytes], { type: 'video/webm' });
+    const localUrl = URL.createObjectURL(webmBlob);
+    try {
+      await new Promise((resolve, reject) => {
+        const localVideo = document.createElement('video');
+        localVideo.muted = true;
+        localVideo.onloadeddata = () => localVideo.videoWidth === 32 && localVideo.videoHeight === 32
+          ? resolve() : reject(new Error('Fixture WebM decoded with unexpected dimensions: ' + localVideo.videoWidth + 'x' + localVideo.videoHeight));
+        localVideo.onerror = () => reject(new Error('Known WebM fixture failed local decoding (' + webmBytes.length + ' bytes)'));
+        localVideo.src = localUrl;
+      });
+    } finally {
+      URL.revokeObjectURL(localUrl);
     }
-    recorder.stop(); await stopped;
-    stream.getTracks().forEach(track => track.stop());
-    const body = new FormData(); body.append('file', new Blob(chunks, { type: 'video/webm' }), 'sample.webm');
+    const body = new FormData(); body.append('file', webmBlob, 'sample.webm');
     const response = await fetch('/api/upload', { method: 'POST', headers: { Authorization: 'Bearer test-alice' }, body });
     const file = (await response.json()).file;
     await new Promise((resolve, reject) => {
@@ -340,7 +340,35 @@ test('TEST 10: real WAV and generated WebM video load/play through authorized st
     });
     const video = document.createElement('video'); video.muted = true; video.src = file.url;
     document.body.appendChild(video);
-    await new Promise((resolve, reject) => { video.onloadeddata = resolve; video.onerror = () => reject(new Error('Video failed')); });
+    await new Promise((resolve, reject) => {
+      video.onloadeddata = resolve;
+      video.onerror = async () => {
+        let responseInfo = { fetchError: null };
+        try {
+          const response = await fetch(file.url);
+          const bytes = await response.clone().arrayBuffer();
+          responseInfo = {
+            status: response.status,
+            contentType: response.headers.get('content-type'),
+            contentLength: response.headers.get('content-length'),
+            contentRange: response.headers.get('content-range'),
+            acceptRanges: response.headers.get('accept-ranges'),
+            cacheControl: response.headers.get('cache-control'),
+            bytesReceived: bytes.byteLength
+          };
+        } catch (error) {
+          responseInfo.fetchError = String(error && error.message || error);
+        }
+        reject(new Error('Video failed: ' + JSON.stringify({
+          mediaError: video.error ? { code: video.error.code, message: video.error.message } : null,
+          networkState: video.networkState,
+          readyState: video.readyState,
+          currentSrc: video.currentSrc,
+          fixtureBytes: webmBytes.length,
+          response: responseInfo
+        })));
+      };
+    });
     await video.play(); video.pause();
     return { file, width: video.videoWidth, height: video.videoHeight };
   })()`);
