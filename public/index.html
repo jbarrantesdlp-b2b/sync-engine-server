@@ -5477,8 +5477,13 @@
       if (search) search.placeholder = 'Buscar contactos por nombre o ID...';
       return;
     }
+    if (view === 'settings') {
+      const profile = document.getElementById('open-edit-profile-btn');
+      if (profile) profile.click();
+      return;
+    }
     // Do not present unimplemented screens as if they were functional.
-    const labels = {calls:'Llamadas', files:'Archivos', settings:'Configuración'};
+    const labels = {calls:'Llamadas', files:'Archivos'};
     const message = document.getElementById('navigation-status-message');
     if (message) {
       message.hidden = false;
