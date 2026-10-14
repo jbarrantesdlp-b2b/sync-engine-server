@@ -1,154 +1,213 @@
 /* ==========================================================================
-   SYNC ENGINE — EXECUTIVE ULTRA-MINIMAL & FLUID REDESIGN
-   ========================================================================= */
+   SYNC ENGINE — RED UI BASELINE
+   Visual layer only. Preserve application logic, API contracts and DOM IDs.
+   ========================================================================== */
 :root {
-  --bg-main: #ffffff;
-  --bg-card: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --border-subtle: #f1f5f9;
-  --accent-electric: #00bfff;
-  --accent-cobalt: #0052d4;
-  --radius-premium: 14px;
+  color-scheme: light;
+  --se-bg: #f7f9fc;
+  --se-surface: #ffffff;
+  --se-surface-muted: #f1f5f9;
+  --se-ink: #0a1a3a;
+  --se-ink-soft: #52627c;
+  --se-muted: #718096;
+  --se-line: #e5eaf2;
+  --se-blue: #0062ff;
+  --se-blue-deep: #0a1a3a;
+  --se-gold: #c5a059;
+  --se-focus: rgba(0, 98, 255, .18);
+  --se-radius-sm: 10px;
+  --se-radius-md: 16px;
+  --se-radius-lg: 22px;
+  --se-shadow: 0 8px 28px rgba(10, 26, 58, .06);
+  --se-motion: 180ms cubic-bezier(.2, .7, .2, 1);
 }
 
-/* Base Restorations — Pure Clean Backgrounds */
-html, body { 
-  background: var(--bg-main) !important; 
-  color: var(--text-primary) !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+html, body {
+  min-height: 100%;
+  background: var(--se-bg);
+  color: var(--se-ink);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-#app-container { 
-  background: var(--bg-main) !important; 
-  box-shadow: none !important; 
+body { margin: 0; }
+button, input, textarea, select { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid var(--se-focus);
+  outline-offset: 2px;
 }
 
-/* Header Integration — Line-based & Microscopic */
+#app-container {
+  background: var(--se-bg);
+  color: var(--se-ink);
+  box-shadow: none;
+}
+
+/* Header: compact, clear hierarchy, subtle glass surface. */
 #app-container > header.sticky {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-bottom: 1px solid var(--border-subtle) !important;
-  box-shadow: none !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, .94);
+  border-bottom: 1px solid var(--se-line);
+  box-shadow: 0 2px 12px rgba(10, 26, 58, .035);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-/* Elimination of heavy gray boxes / labels */
 #app-container > header #header-plan-badge-btn,
 #app-container > header #open-vault-btn,
 #app-container > header #user-identity-badge {
-  background: transparent !important;
-  border: none !important;
-  font-size: 12px !important;
-  color: var(--text-secondary) !important;
-  padding: 4px 8px !important;
+  border-radius: 999px;
+  font-size: 12px;
 }
 
-/* Premium Inputs with Electric Focus */
-#contact-search-input, #chat-search-input, input, textarea { 
-  background: #ffffff !important; 
-  color: var(--text-primary) !important;
-  border: 1px solid #e2e8f0 !important; 
-  border-radius: var(--radius-premium) !important;
-  height: 42px !important;
-  padding: 0 14px !important;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+/* Surfaces and dividers. Avoid changing display/position rules owned by layout. */
+#sidebar-panel, #chat-panel, #info-panel, #info-drawer-panel {
+  border-color: var(--se-line);
+}
+#sidebar-panel, #chat-panel, #info-panel {
+  background: var(--se-surface);
+}
+#contacts-list > *, #contact-list > * {
+  transition: background-color var(--se-motion), border-color var(--se-motion), transform var(--se-motion);
+}
+#contacts-list > *:hover, #contact-list > *:hover {
+  background-color: #f5f8ff;
 }
 
-#contact-search-input:focus, #chat-search-input:focus, input:focus, textarea:focus { 
-  border-color: var(--accent-electric) !important; 
-  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.15) !important; 
+/* Inputs: consistent sizing without forcing a fixed height on multiline fields. */
+#contact-search-input, #chat-search-input, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+textarea, select {
+  color: var(--se-ink);
+  border-color: #dbe3ef;
+  border-radius: var(--se-radius-sm);
+  transition: border-color var(--se-motion), box-shadow var(--se-motion), background-color var(--se-motion);
+}
+#contact-search-input, #chat-search-input, input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select {
+  min-height: 42px;
+}
+textarea { min-height: 42px; }
+#contact-search-input:focus, #chat-search-input:focus, input:focus, textarea:focus, select:focus {
+  border-color: var(--se-blue);
+  box-shadow: 0 0 0 3px var(--se-focus);
 }
 
-/* Electric Brand Signature Messaging Bubbles */
+/* Buttons: restrained motion, visible interaction and touch feedback. */
+button, [role="button"] {
+  transition: background-color var(--se-motion), border-color var(--se-motion), color var(--se-motion), box-shadow var(--se-motion), transform var(--se-motion);
+}
+button:active, [role="button"]:active { transform: scale(.985); }
+button:disabled { cursor: not-allowed; opacity: .55; }
+
+/* Conversation messages: distinguish sender and recipient without neon gradients. */
 .message-bubble-sent {
-  background: linear-gradient(135deg, var(--accent-cobalt), var(--accent-electric)) !important;
-  color: #ffffff !important;
-  border-radius: 18px 18px 4px 18px !important;
+  background: var(--se-blue-deep);
+  color: #fff;
+  border: 1px solid rgba(10, 26, 58, .08);
+  border-radius: 18px 18px 5px 18px;
+  box-shadow: 0 3px 10px rgba(10, 26, 58, .08);
 }
-
 .message-bubble-received {
-  background: #f1f5f9 !important;
-  color: var(--text-primary) !important;
-  border-radius: 18px 18px 18px 4px !important;
+  background: var(--se-surface-muted);
+  color: var(--se-ink);
+  border: 1px solid var(--se-line);
+  border-radius: 18px 18px 18px 5px;
+}
+#chat-messages { scroll-behavior: smooth; }
+#chat-textarea, #message-input { line-height: 1.5; }
+
+/* Dialogs, drawers and menus: consistent premium surfaces. */
+.modal-surface, [role="dialog"] {
+  background: var(--se-surface);
+  border: 1px solid var(--se-line);
+  box-shadow: 0 24px 80px rgba(10, 26, 58, .18);
+}
+.modal-surface { border-radius: var(--se-radius-lg); }
+#info-drawer-panel { background: var(--se-surface); }
+
+/* Motion respects accessibility preferences. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-motion-list] > * {
+    animation: se-message-enter 220ms cubic-bezier(.2, .7, .2, 1) both;
+    animation-delay: calc(min(var(--motion-index, 0), 5) * 24ms);
+  }
+  @keyframes se-message-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }
 
-/* Luxurious Notorious Animations (Framer Motion emulation via CSS) */
-[data-motion-list] > * { 
-  animation: chatCascade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: calc(var(--motion-index, 0) * 0.08s); 
+/* Small-screen workspace: preserve existing DOM/layout rules; improve usability. */
+@media (max-width: 767px) {
+  html, body { min-height: 100dvh; }
+  #app-container > header.sticky {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  #contact-search-input, #chat-search-input,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select { font-size: 16px; }
+  .message-bubble-sent, .message-bubble-received { overflow-wrap: anywhere; }
+  .modal-surface { border-radius: 22px 22px 0 0; }
+  button, [role="button"] { touch-action: manipulation; }
 }
 
-@keyframes chatCascade { 
-  from { opacity: 0; transform: translateY(35px) scale(0.96); } 
-  to { opacity: 1; transform: translateY(0) scale(1); } 
+/* Dark mode follows explicit user preference/class only. */
+html.dark-mode, body.dark-mode {
+  color-scheme: dark;
+  --se-bg: #080d18;
+  --se-surface: #0e1626;
+  --se-surface-muted: #172236;
+  --se-ink: #f2f5fb;
+  --se-ink-soft: #c0cada;
+  --se-muted: #98a6bd;
+  --se-line: rgba(226, 234, 246, .12);
+  --se-focus: rgba(77, 145, 255, .25);
+  background: var(--se-bg);
+  color: var(--se-ink);
 }
-
-/* Bottom-sheet elastic transitions for Modals */
-.modal-surface { 
-  background: #ffffff !important;
-  border-radius: 24px 24px 0 0 !important;
-  animation: sheetIn 0.45s cubic-bezier(0.32, 0.94, 0.6, 1) both; 
+body.dark-mode #app-container,
+body.dark-mode #main-layout,
+body.dark-mode #sidebar-panel,
+body.dark-mode #chat-panel,
+body.dark-mode #info-panel,
+body.dark-mode #info-drawer-panel {
+  background: var(--se-bg);
+  color: var(--se-ink);
+  border-color: var(--se-line);
 }
-
-@keyframes sheetIn { 
-  from { transform: translateY(100%); } 
-  to { transform: translateY(0); } 
+body.dark-mode #app-container > header.sticky {
+  background: rgba(8, 13, 24, .92);
+  border-bottom-color: var(--se-line);
 }
-
-/* Canonical Mark Signature Placement (Lower-Left Desktop) */
-#app-container::after { 
-  content: ''; 
-  position: absolute; 
-  left: 24px; 
-  bottom: 24px; 
-  width: 32px; 
-  height: 32px; 
-  z-index: 50; 
-  background: url('/assets/SYNC_ENGINE_Mark_S_Infinito_Transparente.png') center / contain no-repeat; 
-  opacity: 0.8; 
-  pointer-events: none; 
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select,
+body.dark-mode #contact-search-input,
+body.dark-mode #chat-search-input {
+  background: #111c2e;
+  color: var(--se-ink);
+  border-color: var(--se-line);
 }
-
-/* ==========================================================================
-   PURE BLACK TITANIUM DARK MODE INTERFACE
-   ========================================================================= */
-html.dark-mode, body.dark-mode { 
-  --bg-main: #05070b; 
-  --text-primary: #f8fafc; 
-  --text-secondary: #71717a; 
-  --border-subtle: rgba(255, 255, 255, 0.06); 
-  color-scheme: dark; 
-}
-
-body.dark-mode #app-container, body.dark-mode #main-layout { 
-  background: #05070b !important; 
-}
-
-body.dark-mode #app-container > header.sticky { 
-  background: rgba(5, 7, 11, 0.8) !important; 
-  border-bottom-color: var(--border-subtle) !important; 
-}
-
-body.dark-mode #sidebar-panel, body.dark-mode #chat-panel, body.dark-mode #info-panel { 
-  background: rgba(255, 255, 255, 0.02) !important; 
-  border-color: var(--border-subtle) !important; 
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  box-shadow: none !important;
-}
-
-body.dark-mode #contact-search-input, body.dark-mode #chat-search-input, body.dark-mode input, body.dark-mode textarea { 
-  background: rgba(255, 255, 255, 0.03) !important; 
-  border-color: rgba(255, 255, 255, 0.08) !important; 
-}
-
 body.dark-mode .message-bubble-received {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px);
+  background: var(--se-surface-muted);
+  color: var(--se-ink);
+  border-color: var(--se-line);
+}
+body.dark-mode .modal-surface,
+body.dark-mode [role="dialog"] {
+  background: var(--se-surface);
+  color: var(--se-ink);
+  border-color: var(--se-line);
 }
 
-body.dark-mode .modal-surface {
-  background: #0b0f19 !important;
-}
+/* No decorative logo overlay: branding is owned by the app header/sidebar. */
+#app-container::after { content: none; }
