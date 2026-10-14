@@ -32,5 +32,3 @@ jobs:
 
     - name: Ejecutar pruebas
       run: npm test --if-present
-      env:
-        CHROMIUM_SANDBOX_DISABLED: true

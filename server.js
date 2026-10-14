@@ -2,16 +2,11 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 // ==== Web Push Setup ====
 const webPush = require('web-push');
-const { cert, getApps, initializeApp } = require('firebase-admin/app');
-const { getMessaging } = require('firebase-admin/messaging');
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "";
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "";
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "BD7oG-w_r6z79_nS7N4K43m_B9k4vN5uP8q9l2m3n4o5p6q7r8s9t0u1v2w3x4y5z_SYNC_ENGINE_KEY";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "YOUR_PRIVATE_VAPID_KEY_PLACEHOLDER";
 const VAPID_EMAIL = process.env.VAPID_EMAIL || 'mailto:admin@syncengine.local';
 let webPushConfigured = false;
 try {
-  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-    throw new Error("VAPID_PUBLIC_KEY y VAPID_PRIVATE_KEY no están configuradas");
-  }
   webPush.setVapidDetails(
     VAPID_EMAIL,
     VAPID_PUBLIC_KEY,
@@ -23,6 +18,21 @@ try {
     ? "[Push] Web Push deshabilitado; el servidor continuará sin notificaciones push."
     : "[Push] Web Push deshabilitado: configure claves VAPID válidas.";
   console.warn(message, err.message);
+}
+
+// Helper to store subscription per syncId (multiple devices allowed)
+function storeSubscription(syncId, subscription) {
+  const dbData = db.readDb ? db.readDb() : db.readDb(); // Ensure db is loaded
+  if (!dbData.subscriptions) dbData.subscriptions = {};
+  if (!Array.isArray(dbData.subscriptions[syncId])) {
+    dbData.subscriptions[syncId] = [];
+  }
+  // Avoid duplicates based on endpoint
+  const exists = dbData.subscriptions[syncId].some(sub => sub.endpoint === subscription.endpoint);
+  if (!exists) {
+    dbData.subscriptions[syncId].push(subscription);
+    db.writeDb(dbData);
+  }
 }
 
 // Helper to send push notification to all stored subscriptions for a syncId
@@ -45,62 +55,25 @@ async function sendPushNotification(syncId, payload) {
   await Promise.all(promises);
 }
 
+// Extend send-private-message logic for offline push notification
+// (Insert after line 560 where message is emitted to target sockets)
+// Note: The following code snippet will be inserted at the appropriate location in the existing function.
+/*
+if (!isTargetOnline) {
+  // Prepare minimal push payload
+  const pushPayload = {
+    title: 'Nuevo mensaje de ' + sender.formattedName,
+    body: text.length > 100 ? text.slice(0, 97) + '...' : text,
+    icon: '/assets/logo.png',
+    data: { syncId: targetSyncId, fromSyncId: sender.syncId, type: 'message' }
+  };
+  sendPushNotification(targetSyncId, pushPayload).catch(e => console.warn('[Push] envío fallido:', e.message));
+}
+*/
+
 // ==== End of Web Push Additions ====
-
-// ==== Firebase Cloud Messaging for native Android ====
-let firebaseMessaging = null;
-try {
-  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
-    const app = getApps().length
-      ? getApps()[0]
-      : initializeApp({ credential: cert(serviceAccount) });
-    firebaseMessaging = getMessaging(app);
-  } else if (process.env.NODE_ENV === "production") {
-    console.warn("[FCM] Notificaciones Android deshabilitadas: falta FIREBASE_SERVICE_ACCOUNT.");
-  }
-} catch (err) {
-  console.error("[FCM] No se pudo configurar Firebase Admin:", err.message);
-}
-
-/**
- * Envía una notificación push a los dispositivos Android del usuario.
- * No incluye tokens de acceso ni ofertas WebRTC en el payload.
- * @param {string} syncId Usuario destinatario.
- * @param {{title:string,body:string,type:string}} payload Notificación visible y tipo.
- */
-async function sendMobilePushNotification(syncId, payload) {
-  if (!firebaseMessaging) return;
-  const tokens = db.getMobilePushTokens(syncId);
-  if (!tokens.length) return;
-  const stale = [];
-  await Promise.all(tokens.map(async ({ token }) => {
-    try {
-      await firebaseMessaging.send({
-        token,
-        data: {
-          title: String(payload.title || "SYNC ENGINE").slice(0, 120),
-          body: String(payload.body || "").slice(0, 240),
-          type: String(payload.type || "message"),
-          syncId: String(syncId)
-        },
-        android: { priority: "high" }
-      });
-    } catch (err) {
-      if (err.code === "messaging/registration-token-not-registered" ||
-          err.code === "messaging/invalid-registration-token") {
-        stale.push(token);
-      } else {
-        console.warn("[FCM] Falló el envío a un dispositivo:", err.message);
-      }
-    }
-  }));
-  for (const token of stale) db.removeMobilePushToken(syncId, token);
-}
-
-// ==== End of Firebase Cloud Messaging ====
 const fs = require("fs");
+const dns = require("dns").promises;
 const http = require("http");
 const https = require("https");
 const os = require("os");
@@ -113,8 +86,60 @@ const selfsigned = require("selfsigned");
 const db = require("./db");
 const { safeUrl } = require("./public/safe-content");
 
+const asyncHandler = (fn) => (req, res, next) => {
+  fn(req, res, next).catch(next);
+};
+
 const PORT = (process.env.PORT && process.env.PORT !== "8080") ? process.env.PORT : 3000;
 const HOST = "0.0.0.0";
+const configuredCorsOrigins = new Set(String(process.env.CORS_ORIGINS || "").split(",").map((origin) => origin.trim()).filter(Boolean));
+
+function isAllowedCorsOrigin(origin) {
+  if (!origin) return true;
+  if (origin.startsWith("chrome-extension://") || origin.startsWith("moz-extension://")) return true;
+  return configuredCorsOrigins.has(origin);
+}
+
+function isPrivateAddress(address) {
+  const value = String(address || "").toLowerCase().replace(/^\[|\]$/g, "");
+  if (!value) return true;
+  if (value === "localhost" || value.endsWith(".localhost") || value.endsWith(".local") ||
+      value === "::" || value === "::1" || value.startsWith("fc") || value.startsWith("fd") ||
+      value.startsWith("fe8") || value.startsWith("fe9") || value.startsWith("fea") ||
+      value.startsWith("feb") || value.startsWith("ff")) return true;
+  if (value.startsWith("::ffff:")) return isPrivateAddress(value.slice(7));
+  if (value.includes(":")) {
+    // Reject IPv6 non-global special-use ranges not covered above.
+    if (value.startsWith("2001:db8:") || value.startsWith("2001:10:") ||
+        value.startsWith("2001:2:") || value.startsWith("2002:") ||
+        value.startsWith("64:ff9b:") || value.startsWith("100:")) return true;
+    return false;
+  }
+  const octets = value.split(".").map(Number);
+  if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) return false;
+  return octets[0] === 10 || octets[0] === 127 || octets[0] === 0 ||
+    (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+    (octets[0] === 192 && octets[1] === 168) ||
+    (octets[0] === 169 && octets[1] === 254) ||
+    (octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127) ||
+    (octets[0] === 192 && octets[1] === 0 && octets[2] === 0) ||
+    (octets[0] === 198 && (octets[1] === 18 || octets[1] === 19)) ||
+    (octets[0] === 198 && octets[1] === 51 && octets[2] === 100) ||
+    (octets[0] === 203 && octets[1] === 0 && octets[2] === 113) ||
+    octets[0] >= 224;
+}
+
+async function assertPublicPreviewUrl(targetUrl) {
+  const parsed = new URL(targetUrl);
+  if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password || !parsed.hostname) {
+    throw new Error("URL de vista previa no válida");
+  }
+  if (isPrivateAddress(parsed.hostname)) throw new Error("El destino de la vista previa no está permitido");
+  const addresses = await dns.lookup(parsed.hostname, { all: true, verbatim: true });
+  if (!addresses.length || addresses.some((entry) => isPrivateAddress(entry.address))) {
+    throw new Error("El destino de la vista previa no está permitido");
+  }
+}
 
 function getLocalIPv4Addresses() {
   const nets = os.networkInterfaces();
@@ -135,21 +160,46 @@ function getLocalIPv4Addresses() {
 }
 
 const app = express();
+const authAttempts = new Map();
+const AUTH_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_MAX_ATTEMPTS = 5;
+const AUTH_MAX_TRACKED_IPS = 10000;
+
+function authRateLimit(req, res, next) {
+  const now = Date.now();
+  // Expire stale keys and bound memory use when requests arrive from many IPs.
+  for (const [ip, attempt] of authAttempts) {
+    if (attempt.resetAt <= now) authAttempts.delete(ip);
+  }
+  const key = req.ip || req.socket?.remoteAddress || "unknown";
+  const current = authAttempts.get(key);
+  if (!current || current.resetAt <= now) {
+    if (authAttempts.size >= AUTH_MAX_TRACKED_IPS) {
+      const oldestKey = authAttempts.keys().next().value;
+      if (oldestKey !== undefined) authAttempts.delete(oldestKey);
+    }
+    authAttempts.set(key, { count: 1, resetAt: now + AUTH_WINDOW_MS });
+    return next();
+  }
+  if (current.count >= AUTH_MAX_ATTEMPTS) {
+    res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
+    return res.status(429).json({ error: "Demasiados intentos de autenticación; inténtalo en 15 minutos." });
+  }
+  current.count += 1;
+  next();
+}
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || origin.startsWith("chrome-extension://") || origin.startsWith("moz-extension://") || origin === "null") {
-      return callback(null, true);
-    }
-    return callback(null, true);
+    return callback(null, isAllowedCorsOrigin(origin));
   },
   credentials: true
 };
 app.use(cors(corsOptions));
 
-// Configuración de body-parser para soporte de transferencias pesadas de hasta 2 GB
-app.use(express.json({ limit: "2gb" }));
-app.use(express.urlencoded({ limit: "2gb", extended: true }));
+// Configuración de body-parser limitada a 1 MB para prevenir ataques DoS en memoria
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ limit: "1mb", extended: true }));
 app.use(
   "/.well-known",
   express.static(path.join(__dirname, "public", ".well-known"), {
@@ -213,12 +263,25 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 2 * 1024 * 1024 * 1024 // 2 GB
-  }
-});
+const MAX_STANDARD_UPLOAD_BYTES = 50 * 1024 * 1024;
+const MAX_PREMIUM_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024;
+
+function uploadSingleFileForPlan(req, res, next) {
+  const plan = String(req.user?.plan || "free").trim().toLowerCase();
+  const maxBytes = plan === "enterprise" || plan === "pro"
+    ? MAX_PREMIUM_UPLOAD_BYTES
+    : MAX_STANDARD_UPLOAD_BYTES;
+
+  multer({
+    storage: storage,
+    limits: { fileSize: maxBytes }
+  }).single("file")(req, res, (err) => {
+    if (err && err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({ error: "El archivo supera el límite del plan" });
+    }
+    return next(err);
+  });
+}
 
 // Middleware de Autenticación
 function requireAuth(req, res, next) {
@@ -320,8 +383,21 @@ function messageFileIds(senderId, references, serverHost) {
 }
 
 // Endpoint to receive subscription from client
-app.get('/api/notifications/vapid-public-key', requireAuth, (_req, res) => {
-  res.json({ ok: true, configured: webPushConfigured, publicKey: webPushConfigured ? VAPID_PUBLIC_KEY : null });
+app.post('/api/notifications/subscribe', requireAuth, (req, res) => {
+  const { syncId, subscription } = req.body || {};
+  if (!syncId || !subscription) {
+    return res.status(400).json({ error: 'syncId y subscription son requeridos' });
+  }
+  if (String(syncId).trim().toUpperCase() !== req.user.syncId) {
+    return res.status(403).json({ error: 'No puedes registrar notificaciones para otro usuario' });
+  }
+  try {
+    storeSubscription(syncId, subscription);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('[Push] Error storing subscription:', err);
+    return res.status(500).json({ error: 'Error interno al guardar suscripción' });
+  }
 });
 
 // Extractor de Metadatos OpenGraph y Favicon para Rich Link Cards
@@ -333,6 +409,7 @@ async function fetchUrlMetadata(text) {
   const targetUrl = match[0];
   try {
     const parsed = new URL(targetUrl);
+    await assertPublicPreviewUrl(targetUrl);
     const domain = parsed.hostname;
     const defaultFavicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
@@ -341,6 +418,7 @@ async function fetchUrlMetadata(text) {
 
     const response = await fetch(targetUrl, {
       signal: controller.signal,
+      redirect: "manual",
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
@@ -410,7 +488,7 @@ async function fetchUrlMetadata(text) {
 }
 
 // Rutas de Autenticación
-app.post("/api/auth/register", (req, res) => {
+app.post("/api/auth/register", authRateLimit, (req, res) => {
   try {
     const { username, password, displayName } = req.body || {};
     const user = db.registerUser(username, password, displayName);
@@ -421,7 +499,7 @@ app.post("/api/auth/register", (req, res) => {
   }
 });
 
-app.post("/api/auth/login", (req, res) => {
+app.post("/api/auth/login", authRateLimit, (req, res) => {
   try {
     const { username, password } = req.body || {};
     const result = db.loginUser(username, password);
@@ -431,21 +509,18 @@ app.post("/api/auth/login", (req, res) => {
   }
 });
 
-/**
- * Resumen para el widget nativo de Android.
- * Query: callsSince (ms epoch) limita las llamadas perdidas contadas.
- */
-app.get("/api/widget/summary", requireAuth, (req, res) => {
-  res.set("Cache-Control", "no-store");
-  res.json({ ok: true, ...db.getWidgetSummary(req.user.syncId, req.query.callsSince) });
-});
-
 app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({ ok: true, user: req.user });
 });
 
+app.post("/api/auth/logout", requireAuth, (req, res) => {
+  const token = req.headers.authorization.slice(7).trim();
+  db.revokeSession(token);
+  res.json({ ok: true });
+});
+
 // Endpoint de Registro Web Push inyectado de forma segura
-app.post("/api/save-subscription", requireAuth, async (req, res) => {
+app.post("/api/save-subscription", requireAuth, asyncHandler(async (req, res) => {
   try {
     const subscription = req.body?.subscription || req.body;
 
@@ -469,32 +544,10 @@ app.post("/api/save-subscription", requireAuth, async (req, res) => {
     console.error("[Push] Error al guardar suscripción:", err);
     return res.status(500).json({ ok: false, error: "Error interno al guardar la suscripción" });
   }
-});
-
-/** Registra un token FCM Android en la cuenta autenticada. */
-app.post("/api/mobile/push-token", requireAuth, (req, res) => {
-  const token = req.body?.token;
-  if (typeof token !== "string" || token.length < 20 || token.length > 4096) {
-    return res.status(400).json({ ok: false, error: "Token FCM inválido" });
-  }
-  if (!db.saveMobilePushToken(req.user.syncId, token)) {
-    return res.status(400).json({ ok: false, error: "No se pudo registrar el dispositivo" });
-  }
-  return res.status(201).json({ ok: true });
-});
-
-/** Retira el token FCM de la cuenta autenticada (p. ej. al cerrar sesión). */
-app.delete("/api/mobile/push-token", requireAuth, (req, res) => {
-  const token = req.body?.token;
-  if (typeof token !== "string" || !token) {
-    return res.status(400).json({ ok: false, error: "Token FCM requerido" });
-  }
-  db.removeMobilePushToken(req.user.syncId, token);
-  return res.json({ ok: true });
-});
+}));
 
 // Rutas de Usuario y Perfil
-app.post("/api/user/profile", requireAuth, async (req, res) => {
+app.post("/api/user/profile", requireAuth, asyncHandler(async (req, res) => {
   try {
     const { displayName, avatarUrl } = req.body || {};
     if (avatarUrl !== undefined && avatarUrl !== null && !safeUrl(avatarUrl, "avatar")) {
@@ -506,13 +559,22 @@ app.post("/api/user/profile", requireAuth, async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message || "Error al actualizar perfil" });
   }
-});
+}));
 
 // Endpoint de Subida de Documentos y Archivos Pesados (hasta 2 GB sin compresión)
-app.post("/api/upload", requireAuth, upload.single("file"), async (req, res) => {
+app.post("/api/upload", requireAuth, uploadSingleFileForPlan, asyncHandler(async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No se proporcionó ningún archivo" });
+    }
+
+    const plan = String(req.user.plan || "free").trim().toLowerCase();
+    const maxUploadBytes = plan === "enterprise" || plan === "pro"
+      ? MAX_PREMIUM_UPLOAD_BYTES
+      : MAX_STANDARD_UPLOAD_BYTES;
+    if (req.file.size > maxUploadBytes) {
+      try { await fs.promises.unlink(req.file.path); } catch (_) {}
+      return res.status(413).json({ error: "El archivo supera el límite del plan" });
     }
 
     const registeredFile = await db.registerFile(req.user.syncId, req.file);
@@ -541,7 +603,7 @@ app.post("/api/upload", requireAuth, upload.single("file"), async (req, res) => 
   } catch (err) {
     res.status(500).json({ error: "Error al procesar subida de archivo: " + err.message });
   }
-});
+}));
 
 // Rutas de Contactos
 app.get("/api/contacts", requireAuth, (req, res) => {
@@ -596,12 +658,12 @@ app.delete("/api/messages/:contactSyncId", requireAuth, (req, res) => {
 });
 
 // Endpoint auxiliar para vista previa de enlaces
-app.get("/api/link-preview", requireAuth, async (req, res) => {
+app.get("/api/link-preview", requireAuth, asyncHandler(async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: "URL requerida" });
   const preview = await fetchUrlMetadata(url);
   res.json({ ok: true, preview: preview });
-});
+}));
 
 app.get('/api/status', function (_req, res) {
   res.json({
@@ -650,6 +712,9 @@ app.get("/api/billing/plan", requireAuth, (req, res) => {
 });
 
 app.post("/api/billing/upgrade", requireAuth, (req, res) => {
+  if (process.env.ALLOW_TEST_BILLING !== "true") {
+    return res.status(403).json({ error: "La actualización de plan de prueba está deshabilitada. Contacte a ventas BARRANTES CO. para facturación B2B." });
+  }
   const { plan, billingCycle, paymentDetails } = req.body || {};
   try {
     const result = db.upgradeUserPlan(req.user.syncId, plan, billingCycle, paymentDetails);
@@ -677,6 +742,35 @@ app.post("/api/billing/apply-coupon", requireAuth, (req, res) => {
     res.json({ ok: true, valid: true, discountPercent: coupons[cleanCode], code: cleanCode });
   } else {
     res.status(400).json({ ok: false, valid: false, error: "Código promocional no válido o caducado" });
+  }
+});
+
+// Webhook de pagos deshabilitado hasta implementar verificación criptográfica
+// específica del proveedor sobre el cuerpo original de la solicitud.
+app.post("/api/billing/webhook", (_req, res) => {
+  return res.status(503).json({
+    error: "Webhook de pagos no habilitado: falta verificación de firma del proveedor."
+  });
+});
+
+// Endpoint de Eliminación de Cuenta (Cumplimiento Políticas Google Play & Apple App Store)
+app.post("/api/user/delete-account", requireAuth, (req, res) => {
+  try {
+    const result = db.deleteUserAccount(req.user.syncId);
+    res.json({ ok: true, message: "Cuenta y datos eliminados permanentemente", details: result });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Endpoint B2B para crear Organización
+app.post("/api/org/create", requireAuth, (req, res) => {
+  try {
+    const { name } = req.body || {};
+    const org = db.createOrganization(name, req.user.syncId);
+    res.json({ ok: true, organization: org });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -742,59 +836,65 @@ app.get("/api/messages/:contactSyncId/export", requireAuth, (req, res) => {
   }
 });
 
-// Los certificados autofirmados solo se inicializan para el servidor local.
-// Vercel termina TLS delante de la Function y su filesystem desplegado no es persistente.
-const isServerlessRuntime = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION);
+// Configuración de Certificados SSL Autofirmados para soporte HTTPS (Requerido para iOS WebRTC y Micrófono)
+const SSL_DIR = path.join(__dirname, "data", "ssl");
+if (!fs.existsSync(SSL_DIR)) {
+  fs.mkdirSync(SSL_DIR, { recursive: true });
+}
+const CERT_FILE = path.join(SSL_DIR, "cert.pem");
+const KEY_FILE = path.join(SSL_DIR, "key.pem");
+
 let sslOptions = null;
-
-if (!isServerlessRuntime) {
-  const SSL_DIR = path.join(__dirname, "data", "ssl");
-  const CERT_FILE = path.join(SSL_DIR, "cert.pem");
-  const KEY_FILE = path.join(SSL_DIR, "key.pem");
-
-  try {
-    if (!fs.existsSync(SSL_DIR)) {
-      fs.mkdirSync(SSL_DIR, { recursive: true });
+try {
+  if (fs.existsSync(CERT_FILE) && fs.existsSync(KEY_FILE)) {
+    sslOptions = {
+      cert: fs.readFileSync(CERT_FILE),
+      key: fs.readFileSync(KEY_FILE)
+    };
+  } else {
+    const pemsOrPromise = selfsigned.generate(
+      [{ name: "commonName", value: "sync-engine-server" }],
+      { days: 365, keySize: 2048 }
+    );
+    if (pemsOrPromise && typeof pemsOrPromise.then === "function") {
+      pemsOrPromise.then((pems) => {
+        if (pems && pems.cert && pems.private) {
+          try {
+            fs.writeFileSync(CERT_FILE, pems.cert, "utf8");
+            fs.writeFileSync(KEY_FILE, pems.private, "utf8");
+          } catch (_) {}
+        }
+      }).catch(() => {});
+    } else if (pemsOrPromise && pemsOrPromise.cert && pemsOrPromise.private) {
+      fs.writeFileSync(CERT_FILE, pemsOrPromise.cert, "utf8");
+      fs.writeFileSync(KEY_FILE, pemsOrPromise.private, "utf8");
+      sslOptions = { cert: pemsOrPromise.cert, key: pemsOrPromise.private };
     }
-
-    if (fs.existsSync(CERT_FILE) && fs.existsSync(KEY_FILE)) {
-      sslOptions = {
-        cert: fs.readFileSync(CERT_FILE),
-        key: fs.readFileSync(KEY_FILE)
-      };
-    } else {
-      const pemsOrPromise = selfsigned.generate(
-        [{ name: "commonName", value: "sync-engine-server" }],
-        { days: 365, keySize: 2048 }
-      );
-      if (pemsOrPromise && typeof pemsOrPromise.then === "function") {
-        pemsOrPromise.then((pems) => {
-          if (pems && pems.cert && pems.private) {
-            try {
-              fs.writeFileSync(CERT_FILE, pems.cert, "utf8");
-              fs.writeFileSync(KEY_FILE, pems.private, "utf8");
-            } catch (_) {}
-          }
-        }).catch(() => {});
-      } else if (pemsOrPromise && pemsOrPromise.cert && pemsOrPromise.private) {
-        fs.writeFileSync(CERT_FILE, pemsOrPromise.cert, "utf8");
-        fs.writeFileSync(KEY_FILE, pemsOrPromise.private, "utf8");
-        sslOptions = { cert: pemsOrPromise.cert, key: pemsOrPromise.private };
-      }
-    }
-  } catch (sslErr) {
-    console.warn("[SSL] No se pudo inicializar certificado SSL:", sslErr.message);
   }
+} catch (sslErr) {
+  console.warn("[SSL] No se pudo inicializar certificado SSL:", sslErr.message);
 }
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: function (origin, callback) {
+      callback(null, isAllowedCorsOrigin(origin));
+    },
     methods: ["GET", "POST"]
   },
   maxHttpBufferSize: 50e6
 });
+
+function canReceivePubSubEvent(user, payload) {
+  if (!user || !payload || typeof payload !== "object") return false;
+  const directAudience = [payload.targetSyncId, payload.recipientSyncId, payload.userSyncId]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toUpperCase());
+  if (directAudience.length) return directAudience.includes(user.syncId);
+  if (payload.channelId) return db.isChannelMember(payload.channelId, user.syncId);
+  return false;
+}
 
 let httpsServer = null;
 const HTTPS_PORT = process.env.HTTPS_PORT || (Number(PORT) + 443);
@@ -924,15 +1024,13 @@ io.on("connection", function (socket) {
 
   // Envío de Mensaje Privado (Texto, Audio de Voz o Archivo)
   socket.on("send-private-message", async function (payload) {
-    const clientMsgId = payload && payload.clientMsgId;
-    const emitMessageError = (message) => socket.emit("error-message", { id: clientMsgId, message });
     const sender = socketToUser.get(socket.id);
     if (!sender) {
-      emitMessageError("No autenticado");
+      socket.emit("error-message", { message: "No autenticado" });
       return;
     }
 
-    const { toSyncId, text, type, fileData, audioData, replyTo } = payload || {};
+    const { toSyncId, text, type, fileData, audioData, clientMsgId, replyTo } = payload || {};
     if (!toSyncId) return;
 
     const targetSyncId = String(toSyncId).trim().toUpperCase();
@@ -946,35 +1044,38 @@ io.on("connection", function (socket) {
       if (typeof fileData !== "object" || Array.isArray(fileData) ||
           ["url", "data"].some((key) => fileData[key] != null &&
             !safeUrl(fileData[key], "download") && !safeUrl(fileData[key], "image"))) {
-        emitMessageError("URL de archivo no válida");
+        socket.emit("error-message", { message: "URL de archivo no válida" });
         return;
       }
     }
     if (audioData != null && !safeUrl(audioData, "audio")) {
-      emitMessageError("URL de audio no válida");
+      socket.emit("error-message", { message: "URL de audio no válida" });
       return;
     }
     let fileIds;
     try {
       fileIds = messageFileIds(sender.syncId, [fileData?.url, fileData?.data, audioData], socket.handshake.headers.host);
     } catch (err) {
-      emitMessageError(err.message);
+      socket.emit("error-message", { message: err.message });
       return;
     }
     const targetSockets = onlineUsers.get(targetSyncId);
     const isTargetOnline = Boolean(targetSockets && targetSockets.size > 0);
     const initialStatus = isTargetOnline ? "delivered" : "sent";
-    const existingMessage = clientMsgId ? db.getMessageById(clientMsgId) : null;
-    if (existingMessage &&
-        (existingMessage.fromId !== sender.syncId || existingMessage.toId !== targetSyncId)) {
-      emitMessageError("El identificador del mensaje ya está en uso");
-      return;
-    }
-    const isRetry = Boolean(existingMessage);
 
     let messageObj = null;
 
     if (msgType === "text") {
+      // If recipient is offline, send Web Push notification
+      if (!isTargetOnline) {
+        const pushPayload = {
+          title: `Nuevo mensaje de ${sender.formattedName}`,
+          body: (text && text.length > 100) ? text.slice(0, 97) + "..." : text,
+          icon: '/assets/logo.png',
+          data: { syncId: targetSyncId, fromSyncId: sender.syncId, type: 'message' }
+        };
+        sendPushNotification(targetSyncId, pushPayload).catch(e => console.warn('[Push] envío fallido:', e.message));
+      }
       messageObj = db.saveTextMessage(
         sender.syncId,
         targetSyncId,
@@ -1009,11 +1110,21 @@ io.on("connection", function (socket) {
           }
         } catch (err) {
           console.warn("[AUDIO] Error al persistir audio en disco:", err.message);
-          emitMessageError("No se pudo registrar el audio");
+          socket.emit("error-message", { message: "No se pudo registrar el audio" });
           return;
         }
       }
 
+      // If recipient is offline, send Web Push notification
+      if (!isTargetOnline) {
+        const pushPayload = {
+          title: `Nuevo mensaje de ${sender.formattedName}`,
+          body: (text && text.length > 100) ? text.slice(0, 97) + "..." : text,
+          icon: '/assets/logo.png',
+          data: { syncId: targetSyncId, type: 'message' }
+        };
+        sendPushNotification(targetSyncId, pushPayload).catch(e => console.warn('[Push] envío fallido:', e.message));
+      }
       messageObj = db.saveMessage({
         id: clientMsgId || null,
         fromId: sender.syncId,
@@ -1026,24 +1137,6 @@ io.on("connection", function (socket) {
         replyTo: replyTo || null,
         status: initialStatus
       });
-    }
-
-    if (!isTargetOnline && !isRetry) {
-      const pushPayload = {
-        title: `Nuevo mensaje de ${sender.formattedName}`,
-        body: (text && text.length > 100) ? text.slice(0, 97) + "..." : text,
-        icon: '/assets/logo.png',
-        data: { syncId: targetSyncId, fromSyncId: sender.syncId, type: 'message' }
-      };
-      sendPushNotification(targetSyncId, pushPayload).catch(e => console.warn('[Push] envío fallido:', e.message));
-    }
-
-    if (!isRetry) {
-      sendMobilePushNotification(targetSyncId, {
-        title: `Nuevo mensaje de ${sender.formattedName}`,
-        body: (text && text.length > 100) ? text.slice(0, 97) + "..." : (text || "Tienes un mensaje nuevo"),
-        type: "message"
-      }).catch(e => console.warn("[FCM] Falló el aviso de mensaje:", e.message));
     }
 
     if (sender) {
@@ -1236,27 +1329,30 @@ io.on("connection", function (socket) {
     if (!sender || !payload || !payload.messageId || !payload.toSyncId || !payload.emoji) return;
 
     const targetSyncId = String(payload.toSyncId).trim().toUpperCase();
-    const updatedReactions = db.updateMessageReaction(payload.messageId, sender.syncId, payload.emoji);
+    try {
+      const updatedReactions = db.updateMessageReaction(payload.messageId, sender.syncId, payload.emoji, targetSyncId);
+      const eventData = {
+        messageId: payload.messageId,
+        fromSyncId: sender.syncId,
+        emoji: payload.emoji,
+        reactions: updatedReactions
+      };
 
-    const eventData = {
-      messageId: payload.messageId,
-      fromSyncId: sender.syncId,
-      emoji: payload.emoji,
-      reactions: updatedReactions
-    };
+      const targetSockets = onlineUsers.get(targetSyncId);
+      if (targetSockets && targetSockets.size > 0) {
+        targetSockets.forEach((sockId) => {
+          io.to(sockId).emit("message-reaction-updated", eventData);
+        });
+      }
 
-    const targetSockets = onlineUsers.get(targetSyncId);
-    if (targetSockets && targetSockets.size > 0) {
-      targetSockets.forEach((sockId) => {
-        io.to(sockId).emit("message-reaction-updated", eventData);
-      });
-    }
-
-    const senderSockets = onlineUsers.get(sender.syncId);
-    if (senderSockets && senderSockets.size > 0) {
-      senderSockets.forEach((sockId) => {
-        io.to(sockId).emit("message-reaction-updated", eventData);
-      });
+      const senderSockets = onlineUsers.get(sender.syncId);
+      if (senderSockets && senderSockets.size > 0) {
+        senderSockets.forEach((sockId) => {
+          io.to(sockId).emit("message-reaction-updated", eventData);
+        });
+      }
+    } catch (err) {
+      socket.emit("error-message", { message: err.message });
     }
   });
 
@@ -1267,12 +1363,6 @@ io.on("connection", function (socket) {
 
     const targetSyncId = String(data.toSyncId).trim().toUpperCase();
     const targetSockets = onlineUsers.get(targetSyncId);
-    db.recordCall(sender.syncId, targetSyncId, !(targetSockets && targetSockets.size > 0));
-    sendMobilePushNotification(targetSyncId, {
-      title: "Llamada entrante",
-      body: `Llamada de ${sender.formattedName || sender.syncId}`,
-      type: "call"
-    }).catch(e => console.warn("[FCM] Falló el aviso de llamada:", e.message));
 
     if (targetSockets && targetSockets.size > 0) {
       targetSockets.forEach((sockId) => {
@@ -1283,11 +1373,6 @@ io.on("connection", function (socket) {
         });
       });
     } else {
-      sendMobilePushNotification(targetSyncId, {
-        title: "Llamada entrante",
-        body: `Llamada de ${sender.formattedName || sender.syncId}`,
-        type: "call"
-      }).catch(e => console.warn("[FCM] Falló el aviso de llamada:", e.message));
       socket.emit("call-unavailable", {
         toSyncId: targetSyncId,
         message: "El contacto no se encuentra en línea para recibir llamadas"
@@ -1301,7 +1386,6 @@ io.on("connection", function (socket) {
 
     const targetSyncId = String(data.toSyncId).trim().toUpperCase();
     const targetSockets = onlineUsers.get(targetSyncId);
-    db.resolveCall(targetSyncId, sender.syncId, 'answered');
 
     if (targetSockets && targetSockets.size > 0) {
       targetSockets.forEach((sockId) => {
@@ -1337,7 +1421,6 @@ io.on("connection", function (socket) {
 
     const targetSyncId = String(data.toSyncId).trim().toUpperCase();
     const targetSockets = onlineUsers.get(targetSyncId);
-    db.resolveCall(targetSyncId, sender.syncId, 'rejected');
 
     if (targetSockets && targetSockets.size > 0) {
       targetSockets.forEach((sockId) => {
@@ -1355,8 +1438,6 @@ io.on("connection", function (socket) {
 
     const targetSyncId = String(data.toSyncId).trim().toUpperCase();
     const targetSockets = onlineUsers.get(targetSyncId);
-    // Si quien llama cuelga antes de que contesten, cuenta como llamada perdida.
-    db.resolveCall(sender.syncId, targetSyncId, 'missed');
 
     if (targetSockets && targetSockets.size > 0) {
       targetSockets.forEach((sockId) => {
@@ -1486,8 +1567,7 @@ function broadcastUserStatus(syncId, isOnline) {
   });
 }
 
-if (typeof module !== "undefined" && require.main === module) {
-  server.listen(PORT, HOST, function () {
+server.listen(PORT, HOST, function () {
   const localIps = getLocalIPv4Addresses();
   console.log("\n==================================================");
   console.log("SYNC ENGINE Server Activo en http://" + HOST + ":" + PORT);
@@ -1508,24 +1588,19 @@ if (typeof module !== "undefined" && require.main === module) {
   try {
     const { startChatSubscriptionListener } = require("./pubsub-service");
     startChatSubscriptionListener(function (pubsubPayload) {
-      // Emitir el evento al canal genérico de Pub/Sub para que cualquier cliente
-      // suscrito a 'pubsub-chat-event' lo reciba sin necesidad de estar autenticado
-      // en una conversación privada específica.
-      io.emit("pubsub-chat-event", pubsubPayload);
-      console.log("[Pub/Sub → Socket.IO] Evento propagado a clientes conectados:", pubsubPayload.type || "unknown");
+      let delivered = 0;
+      socketToUser.forEach((user, socketId) => {
+        if (canReceivePubSubEvent(user, pubsubPayload)) {
+          io.to(socketId).emit("pubsub-chat-event", pubsubPayload);
+          delivered += 1;
+        }
+      });
+      console.log("[Pub/Sub → Socket.IO] Evento autorizado para sockets:", delivered);
     });
   } catch (err) {
     console.error("[Pub/Sub] No se pudo iniciar la suscripción; HTTP seguirá disponible:", err.message);
   }
-  });
-}
-
-if (typeof module !== "undefined") {
-  module.exports = app;
-  module.exports.app = app;
-  module.exports.server = server;
-  module.exports.io = io;
-}
+});
 
 if (process.env.RENDER_EXTERNAL_URL) {
   const keepAliveUrl = new URL("/api/status", process.env.RENDER_EXTERNAL_URL);

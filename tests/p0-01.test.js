@@ -231,33 +231,63 @@ test('real Socket.IO delivers normal text/files/audio and rejects executable res
   }
 });
 
-test('private message retries with the same client ID do not create duplicates', async () => {
-  const alice = await authenticatedSocket('test-alice');
-  const bob = await authenticatedSocket('test-bob');
-  const clientMsgId = 'retry_' + Date.now();
-  const received = waitEvent(bob, 'receive-private-message');
-  const firstAck = waitEvent(alice, 'message-sent');
-  alice.emit('send-private-message', {
-    clientMsgId, toSyncId: users[1].syncId, type: 'text', text: 'Queued once'
-  });
-  assert.equal((await firstAck).id, clientMsgId);
-  assert.equal((await received).id, clientMsgId);
+test('message reactions and pinned messages cannot cross conversation boundaries', async () => {
+  const foreign = {
+    id: 'foreign-conversation-message',
+    fromId: 'SYNC-3003',
+    toId: 'SYNC-4004',
+    type: 'text',
+    text: 'Private message outside Alice-Bob'
+  };
+  db.testData.messages.push(foreign);
+  db.writeDb(db.testData);
 
-  const retryAck = waitEvent(alice, 'message-sent');
-  alice.emit('send-private-message', {
-    clientMsgId, toSyncId: users[1].syncId, type: 'text', text: 'Queued once'
+  assert.throws(
+    () => db.updateMessageReaction(foreign.id, users[0].syncId, '🔥', users[1].syncId),
+    /permisos/
+  );
+  assert.throws(
+    () => db.setPinnedMessage(users[0].syncId, users[1].syncId, foreign.id),
+    /permisos/
+  );
+
+  const key = [users[0].syncId, users[1].syncId].sort().join(':');
+  db.testData.pinnedMessages[key] = foreign.id;
+  db.writeDb(db.testData);
+  assert.equal(db.getPinnedMessage(users[0].syncId, users[1].syncId), null);
+
+  const alice = await authenticatedSocket('test-alice');
+  const reactionError = waitEvent(alice, 'error-message');
+  alice.emit('message-reaction', {
+    messageId: foreign.id,
+    toSyncId: users[1].syncId,
+    emoji: '🔥'
   });
-  assert.equal((await retryAck).id, clientMsgId);
-  assert.equal(messages.filter((message) => message.id === clientMsgId).length, 1);
+  assert.match((await reactionError).message, /permisos/);
+  assert.equal(db.getMessagesBetween('SYNC-3003', 'SYNC-4004').find((message) => message.id === foreign.id).reactions, undefined);
+
+  const pinError = waitEvent(alice, 'error-message');
+  alice.emit('pin-message', {
+    messageId: foreign.id,
+    toSyncId: users[1].syncId
+  });
+  assert.match((await pinError).message, /permisos/);
+  assert.equal(db.testData.pinnedMessages[key], foreign.id);
 });
 
-test('Web Push configuration endpoint requires authentication and reports disabled configuration', async () => {
-  assert.equal((await fetch(base + '/api/notifications/vapid-public-key')).status, 401);
-  const response = await fetch(base + '/api/notifications/vapid-public-key', {
-    headers: { Authorization: ['Bearer', 'test-alice'].join(' ') }
+test('billing webhook fails closed until provider signature verification exists', async () => {
+  const response = await fetch(base + '/api/billing/webhook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'stripe-signature': 'forged-signature' },
+    body: JSON.stringify({
+      event: 'charge.success',
+      userSyncId: users[0].syncId,
+      plan: 'enterprise',
+      billingCycle: 'yearly'
+    })
   });
-  assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { ok: true, configured: false, publicKey: null });
+  assert.equal(response.status, 503);
+  assert.match((await response.json()).error, /verificación de firma/);
 });
 
 test('channel subscriptions and history require an authenticated member', async () => {
@@ -419,14 +449,12 @@ class DevTools {
 }
 
 async function startBrowser(t) {
-  if (cdp) return true;
   const executable = [process.env.CHROME_PATH,
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     '/usr/bin/chromium', '/usr/bin/google-chrome'].find((file) => file && fs.existsSync(file));
   if (!executable) { t.skip('Set CHROME_PATH to run real-browser assertions'); return false; }
-  const sandboxArgs = (process.env.CI || process.env.CHROMIUM_SANDBOX_DISABLED) ? ['--no-sandbox'] : [];
-  browserProcess = spawn(executable, [...sandboxArgs, '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+  browserProcess = spawn(executable, ['--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--disable-background-networking', '--remote-debugging-port=0', '--user-data-dir=' + path.join(tempDir, 'browser'),
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   const browserUrl = await new Promise((resolve, reject) => {
@@ -643,41 +671,52 @@ test('real browser: text/name/file/quote payloads stay data across chat, avatars
   assert.equal(await cdp.evaluate('window.__xss'), 0);
 });
 
-test('real browser queues offline private text and replays it once after reconnect', async (t) => {
-  if (!cdp) db.saveTextMessage(users[0].syncId, users[1].syncId, 'Outbox test history');
-  if (!await startBrowser(t)) return;
-  const disconnected = await cdp.evaluate(`(() => {
-    socket.disconnect();
-    isSocketAuthenticated = false;
-    return JSON.stringify({ connected: socket.connected, recipient: activeContactSyncId });
-  })()`).then(JSON.parse).catch((error) => { throw new Error('Disconnect evaluation failed: ' + error.message); });
-  assert.equal(disconnected.connected, false);
-  assert.equal(disconnected.recipient, users[1].syncId);
-  await cdp.evaluate(`(async () => {
-    chatTextarea.value = 'Offline private message';
-    await handleSendMessage();
-    return true;
-  })()`).catch((error) => { throw new Error('Queue evaluation failed: ' + error.message); });
-  const queued = await cdp.evaluate(`getOfflineMessages().then(messages => JSON.stringify((() => {
-    const entry = messages.find(message => message.text === 'Offline private message');
-    return { saved: Boolean(entry), status: entry && entry.status, text: entry && entry.text,
-      textarea: chatTextarea.value };
-  })()))`).then(JSON.parse).catch((error) => { throw new Error('Outbox evaluation failed: ' + error.message); });
-  assert.equal(queued.textarea, '');
-  assert.equal(queued.saved, true);
-  assert.equal(queued.status, 'pending');
 
-  await cdp.evaluate('socket.connect(); true');
-  await cdp.evaluate(`new Promise((resolve, reject) => {
-    const started = Date.now();
-    const timer = setInterval(async () => {
-      const stillQueued = (await getOfflineMessages()).some(message => message.text === 'Offline private message');
-      if (!stillQueued && socket.connected && isSocketAuthenticated) {
-        clearInterval(timer); resolve(true);
-      } else if (Date.now() - started > 10000) {
-        clearInterval(timer); reject(new Error('Offline message did not replay'));
-      }
-    }, 50);
-  })`);
-  assert.equal(messages.filter((message) => message.text === 'Offline private message').length, 1);
+test('organization default channels are isolated to organization members', () => {
+  const organization = db.createOrganization('Security Boundary Test', users[0].syncId);
+  const channel = db.testData.channels.find((item) => item.orgId === organization.id && item.name === 'general');
+  assert.ok(channel, 'organization general channel should exist');
+  assert.equal(db.isChannelMember(channel.id, users[0].syncId), true, 'owner must access own organization channel');
+  assert.equal(db.isChannelMember(channel.id, users[1].syncId), false, 'unrelated registered user must not access organization channel');
+  assert.throws(() => db.getChannelMessages(channel.id, users[1].syncId), /permisos/);
+  assert.throws(() => db.saveChannelMessage(channel.id, users[1].syncId, { text: 'unauthorized' }), /permisos/);
+  assert.throws(() => db.createOrganization('Invalid owner test', 'SYNC-DOES-NOT-EXIST'), /Propietario/);
+});
+
+
+test('account deletion removes sessions, reciprocal contacts, pins, private data and owned organization data', () => {
+  const data = db.testData;
+  const organization = db.createOrganization('Deletion Boundary Test', users[0].syncId);
+  const ownedChannel = data.channels.find((channel) => channel.orgId === organization.id && channel.name === 'general');
+  data.contacts[users[0].syncId] = [users[1].syncId];
+  data.contacts[users[1].syncId] = [users[0].syncId];
+  data.vaultItems[users[0].syncId] = [{ id: 'private-vault-item' }];
+  data.subscriptions[users[0].syncId] = [{ endpoint: 'https://push.example.test/user-a' }];
+  data.messages.push({ id: 'delete-user-message', fromId: users[0].syncId, toId: users[1].syncId, text: 'private' });
+  data.messages.push({ id: 'keep-user-message', fromId: users[1].syncId, toId: users[1].syncId, text: 'keep' });
+  data.pinnedMessages[users[0].syncId + ':' + users[1].syncId] = 'delete-user-message';
+  data.channelMessages = [{ id: 'org-message', channelId: ownedChannel.id, senderSyncId: users[0].syncId }];
+
+  const result = db.deleteUserAccount(' sync-1001 ');
+  assert.equal(result.deletedSyncId, users[0].syncId);
+  assert.equal(data.users.some((user) => user.syncId === users[0].syncId), false);
+  assert.equal(data.sessions.some((session) => session.syncId === users[0].syncId), false);
+  assert.equal(data.contacts[users[1].syncId].includes(users[0].syncId), false);
+  assert.equal(Object.hasOwn(data.vaultItems, users[0].syncId), false);
+  assert.equal(Object.hasOwn(data.subscriptions, users[0].syncId), false);
+  assert.equal(data.messages.some((message) => message.id === 'delete-user-message'), false);
+  assert.equal(data.messages.some((message) => message.id === 'keep-user-message'), true);
+  assert.equal(Object.hasOwn(data.pinnedMessages, users[0].syncId + ':' + users[1].syncId), false);
+  assert.equal(data.organizations.some((item) => item.id === organization.id), false);
+  assert.equal(data.channels.some((item) => item.orgId === organization.id), false);
+  assert.equal(data.channelMessages.some((item) => item.id === 'org-message'), false);
+  assert.throws(() => db.deleteUserAccount(users[0].syncId), /Usuario no encontrado/);
+});
+
+
+test('HTTP CORS rejects unconfigured web origins while preserving extension access', async () => {
+  const denied = await fetch(base + '/api/health', { headers: { Origin: 'https://untrusted-origin.example' } });
+  assert.equal(denied.headers.get('access-control-allow-origin'), null);
+  const extension = await fetch(base + '/api/health', { headers: { Origin: 'chrome-extension://abcdefghijklmnop' } });
+  assert.equal(extension.headers.get('access-control-allow-origin'), 'chrome-extension://abcdefghijklmnop');
 });

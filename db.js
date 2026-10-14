@@ -4,6 +4,12 @@ const crypto = require("crypto");
 
 const DATA_DIR = path.join(__dirname, "data");
 const DB_FILE = path.join(DATA_DIR, "sync_db.json");
+const PASSWORD_ITERATIONS = 310000;
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+function hashSessionToken(token) {
+  return crypto.createHash("sha256").update(String(token)).digest("hex");
+}
 
 function ensureDbFile() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -50,7 +56,6 @@ function readDb() {
     if (!Array.isArray(data.files)) data.files = [];
     if (!data.pinnedMessages) data.pinnedMessages = {};
     if (!data.subscriptions) data.subscriptions = {};
-    if (!data.mobilePushTokens) data.mobilePushTokens = {};
     if (!data.channels || data.channels.length === 0) {
       data.channels = [
         { id: "chan-general", name: "general", description: "Espacio general de sincronización y equipo", createdAt: Date.now(), isDefault: true },
@@ -60,7 +65,6 @@ function readDb() {
     if (!data.channelMessages) data.channelMessages = [];
     if (!data.vaultItems) data.vaultItems = {};
     if (!data.invoices) data.invoices = {};
-    if (!Array.isArray(data.calls)) data.calls = [];
     cachedDb = data;
     if (seedDevelopmentAdmin(cachedDb)) {
       writeDb(cachedDb);
@@ -80,12 +84,31 @@ async function processWriteQueue() {
   isProcessingQueue = true;
 
   while (writeQueue.length > 0) {
+    // Procesar cada escritura en orden para no descartar estados intermedios.
     const item = writeQueue[0];
     const tmpFile = `${DB_FILE}.tmp.${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const bakFile = `${DB_FILE}.bak`;
+
     try {
       ensureDbFile();
       await fs.promises.writeFile(tmpFile, item.content, "utf8");
-      await fs.promises.rename(tmpFile, DB_FILE);
+
+      let attempts = 0;
+      let renamed = false;
+      while (attempts < 3 && !renamed) {
+        try {
+          if (fs.existsSync(DB_FILE)) {
+            await fs.promises.copyFile(DB_FILE, bakFile).catch(() => {});
+          }
+          await fs.promises.rename(tmpFile, DB_FILE);
+          renamed = true;
+        } catch (renameErr) {
+          attempts++;
+          if (attempts >= 3) throw renameErr;
+          await new Promise((res) => setTimeout(res, 25 * attempts));
+        }
+      }
+
       writeQueue.shift();
       item.resolve();
     } catch (err) {
@@ -95,6 +118,8 @@ async function processWriteQueue() {
           await fs.promises.unlink(tmpFile);
         }
       } catch (_) {}
+
+      // Rechazar solo la escritura fallida; las siguientes siguen en cola.
       writeQueue.shift();
       item.reject(err);
     }
@@ -129,12 +154,13 @@ function formatFullName(syncId, cleanName) {
   return `${syncId} - ${cleanName}`;
 }
 
-function hashPassword(password, salt) {
-  return crypto.pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
+function hashPassword(password, salt, iterations = PASSWORD_ITERATIONS) {
+  return crypto.pbkdf2Sync(password, salt, iterations, 64, "sha512").toString("hex");
 }
 
 function seedDevelopmentAdmin(data) {
-  const isDevelopment = (process.env.NODE_ENV === "development" || !process.env.NODE_ENV) &&
+  const isDevelopment = process.env.NODE_ENV === "development" &&
+    process.env.SEED_DEVELOPMENT_ADMIN === "true" &&
     !process.env.RENDER && !process.env.RENDER_EXTERNAL_URL;
   if (!isDevelopment) {
     return false;
@@ -153,6 +179,8 @@ function seedDevelopmentAdmin(data) {
     return false;
   }
 
+  const developmentPassword = process.env.DEV_ADMIN_PASSWORD;
+  if (!developmentPassword || developmentPassword.length < 12) return false;
   const salt = crypto.randomBytes(16).toString("hex");
   const cleanDisplayName = "Admin";
   data.users.push({
@@ -162,7 +190,8 @@ function seedDevelopmentAdmin(data) {
     cleanDisplayName: cleanDisplayName,
     formattedName: formatFullName("SYNC-0000", cleanDisplayName),
     salt: salt,
-    passwordHash: hashPassword("password123", salt),
+    passwordHash: hashPassword(developmentPassword, salt),
+    passwordIterations: PASSWORD_ITERATIONS,
     createdAt: Date.now(),
     plan: "pro",
     role: "admin"
@@ -207,8 +236,8 @@ function registerUser(username, password, rawDisplayName) {
   if (cleanUsername.length < 3) {
     throw new Error("El usuario debe tener al menos 3 caracteres");
   }
-  if (String(password).length < 4) {
-    throw new Error("La contraseña debe tener al menos 4 caracteres");
+  if (String(password).length < 10) {
+    throw new Error("La contraseña debe tener al menos 10 caracteres");
   }
 
   const db = readDb();
@@ -231,6 +260,7 @@ function registerUser(username, password, rawDisplayName) {
     formattedName: formattedName,
     salt: salt,
     passwordHash: passwordHash,
+    passwordIterations: PASSWORD_ITERATIONS,
     createdAt: Date.now()
   };
 
@@ -257,19 +287,27 @@ function loginUser(username, password) {
     throw new Error("Credenciales inválidas");
   }
 
-  const hash = hashPassword(password, user.salt);
+  const passwordIterations = Number(user.passwordIterations) || 10000;
+  const hash = hashPassword(password, user.salt, passwordIterations);
   if (!crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(user.passwordHash))) {
     throw new Error("Credenciales inválidas");
   }
 
+  if (passwordIterations !== PASSWORD_ITERATIONS) {
+    user.passwordHash = hashPassword(password, user.salt);
+    user.passwordIterations = PASSWORD_ITERATIONS;
+  }
+
   const token = crypto.randomBytes(32).toString("hex");
+  const now = Date.now();
   db.sessions.push({
-    token: token,
+    tokenHash: hashSessionToken(token),
     syncId: user.syncId,
-    createdAt: Date.now()
+    createdAt: now,
+    expiresAt: now + SESSION_MAX_AGE_MS
   });
 
-  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const cutoff = now - SESSION_MAX_AGE_MS;
   db.sessions = db.sessions.filter((s) => s.createdAt > cutoff);
 
   writeDb(db);
@@ -280,11 +318,29 @@ function loginUser(username, password) {
 function getUserByToken(token) {
   if (!token) return null;
   const db = readDb();
-  const session = db.sessions.find((s) => s.token === token);
-  if (!session) return null;
+  const tokenHash = hashSessionToken(token);
+  const session = db.sessions.find((s) => s.tokenHash === tokenHash || s.token === token);
+  if (!session || (session.expiresAt || session.createdAt + SESSION_MAX_AGE_MS) <= Date.now()) return null;
+
+  if (!session.tokenHash) {
+    session.tokenHash = tokenHash;
+    delete session.token;
+    writeDb(db);
+  }
 
   const user = db.users.find((u) => u.syncId === session.syncId);
   return user ? toPublicUser(user) : null;
+}
+
+function revokeSession(token) {
+  if (!token) return false;
+  const db = readDb();
+  const tokenHash = hashSessionToken(token);
+  const initialLength = db.sessions.length;
+  db.sessions = db.sessions.filter((session) => session.tokenHash !== tokenHash && session.token !== token);
+  if (db.sessions.length === initialLength) return false;
+  writeDb(db);
+  return true;
 }
 
 function getUserBySyncId(syncId) {
@@ -387,77 +443,6 @@ function getUserContacts(userSyncId, onlineSyncIds = new Set()) {
   return contactsList;
 }
 
-/**
- * Registra el inicio de una llamada para poder contabilizar las perdidas.
- * @param {string} fromId syncId de quien llama.
- * @param {string} toId syncId de quien recibe.
- * @param {boolean} unavailable true si el destinatario no estaba en línea.
- * @returns {object} Registro de llamada creado.
- */
-function recordCall(fromId, toId, unavailable) {
-  const db = readDb();
-  const call = {
-    id: 'call_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-    fromId: fromId,
-    toId: toId,
-    timestamp: Date.now(),
-    status: unavailable ? 'missed' : 'ringing'
-  };
-  db.calls.push(call);
-  if (db.calls.length > 2000) {
-    db.calls = db.calls.slice(-2000);
-  }
-  writeDb(db);
-  return call;
-}
-
-/**
- * Actualiza la última llamada pendiente entre dos usuarios.
- * @param {string} fromId syncId de quien llamó.
- * @param {string} toId syncId de quien recibió.
- * @param {'answered'|'rejected'|'missed'} status Nuevo estado.
- * @returns {boolean} true si se encontró una llamada en curso.
- */
-function resolveCall(fromId, toId, status) {
-  const db = readDb();
-  for (let i = db.calls.length - 1; i >= 0; i--) {
-    const call = db.calls[i];
-    if (call.fromId === fromId && call.toId === toId && call.status === 'ringing') {
-      call.status = status;
-      writeDb(db);
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Resumen para el widget nativo: mensajes sin leer y llamadas perdidas.
- * @param {string} syncId syncId del usuario autenticado.
- * @param {number} callsSince Marca de tiempo desde la que se cuentan llamadas perdidas.
- * @returns {{unreadMessages:number, missedCalls:number, latest:Array<object>}}
- */
-function getWidgetSummary(syncId, callsSince) {
-  const db = readDb();
-  const since = Number(callsSince) || 0;
-  const unread = db.messages
-    .filter((m) => m.toId === syncId && m.fromId !== syncId && !m.read && m.status !== 'read' && !m.deletedForEveryone)
-    .sort((a, b) => b.timestamp - a.timestamp);
-  const missed = db.calls.filter((c) => c.toId === syncId && c.status === 'missed' && c.timestamp > since);
-  const nameOf = (id) => {
-    const user = db.users.find((u) => u.syncId === id);
-    return user ? (user.formattedName || formatFullName(user.syncId, user.cleanDisplayName)) : id;
-  };
-  const latest = unread.slice(0, 5).map((m) => ({
-    id: m.id,
-    fromId: m.fromId,
-    fromName: nameOf(m.fromId),
-    type: m.type || 'text',
-    text: m.type === 'text' || !m.type ? String(m.text || '').slice(0, 120) : '',
-    timestamp: m.timestamp
-  }));
-  return { unreadMessages: unread.length, missedCalls: missed.length, latest: latest };
-}
 async function registerFile(ownerId, file) {
   if (!file.filename || file.filename === "." || file.filename === ".." ||
       /[/\\:\u0000]/.test(file.filename)) throw new Error("Nombre físico de archivo inválido");
@@ -496,14 +481,6 @@ function canReadFile(fileId, userId) {
 function saveMessage(msgData) {
   const db = readDb();
   const fromId = String(msgData.fromId).trim().toUpperCase();
-  const toId = String(msgData.toId).trim().toUpperCase();
-  if (msgData.id) {
-    const existingMessage = db.messages.find((message) => message.id === msgData.id);
-    if (existingMessage) {
-      if (existingMessage.fromId === fromId && existingMessage.toId === toId) return existingMessage;
-      throw new Error("El identificador del mensaje ya está en uso");
-    }
-  }
   const fileIds = [...new Set(msgData.fileIds || [])];
   for (const fileId of fileIds) {
     const file = db.files.find((item) => item.id === fileId);
@@ -512,7 +489,7 @@ function saveMessage(msgData) {
   const newMsg = {
     id: msgData.id || ("msg_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
     fromId: fromId,
-    toId: toId,
+    toId: String(msgData.toId).trim().toUpperCase(),
     type: msgData.type || "text",
     text: msgData.text || "",
     audioData: msgData.audioData || null,
@@ -529,17 +506,8 @@ function saveMessage(msgData) {
   };
 
   db.messages.push(newMsg);
-
-  if (db.messages.length > 5000) {
-    db.messages = db.messages.slice(-5000);
-  }
-
   writeDb(db);
   return newMsg;
-}
-
-function getMessageById(messageId) {
-  return readDb().messages.find((message) => message.id === messageId) || null;
 }
 
 function saveTextMessage(fromId, toId, text, customId = null, replyTo = null, linkPreview = null, status = 'sent') {
@@ -556,22 +524,31 @@ function saveTextMessage(fromId, toId, text, customId = null, replyTo = null, li
   });
 }
 
-function updateMessageReaction(messageId, userSyncId, emoji) {
+function updateMessageReaction(messageId, userSyncId, emoji, conversationUserId) {
   const db = readDb();
   const msg = db.messages.find((m) => m.id === messageId);
-  if (msg) {
-    if (!msg.reactions || typeof msg.reactions !== 'object') {
-      msg.reactions = {};
-    }
-    if (msg.reactions[userSyncId] === emoji) {
-      delete msg.reactions[userSyncId];
-    } else {
-      msg.reactions[userSyncId] = emoji;
-    }
-    writeDb(db);
-    return msg.reactions;
+  if (!msg) {
+    throw new Error("Mensaje no encontrado");
   }
-  return { [userSyncId]: emoji };
+
+  const actor = String(userSyncId || '').trim().toUpperCase();
+  const peer = String(conversationUserId || '').trim().toUpperCase();
+  const from = String(msg.fromId || '').trim().toUpperCase();
+  const to = String(msg.toId || '').trim().toUpperCase();
+  if (!actor || !peer || !((from === actor && to === peer) || (from === peer && to === actor))) {
+    throw new Error("No tienes permisos para reaccionar a este mensaje");
+  }
+
+  if (!msg.reactions || typeof msg.reactions !== 'object' || Array.isArray(msg.reactions)) {
+    msg.reactions = {};
+  }
+  if (msg.reactions[actor] === emoji) {
+    delete msg.reactions[actor];
+  } else {
+    msg.reactions[actor] = emoji;
+  }
+  writeDb(db);
+  return msg.reactions;
 }
 
 function updateMessageStatus(messageId, status) {
@@ -650,7 +627,13 @@ function getPinnedMessage(user1Id, user2Id) {
   const msgId = db.pinnedMessages[key];
   if (!msgId) return null;
   const msg = db.messages.find((m) => m.id === msgId);
-  return msg || null;
+  if (!msg) return null;
+
+  const first = String(user1Id || '').trim().toUpperCase();
+  const second = String(user2Id || '').trim().toUpperCase();
+  const from = String(msg.fromId || '').trim().toUpperCase();
+  const to = String(msg.toId || '').trim().toUpperCase();
+  return ((from === first && to === second) || (from === second && to === first)) ? msg : null;
 }
 
 function setPinnedMessage(user1Id, user2Id, messageId) {
@@ -660,6 +643,15 @@ function setPinnedMessage(user1Id, user2Id, messageId) {
   if (!msg) {
     throw new Error("Mensaje no encontrado");
   }
+
+  const first = String(user1Id || '').trim().toUpperCase();
+  const second = String(user2Id || '').trim().toUpperCase();
+  const from = String(msg.fromId || '').trim().toUpperCase();
+  const to = String(msg.toId || '').trim().toUpperCase();
+  if (!first || !second || !((from === first && to === second) || (from === second && to === first))) {
+    throw new Error("No tienes permisos para fijar este mensaje en esa conversación");
+  }
+
   db.pinnedMessages[key] = messageId;
   writeDb(db);
   return msg;
@@ -746,58 +738,6 @@ function removePushSubscription(syncId, endpoint) {
     return true;
   }
   return false;
-}
-
-/**
- * Registra o renueva un token FCM asociado al usuario.
- * @param {string} syncId Identificador del usuario.
- * @param {string} token Token de registro de Firebase.
- * @returns {boolean} true cuando el token queda almacenado.
- */
-function saveMobilePushToken(syncId, token) {
-  if (!syncId || typeof token !== "string" || token.length < 20 || token.length > 4096) return false;
-  const db = readDb();
-  if (!db.mobilePushTokens) db.mobilePushTokens = {};
-  const sId = String(syncId).trim().toUpperCase();
-  const tokens = db.mobilePushTokens[sId] || (db.mobilePushTokens[sId] = []);
-  const existing = tokens.find((item) => item.token === token);
-  if (existing) {
-    existing.updatedAt = Date.now();
-  } else {
-    tokens.push({ token: token, updatedAt: Date.now() });
-  }
-  writeDb(db);
-  return true;
-}
-
-/**
- * Devuelve los tokens Android del usuario.
- * @param {string} syncId Identificador del usuario.
- * @returns {Array<{token:string,updatedAt:number}>}
- */
-function getMobilePushTokens(syncId) {
-  if (!syncId) return [];
-  const db = readDb();
-  const sId = String(syncId).trim().toUpperCase();
-  return (db.mobilePushTokens && db.mobilePushTokens[sId]) || [];
-}
-
-/**
- * Elimina el token FCM de un usuario.
- * @param {string} syncId Identificador del usuario.
- * @param {string} token Token a eliminar.
- * @returns {boolean} true si el token estaba registrado.
- */
-function removeMobilePushToken(syncId, token) {
-  if (!syncId || !token) return false;
-  const db = readDb();
-  const sId = String(syncId).trim().toUpperCase();
-  if (!db.mobilePushTokens || !Array.isArray(db.mobilePushTokens[sId])) return false;
-  const current = db.mobilePushTokens[sId];
-  db.mobilePushTokens[sId] = current.filter((item) => item.token !== token);
-  if (db.mobilePushTokens[sId].length === current.length) return false;
-  writeDb(db);
-  return true;
 }
 
 // ==== Planes, Suscripciones y Facturación ====
@@ -1040,7 +980,18 @@ function isChannelMember(channelId, userSyncId) {
     item.name.toLowerCase() === clean
   );
   if (!channel) return false;
-  if (channel.isDefault) return true;
+
+  // Organization channels must never inherit the global default-channel policy.
+  // Enforce organization membership before considering creator/member flags.
+  if (channel.orgId) {
+    const organization = (db.organizations || []).find((org) => org.id === channel.orgId);
+    if (!organization) return false;
+    const isOrganizationMember = Array.isArray(organization.memberSyncIds) &&
+      organization.memberSyncIds.some((memberId) => String(memberId).trim().toUpperCase() === normalizedUserId);
+    if (!isOrganizationMember) return false;
+  }
+
+  if (channel.isDefault && !channel.orgId) return true;
   if (String(channel.creatorSyncId || "").trim().toUpperCase() === normalizedUserId) return true;
   return Array.isArray(channel.memberSyncIds) &&
     channel.memberSyncIds.some((memberId) => String(memberId).trim().toUpperCase() === normalizedUserId);
@@ -1100,7 +1051,8 @@ function saveChannelMessage(channelId, senderSyncId, payload) {
   const db = readDb();
   if (!db.channelMessages) db.channelMessages = [];
 
-  const sender = db.users.find((u) => u.syncId === senderSyncId);
+  const normalizedSenderId = String(senderSyncId).trim().toUpperCase();
+  const sender = db.users.find((u) => String(u.syncId).trim().toUpperCase() === normalizedSenderId);
   if (!sender) throw new Error("Emisor no encontrado");
 
   const { text, type, fileData, audioData } = payload;
@@ -1119,10 +1071,6 @@ function saveChannelMessage(channelId, senderSyncId, payload) {
   };
 
   db.channelMessages.push(message);
-  // Mantener histórico limitado a 1500 mensajes por performance
-  if (db.channelMessages.length > 1500) {
-    db.channelMessages = db.channelMessages.slice(-1500);
-  }
   writeDb(db);
   return message;
 }
@@ -1150,8 +1098,8 @@ function exportConversation(syncId, contactSyncId) {
       id: m.id,
       timestamp: m.timestamp,
       dateFormatted: new Date(m.timestamp).toLocaleString(),
-      fromSyncId: m.fromSyncId,
-      toSyncId: m.toSyncId,
+      fromId: m.fromId,
+      toId: m.toId,
       type: m.type,
       text: m.text,
       status: m.status,
@@ -1162,22 +1110,139 @@ function exportConversation(syncId, contactSyncId) {
   };
 }
 
+// ==== Eliminación de Cuenta (Cumplimiento Google Play & Apple Store) ====
+function deleteUserAccount(syncId) {
+  const db = readDb();
+  const normalizedId = String(syncId || "").trim().toUpperCase();
+  if (!normalizedId) throw new Error("Identificador de usuario no válido");
+
+  const userExists = db.users.some((user) => String(user.syncId || "").trim().toUpperCase() === normalizedId);
+  if (!userExists) throw new Error("Usuario no encontrado");
+
+  const normalizeId = (value) => String(value || "").trim().toUpperCase();
+  db.users = db.users.filter((user) => normalizeId(user.syncId) !== normalizedId);
+  db.sessions = (db.sessions || []).filter((session) => normalizeId(session.syncId) !== normalizedId);
+
+  // Remove both sides of contact relationships.
+  if (db.contacts && typeof db.contacts === "object") {
+    delete db.contacts[normalizedId];
+    for (const [contactId, contactList] of Object.entries(db.contacts)) {
+      if (Array.isArray(contactList)) {
+        db.contacts[contactId] = contactList.filter((id) => normalizeId(id) !== normalizedId);
+      }
+    }
+  }
+
+  db.messages = (db.messages || []).filter((message) =>
+    normalizeId(message.fromId) !== normalizedId && normalizeId(message.toId) !== normalizedId
+  );
+
+  // Remove pins for conversations involving the deleted user or messages no longer present.
+  if (db.pinnedMessages && typeof db.pinnedMessages === "object") {
+    const remainingMessageIds = new Set(db.messages.map((message) => message.id));
+    for (const [key, messageId] of Object.entries(db.pinnedMessages)) {
+      const participants = String(key).split(":").map(normalizeId);
+      if (participants.includes(normalizedId) || !remainingMessageIds.has(messageId)) {
+        delete db.pinnedMessages[key];
+      }
+    }
+  }
+
+  // Remove the account's private data and push endpoints.
+  if (db.vaultItems) delete db.vaultItems[normalizedId];
+  if (db.subscriptions) delete db.subscriptions[normalizedId];
+
+  // Delete organizations owned by this user and their isolated channels/messages.
+  const removedOrgIds = new Set();
+  db.organizations = (db.organizations || []).filter((organization) => {
+    if (normalizeId(organization.ownerSyncId) === normalizedId) {
+      removedOrgIds.add(organization.id);
+      return false;
+    }
+    if (Array.isArray(organization.memberSyncIds)) {
+      organization.memberSyncIds = organization.memberSyncIds.filter((id) => normalizeId(id) !== normalizedId);
+    }
+    return true;
+  });
+
+  const removedChannelIds = new Set();
+  db.channels = (db.channels || []).filter((channel) => {
+    const removeChannel = removedOrgIds.has(channel.orgId) ||
+      (!channel.orgId && normalizeId(channel.creatorSyncId) === normalizedId);
+    if (removeChannel) removedChannelIds.add(channel.id);
+    if (!removeChannel && Array.isArray(channel.memberSyncIds)) {
+      channel.memberSyncIds = channel.memberSyncIds.filter((id) => normalizeId(id) !== normalizedId);
+    }
+    return !removeChannel;
+  });
+  db.channelMessages = (db.channelMessages || []).filter((message) =>
+    !removedChannelIds.has(message.channelId) && normalizeId(message.senderSyncId) !== normalizedId
+  );
+
+  // Remove file metadata owned by the deleted account only when no remaining
+  // conversation message references the file. Physical upload cleanup is handled separately.
+  const referencedFileIds = new Set();
+  for (const message of db.messages) {
+    for (const fileId of Array.isArray(message.fileIds) ? message.fileIds : []) referencedFileIds.add(fileId);
+  }
+  db.files = (db.files || []).filter((file) =>
+    normalizeId(file.ownerId) !== normalizedId || referencedFileIds.has(file.id)
+  );
+
+  writeDb(db);
+  return { ok: true, deletedSyncId: normalizedId };
+}
+
+// ==== B2B Multi-Tenant & Invitaciones ====
+function createOrganization(name, ownerSyncId) {
+  const db = readDb();
+  if (!db.organizations) db.organizations = [];
+
+  const cleanName = String(name || "").trim();
+  if (cleanName.length < 2) throw new Error("Nombre de organización no válido");
+
+  const normalizedOwnerId = String(ownerSyncId || "").trim().toUpperCase();
+  const ownerExists = db.users.some((user) => String(user.syncId).trim().toUpperCase() === normalizedOwnerId);
+  if (!normalizedOwnerId || !ownerExists) throw new Error("Propietario de organización no encontrado");
+
+  const orgId = "org_" + cleanName.toLowerCase().replace(/[^a-z0-9_-]/g, "") + "_" + Date.now().toString(36);
+  const newOrg = {
+    id: orgId,
+    name: cleanName,
+    ownerSyncId: ownerSyncId,
+    memberSyncIds: [String(ownerSyncId).trim().toUpperCase()],
+    createdAt: Date.now()
+  };
+
+  db.organizations.push(newOrg);
+
+  // Crear canales por defecto aislados para esta organización B2B
+  if (!db.channels) db.channels = [];
+  db.channels.push(
+    { id: "chan-" + orgId + "-general", name: "general", description: "Canal general B2B", creatorSyncId: ownerSyncId, memberSyncIds: [ownerSyncId], createdAt: Date.now(), isDefault: true, orgId: orgId },
+    { id: "chan-" + orgId + "-anuncios", name: "anuncios", description: "Anuncios oficiales B2B", creatorSyncId: ownerSyncId, memberSyncIds: [ownerSyncId], createdAt: Date.now(), isDefault: true, orgId: orgId }
+  );
+
+  writeDb(db);
+  return newOrg;
+}
+
 module.exports = {
+  readDb,
+  generateSyncId,
+  registerUser,
+  loginUser,
+  getUserByToken,
+  revokeSession,
+  getUserBySyncId,
+  updateUserProfile,
+  getUserContacts,
+  addContact,
   registerFile,
   getFileById,
   getFileByFilename,
   canReadFile,
-  removeEmojis,
-  formatFullName,
-  registerUser,
-  loginUser,
-  getUserByToken,
-  getUserBySyncId,
-  updateUserProfile,
-  addContact,
-  getUserContacts,
   saveMessage,
-  getMessageById,
   saveTextMessage,
   updateMessageReaction,
   updateMessageStatus,
@@ -1193,9 +1258,6 @@ module.exports = {
   savePushSubscription,
   getPushSubscriptions,
   removePushSubscription,
-  saveMobilePushToken,
-  getMobilePushTokens,
-  removeMobilePushToken,
   // Nuevas capacidades de monetización y workspace
   upgradeUserPlan,
   getUserInvoices,
@@ -1209,7 +1271,6 @@ module.exports = {
   getChannelMessages,
   saveChannelMessage,
   exportConversation,
-  recordCall,
-  resolveCall,
-  getWidgetSummary
+  deleteUserAccount,
+  createOrganization
 };
