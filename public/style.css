@@ -652,3 +652,32 @@ body { background: #eef3f9 !important; color: var(--se-text); }
   #chat-header-bar .icon-btn { min-width:34px; padding-left:7px !important; padding-right:7px !important; }
   #chat-messages { padding:10px !important; }
 }
+
+
+/* Remove legacy duplicate workspace controls; the primary navigation owns this switch. */
+#sidebar-panel > div:first-child[role="tablist"] { display:none !important; }
+#app-container > header.sticky { display:none !important; }
+#primary-navigation .primary-nav-item.is-active {
+  background:linear-gradient(90deg,rgba(8,102,245,.34),rgba(8,102,245,.12)) !important;
+  color:#fff !important; border-color:rgba(73,145,255,.24) !important;
+}
+#primary-navigation .primary-nav-item:not(.is-active) {
+  background:transparent !important; color:#d2dfef !important;
+  border-color:transparent !important;
+}
+#primary-navigation .primary-nav-item:not(.is-active) > span:first-child { color:#c6d8f2 !important; }
+#navigation-status-message {
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:100;
+  max-width:min(92vw,520px); padding:12px 16px; border:1px solid #dce7f5;
+  border-radius:12px; background:#fff; color:#263c5d; box-shadow:0 8px 28px rgba(7,26,50,.16);
+  font-size:13px; font-weight:600;
+}
+#navigation-status-message[hidden] { display:none !important; }
+@media (max-width:767px) {
+  #app-container > header.sticky { display:flex !important; }
+  #app-container > header.sticky > div { min-height:48px !important; padding:5px 10px !important; }
+  #app-container > header.sticky > div > div:first-child { flex:1; }
+  #app-container > header.sticky > div > div:last-child { gap:4px !important; }
+  #app-container > header.sticky > div > div:last-child > *:not(#logout-btn) { display:none !important; }
+  #sidebar-panel > div:first-child[role="tablist"] { display:none !important; }
+}
