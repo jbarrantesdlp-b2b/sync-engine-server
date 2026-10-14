@@ -710,3 +710,198 @@ body { background: #eef3f9 !important; color: var(--se-text); }
   .mobile-nav-item.is-active { color:#0866f5 !important; background:#f0f5ff !important; }
   #sidebar-pro-card { display:none !important; }
 }
+
+
+/* ==========================================================================
+   SYNC ENGINE — WHATSAPP-INSPIRED SHELL V2
+   Structural presentation layer. Reuses existing application logic and IDs.
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+  --se-bg: #0b141a;
+  --se-surface: #111b21;
+  --se-surface-muted: #202c33;
+  --se-ink: #e9edef;
+  --se-ink-soft: #c4ccd0;
+  --se-muted: #8696a0;
+  --se-line: #27343b;
+  --se-blue: #38b6ff;
+  --se-blue-deep: #0a1a3a;
+  --se-gold: #c5a059;
+  --se-focus: rgba(56,182,255,.24);
+}
+html, body { background:#0b141a !important; color:#e9edef !important; }
+#app-container {
+  width:100% !important; max-width:none !important; height:100dvh !important;
+  margin:0 !important; padding:0 !important; gap:0 !important;
+  background:#0b141a !important; color:#e9edef !important; box-shadow:none !important;
+}
+#app-container > header.sticky { display:none !important; }
+#main-layout {
+  width:100% !important; max-width:none !important; margin:0 !important;
+  padding:0 !important; gap:0 !important; background:#0b141a !important;
+  display:flex !important; align-items:stretch !important;
+}
+/* Narrow WhatsApp-like rail, but with Sync Engine identity. */
+#primary-navigation {
+  width:84px !important; min-width:84px !important; flex:0 0 84px !important;
+  padding:18px 10px 12px !important; border:0 !important; border-right:1px solid #27343b !important;
+  border-radius:0 !important; box-shadow:none !important;
+  background:#202c33 !important; color:#e9edef !important;
+}
+.primary-nav-brand {
+  min-height:44px !important; height:44px !important; justify-content:center !important;
+  padding:0 0 14px !important; border-bottom:1px solid #35434b !important;
+}
+.primary-nav-brand img { width:34px !important; height:34px !important; }
+.primary-nav-brand span { display:none !important; }
+.primary-nav-items { padding-top:18px !important; gap:10px !important; }
+.primary-nav-item {
+  min-height:48px !important; height:48px !important; width:48px !important;
+  margin:0 auto !important; padding:0 !important; justify-content:center !important;
+  gap:0 !important; border:0 !important; border-radius:14px !important;
+  color:#aebac1 !important; background:transparent !important;
+}
+.primary-nav-item > span:first-child { width:auto !important; font-size:21px !important; color:inherit !important; }
+.primary-nav-item > span:not(:first-child) { display:none !important; }
+.primary-nav-item:hover { background:#2a3942 !important; color:#e9edef !important; }
+.primary-nav-item.is-active {
+  background:#34454f !important; color:#38b6ff !important;
+  box-shadow:inset 3px 0 0 #38b6ff !important;
+}
+.primary-nav-item.is-active > span:first-child { color:#38b6ff !important; }
+.primary-nav-footer { border-top:1px solid #35434b !important; padding-top:12px !important; }
+.primary-nav-user { justify-content:center !important; padding:12px 0 0 !important; }
+.primary-nav-user-avatar { background:#152b52 !important; color:#fff !important; width:38px !important; height:38px !important; flex-basis:38px !important; }
+.primary-nav-user > span:not(.primary-nav-user-avatar) { display:none !important; }
+/* Conversation list panel. */
+#sidebar-panel {
+  width:360px !important; min-width:300px !important; max-width:420px !important;
+  flex:0 0 360px !important; height:100% !important; min-height:0 !important;
+  border:0 !important; border-right:1px solid #27343b !important; border-radius:0 !important;
+  box-shadow:none !important; background:#111b21 !important; color:#e9edef !important;
+}
+#sidebar-panel > div:first-child[role="tablist"] { display:none !important; }
+#sidebar-dms-view, #sidebar-channels-view { background:#111b21 !important; }
+#sidebar-dms-view > div:first-child,
+#sidebar-channels-view > div:first-child {
+  padding:18px 16px 10px !important; background:#111b21 !important;
+  border-bottom:0 !important;
+}
+#contact-search-input {
+  min-height:42px !important; border-radius:10px !important;
+  background:#202c33 !important; border:1px solid transparent !important;
+  color:#e9edef !important; box-shadow:none !important; font-size:13px !important;
+  text-transform:none !important;
+}
+#contact-search-input::placeholder { color:#8696a0 !important; }
+#contact-search-input:focus { border-color:#38b6ff !important; outline:none !important; }
+#add-contact-btn {
+  min-height:40px !important; border-radius:10px !important;
+  background:#152b52 !important; color:#d9efff !important;
+  border:1px solid #2b5875 !important; box-shadow:none !important;
+}
+/* Remove the promotional block from the primary conversation flow. The plan remains accessible elsewhere. */
+#sidebar-pro-card { display:none !important; }
+#sidebar-panel .text-\[10px\] { letter-spacing:0 !important; }
+.mobile-chat-filters {
+  display:flex !important; align-items:center !important; gap:8px !important;
+  padding:8px 16px 12px !important; background:#111b21 !important;
+  border-bottom:1px solid #27343b !important; overflow-x:auto !important;
+}
+.mobile-chat-filter {
+  padding:8px 13px !important; border:1px solid #35434b !important;
+  border-radius:999px !important; background:#202c33 !important;
+  color:#c4ccd0 !important; font-size:12px !important; font-weight:600 !important;
+}
+.mobile-chat-filter.is-active {
+  background:#15334a !important; border-color:#245b7a !important; color:#73d0ff !important;
+}
+#contacts-list { padding:4px 8px 14px !important; background:#111b21 !important; }
+#contacts-list .contact-item {
+  min-height:74px !important; padding:11px 10px !important; gap:12px !important;
+  border:0 !important; border-bottom:1px solid rgba(134,150,160,.12) !important;
+  border-radius:0 !important; background:transparent !important; color:#e9edef !important;
+}
+#contacts-list .contact-item:hover { background:#202c33 !important; }
+#contacts-list .contact-item.is-active { background:#202c33 !important; border-left:3px solid #38b6ff !important; }
+#contacts-list .contact-item .avatar-circle { width:48px !important; height:48px !important; }
+#contacts-list .contact-item p { color:#c4ccd0 !important; }
+#contacts-list .contact-item p.font-bold { color:#e9edef !important; font-size:14px !important; }
+#contacts-list .contact-item p.mt-0\.5 { color:#8696a0 !important; font-size:12px !important; }
+/* Conversation surface and contextual header. */
+#chat-panel-container { min-width:0 !important; flex:1 1 auto !important; background:#0b141a !important; }
+#workspace-split-container { gap:0 !important; background:#0b141a !important; }
+#chat-panel {
+  min-width:0 !important; border:0 !important; border-radius:0 !important;
+  box-shadow:none !important; background:#0b141a !important; color:#e9edef !important;
+}
+#chat-header-bar {
+  min-height:68px !important; padding:10px 20px !important;
+  background:#202c33 !important; border:0 !important; border-bottom:1px solid #27343b !important;
+  color:#e9edef !important; box-shadow:none !important;
+}
+#chat-header-bar h1, #chat-header-bar h2, #chat-header-bar p,
+#active-chat-info-trigger { color:#e9edef !important; }
+#chat-header-bar button { color:#aebac1 !important; }
+#chat-header-bar button:hover { background:#34454f !important; color:#73d0ff !important; }
+#chat-messages {
+  background-color:#0b141a !important; color:#e9edef !important;
+  background-image:none !important; padding:22px 5% !important;
+}
+#chat-welcome { color:#aebac1 !important; }
+#chat-welcome .empty-state-icon {
+  background:#111b21 !important; border:1px solid #27343b !important;
+  color:#38b6ff !important; box-shadow:none !important;
+}
+#chat-welcome .empty-state-title { color:#e9edef !important; }
+#chat-welcome .empty-state-text { color:#aebac1 !important; }
+#chat-welcome .empty-state-hint {
+  background:#111b21 !important; border-color:#27343b !important; color:#73d0ff !important;
+}
+#input-container {
+  padding:12px 18px 14px !important; background:#0b141a !important;
+  border-top:0 !important; color:#e9edef !important;
+}
+#input-container textarea, #input-container input {
+  color:#e9edef !important; background:transparent !important;
+}
+#input-container textarea::placeholder { color:#8696a0 !important; }
+#input-container > div {
+  border-color:#27343b !important; background:#202c33 !important; box-shadow:none !important;
+}
+#input-container button { border-radius:10px !important; }
+#send-btn {
+  background:#153c53 !important; color:#e9f7ff !important;
+  border:1px solid #245b7a !important; box-shadow:none !important;
+}
+#info-drawer-panel {
+  background:#111b21 !important; color:#e9edef !important; border-color:#27343b !important;
+}
+#info-drawer-panel.drawer-open { border-radius:0 !important; box-shadow:-12px 0 36px rgba(0,0,0,.28) !important; }
+/* Desktop dimensions should remain stable; mobile uses independent list/chat views. */
+@media (max-width:1100px) and (min-width:768px) {
+  #primary-navigation { width:72px !important; min-width:72px !important; flex-basis:72px !important; }
+  #sidebar-panel { width:320px !important; min-width:280px !important; flex-basis:320px !important; }
+}
+@media (max-width:767px) {
+  #app-container { height:100dvh !important; background:#0b141a !important; }
+  #main-layout { background:#0b141a !important; }
+  #primary-navigation { display:none !important; }
+  #sidebar-panel {
+    width:100% !important; max-width:none !important; min-width:0 !important;
+    background:#111b21 !important; border:0 !important;
+  }
+  #chat-panel-container { background:#0b141a !important; }
+  #chat-panel { background:#0b141a !important; }
+  #chat-header-bar { min-height:58px !important; padding:8px 10px !important; }
+  #chat-messages { padding:12px !important; }
+  #input-container { padding:8px 10px calc(8px + env(safe-area-inset-bottom)) !important; }
+  .mobile-primary-navigation {
+    background:#202c33 !important; border-top:1px solid #27343b !important;
+    box-shadow:none !important;
+  }
+  .mobile-nav-item { color:#aebac1 !important; }
+  .mobile-nav-item.is-active { color:#73d0ff !important; background:#34454f !important; }
+  #mobile-new-chat-fab { background:#153c53 !important; color:#e9f7ff !important; box-shadow:0 6px 20px rgba(0,0,0,.25) !important; }
+}
