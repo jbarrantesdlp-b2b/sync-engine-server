@@ -2458,3 +2458,28 @@ body.has-active-chat #chat-welcome { display:none !important; }
   #chat-header-bar { display:none !important; }
   body.has-active-chat #chat-header-bar { display:flex !important; }
 }
+
+
+/* SYNC ENGINE shell — branch preview, light-first + Energy alternative */
+:root{--se-navy:#071B3A;--se-blue:#0877F9;--se-line:#DCE4EF}
+#sync-engine-nav-rail{position:absolute;inset:0 auto 0 0;width:76px;z-index:70;display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 8px;background:var(--se-navy);color:#EAF2FF;border-right:1px solid rgba(255,255,255,.1)}
+.se-nav-item{width:58px;min-height:52px;border:0;border-radius:12px;background:transparent;color:#C2D0E2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font:500 10px/1.1 Inter,sans-serif}
+.se-nav-icon{font-size:22px;line-height:1.1}.se-nav-item:hover{background:rgba(255,255,255,.09);color:white}.se-nav-item.is-active{background:var(--se-blue);color:white;box-shadow:0 5px 16px #0877f933}
+.se-nav-divider{height:1px;width:40px;background:#ffffff24;margin:8px 0}.se-nav-profile{margin-top:auto}
+#app-container>header.sticky{margin-left:76px;width:calc(100% - 76px);max-width:none}
+#main-layout{margin-left:76px!important;width:calc(100% - 76px)!important;max-width:none!important;padding:0!important}
+#sidebar-panel{width:min(32%,390px)!important;min-width:280px!important;max-width:390px!important;border-radius:0!important;border-top:0!important;border-bottom:0!important;box-shadow:none!important;background:#F8FAFC!important}
+#chat-panel-container,#chat-panel{border-radius:0!important;box-shadow:none!important}#chat-panel{background:#fff!important;border:0!important}
+#chat-header-bar,#chat-form{background:#fff!important;border-color:var(--se-line)!important}
+#chat-messages{background-color:#fff!important;background-image:radial-gradient(#0877f908 .8px,transparent .8px),linear-gradient(#fff,#fbfdff)!important;background-size:22px 22px,100% 100%!important}
+.workspace-segmented-tab.is-active{background:#E8F2FF!important;color:#0877F9!important;border-color:#C5DFFF!important}
+#se-calls-home{flex:1;min-width:0;min-height:0;height:100%;background:#fff;overflow:auto}
+.se-calls-content{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;color:#10213D}
+.se-calls-icon{width:72px;height:72px;border-radius:24px;display:grid;place-items:center;background:#EAF3FF;color:#0877F9;font-size:32px;margin-bottom:20px}
+.se-calls-content h1{font-size:clamp(24px,3vw,34px);margin:0 0 10px;font-weight:700;color:#071B3A}.se-calls-content p{font-size:14px;color:#65748B}
+.se-calls-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+.se-primary-action,.se-secondary-action{border-radius:999px;padding:12px 20px;font-size:14px;font-weight:650;cursor:pointer}
+.se-primary-action{background:#0877F9;color:white;border:1px solid #0877F9}.se-secondary-action{background:white;color:#071B3A;border:1px solid #DCE4EF}
+#app-container[data-se-theme="energy"] #sync-engine-nav-rail{background:radial-gradient(ellipse at top, #0877f933, transparent 48%),#030D20;box-shadow:inset -1px 0 #46a9ff33}
+#app-container[data-se-theme="energy"] .se-nav-item.is-active{box-shadow:0 0 0 1px #50beff55,0 0 18px #0877f962}
+@media(max-width:767px){#sync-engine-nav-rail{inset:auto 0 0;width:100%;height:calc(60px + env(safe-area-inset-bottom));padding:4px 6px max(4px,env(safe-area-inset-bottom));flex-direction:row;justify-content:space-around;border-right:0;border-top:1px solid #ffffff20}.se-nav-item{flex:1;width:auto;min-width:0;min-height:48px;font-size:9px}.se-nav-icon{font-size:20px}.se-nav-divider{width:1px;height:30px;margin:0 2px}.se-nav-profile{margin-top:0}#app-container>header.sticky{margin-left:0;width:100%}#main-layout{margin-left:0!important;width:100%!important;padding-bottom:calc(60px + env(safe-area-inset-bottom))!important}#sidebar-panel{width:100%!important;min-width:0!important;max-width:none!important}.se-nav-theme{display:none}}
