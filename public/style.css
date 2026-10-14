@@ -681,3 +681,32 @@ body { background: #eef3f9 !important; color: var(--se-text); }
   #app-container > header.sticky > div > div:last-child > *:not(#logout-btn) { display:none !important; }
   #sidebar-panel > div:first-child[role="tablist"] { display:none !important; }
 }
+
+
+/* Phase A — mobile conversation list aligned with the approved reference. */
+.mobile-chat-filters { display:none; }
+#mobile-new-chat-fab { display:none; }
+@media (max-width:767px) {
+  #app-container { display:flex !important; flex-direction:column !important; }
+  #app-container > header.sticky { background:#fff !important; border-bottom:1px solid #e4eaf2 !important; box-shadow:none !important; }
+  #app-container > header.sticky img { max-height:32px !important; }
+  #app-container > header.sticky h1,
+  #app-container > header.sticky .font-title { letter-spacing:.035em; }
+  #sidebar-dms-view > div:first-child { padding:12px 14px 8px !important; background:#fff !important; border-bottom:0 !important; }
+  #contact-search-input { min-height:42px !important; border-radius:13px !important; background:#f2f5f9 !important; border-color:transparent !important; font-family:Inter,sans-serif !important; font-size:13px !important; text-transform:none !important; }
+  #add-contact-btn { min-height:40px !important; border-radius:12px !important; background:#0866f5 !important; padding:0 12px !important; }
+  .mobile-chat-filters { display:flex; align-items:center; gap:8px; padding:5px 14px 12px; overflow-x:auto; scrollbar-width:none; background:#fff; flex-shrink:0; }
+  .mobile-chat-filters::-webkit-scrollbar { display:none; }
+  .mobile-chat-filter { border:1px solid #e3e9f2; border-radius:999px; padding:8px 13px; white-space:nowrap; background:#fff; color:#53647c; font-size:12px; font-weight:600; }
+  .mobile-chat-filter.is-active { background:#eaf2ff; color:#075ce5; border-color:#d9e7ff; }
+  #contacts-list { padding:2px 10px 90px !important; }
+  #contacts-list .contact-item { min-height:76px; padding:12px 9px !important; border-radius:13px !important; border:0 !important; border-bottom:1px solid #edf1f6 !important; background:#fff !important; gap:12px !important; }
+  #contacts-list .contact-item.is-active { background:#f4f8ff !important; border-left:0 !important; }
+  #contacts-list .contact-item .avatar-circle { width:48px !important; height:48px !important; }
+  #contacts-list .contact-item p.font-bold { font-size:14px !important; font-family:Inter,sans-serif !important; }
+  #contacts-list .contact-item p.mt-0\.5 { font-size:12px !important; margin-top:4px !important; }
+  #mobile-new-chat-fab { display:flex; position:absolute; right:18px; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:25; width:54px; height:54px; border:0; border-radius:18px; align-items:center; justify-content:center; background:#0866f5; color:#fff; font-size:31px; line-height:1; box-shadow:0 8px 22px rgba(8,102,245,.3); }
+  .mobile-primary-navigation { flex-basis:calc(62px + env(safe-area-inset-bottom)) !important; min-height:62px !important; padding-top:6px !important; }
+  .mobile-nav-item.is-active { color:#0866f5 !important; background:#f0f5ff !important; }
+  #sidebar-pro-card { display:none !important; }
+}
