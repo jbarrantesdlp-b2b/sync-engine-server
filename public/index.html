@@ -246,7 +246,14 @@
             <p id="contact-action-msg" class="field-error hidden"></p>
           </div>
 
+          <div id="mobile-chat-filters" class="mobile-chat-filters" role="group" aria-label="Filtrar conversaciones">
+            <button type="button" class="mobile-chat-filter is-active" data-contact-filter="all" aria-pressed="true">Todos</button>
+            <button type="button" class="mobile-chat-filter" data-contact-filter="online" aria-pressed="false">En línea</button>
+            <button type="button" class="mobile-chat-filter" data-contact-filter="people" aria-pressed="false">Personas</button>
+            <button type="button" class="mobile-chat-filter" data-contact-filter="channels" aria-pressed="false">Canales</button>
+          </div>
           <div id="contacts-list" class="flex-1 min-h-0 overflow-y-auto p-1.5 px-2 bg-white"></div>
+          <button id="mobile-new-chat-fab" type="button" aria-label="Iniciar conversación" title="Iniciar conversación">＋</button>
         </div>
 
         <!-- VISTA DE CANALES DE EQUIPO (# Canales) -->
@@ -619,8 +626,7 @@
       <button type="button" class="mobile-nav-item is-active" data-primary-view="chats" aria-current="page"><span>▣</span><small>Chats</small></button>
       <button type="button" class="mobile-nav-item" data-primary-view="calls"><span>♧</span><small>Llamadas</small></button>
       <button type="button" class="mobile-nav-item" data-primary-view="contacts"><span>♙</span><small>Contactos</small></button>
-      <button type="button" class="mobile-nav-item" data-primary-view="channels"><span>▤</span><small>Espacios</small></button>
-      <button type="button" class="mobile-nav-item" data-primary-view="settings"><span>⚙</span><small>Perfil</small></button>
+      <button type="button" class="mobile-nav-item" data-primary-view="settings"><span>◉</span><small>Perfil</small></button>
     </nav>
 
   </div>
@@ -5507,6 +5513,76 @@
     syncName();
     new MutationObserver(syncName).observe(name, {childList:true,subtree:true,characterData:true});
   }
+})();
+
+</script>
+<script>
+/* Phase A: mobile chats interactions, layered over existing authenticated data and handlers. */
+(() => {
+  const filters = document.getElementById('mobile-chat-filters');
+  const list = document.getElementById('contacts-list');
+  const search = document.getElementById('contact-search-input');
+  const fab = document.getElementById('mobile-new-chat-fab');
+  const nav = document.getElementById('mobile-primary-navigation');
+  if (!filters || !list) return;
+  let activeFilter = 'all';
+  function applyFilter() {
+    const term = (search?.value || '').trim().toLocaleLowerCase('es');
+    const rows = Array.from(list.querySelectorAll('.contact-item'));
+    rows.forEach(row => {
+      const online = Boolean(row.querySelector('.pulse-online'));
+      const textMatch = !term || row.textContent.toLocaleLowerCase('es').includes(term);
+      const filterMatch = activeFilter !== 'online' || online;
+      row.style.display = textMatch && filterMatch ? '' : 'none';
+    });
+  }
+  filters.addEventListener('click', event => {
+    const button = event.target.closest('[data-contact-filter]');
+    if (!button) return;
+    const filter = button.dataset.contactFilter;
+    if (filter === 'channels') {
+      const channelNav = document.querySelector('[data-primary-view="channels"]');
+      if (channelNav) channelNav.click();
+      return;
+    }
+    activeFilter = filter;
+    filters.querySelectorAll('[data-contact-filter]').forEach(item => {
+      const active = item === button;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
+    applyFilter();
+  });
+  if (search) search.addEventListener('input', () => requestAnimationFrame(applyFilter));
+  if (fab) fab.addEventListener('click', () => {
+    if (search) {
+      search.focus();
+      search.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+    const add = document.getElementById('add-contact-btn');
+    if (add) add.focus({preventScroll:true});
+  });
+  const observer = new MutationObserver(applyFilter);
+  observer.observe(list, {childList:true,subtree:true});
+  const back = document.getElementById('back-to-contacts-btn');
+  if (back) back.addEventListener('click', () => {
+    document.body.classList.add('mobile-view-contacts');
+    document.body.classList.remove('mobile-view-chat');
+  });
+  list.addEventListener('click', event => {
+    if (window.matchMedia('(max-width: 767px)').matches && event.target.closest('.contact-item')) {
+      const sidebar = document.getElementById('sidebar-panel');
+      const chat = document.getElementById('chat-panel-container');
+      if (sidebar) sidebar.classList.add('mobile-view-hidden');
+      if (chat) chat.classList.remove('mobile-view-hidden');
+    }
+  });
+  if (nav) nav.addEventListener('click', event => {
+    const button = event.target.closest('[data-primary-view="settings"]');
+    if (!button) return;
+    const profile = document.getElementById('open-edit-profile-btn');
+    if (profile) profile.click();
+  });
 })();
 </script>
 </body>
