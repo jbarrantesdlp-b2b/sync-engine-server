@@ -1196,6 +1196,8 @@
 <script>
   // ESTADO GLOBAL DE LA APLICACIÓN
   const SERVER_URL = window.location.origin;
+  // Socket.IO uses the persistent Render backend directly; Vercel rewrites may not proxy WebSocket upgrades.
+  const SOCKET_URL = 'https://sync-engine-server.onrender.com';
   const TOKEN_KEY = 'sync_engine_auth_token';
   const { safeUrl, setSafeUrl } = SyncSafeContent;
 
@@ -3231,7 +3233,7 @@
       socket = null;
     }
 
-    socket = io(SERVER_URL, {
+    socket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: Infinity,

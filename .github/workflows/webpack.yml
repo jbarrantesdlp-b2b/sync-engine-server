@@ -31,6 +31,7 @@ jobs:
       run: npm run build --if-present
 
     - name: Ejecutar pruebas
+      timeout-minutes: 10
       run: npm test --if-present
       env:
         CHROMIUM_SANDBOX_DISABLED: true

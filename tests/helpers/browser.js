@@ -96,13 +96,13 @@ module.exports = async function launchBrowser(tempDir) {
       return page;
     },
     async close() {
-      for (const page of pages) page.close();
+      for (const page of pages) {
+        try { page.close(); } catch (_) {}
+      }
       try { await browser.send('Browser.close'); } catch (_) {}
-      browser.close();
-      if (child.exitCode === null) {
-        const exited = once(child, 'exit');
-        child.kill();
-        await exited;
+      try { browser.close(); } catch (_) {}
+      if (child && child.exitCode === null) {
+        try { child.kill('SIGKILL'); } catch (_) {}
       }
     }
   };
