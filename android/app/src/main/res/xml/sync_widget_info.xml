@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:configure="com.barrantesco.syncengine.WidgetConfigActivity"
     android:description="@string/widget_name"
     android:initialLayout="@layout/sync_widget"
     android:minHeight="120dp"
